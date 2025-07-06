@@ -1831,7 +1831,9 @@ function drawAirplane(x, y, width, height, color, isEnemy = false) {
 // 게임 루프 수정
 function gameLoop() {
     if (isPaused) {
-        requestAnimationFrame(gameLoop);
+        if (gameLoopRunning) {
+            requestAnimationFrame(gameLoop);
+        }
         return;
     }
 
@@ -1840,7 +1842,9 @@ function gameLoop() {
 
     if (isStartScreen) {
         drawStartScreen();
-        requestAnimationFrame(gameLoop);
+        if (gameLoopRunning) {
+            requestAnimationFrame(gameLoop);
+        }
         return;
     }
 
@@ -1887,7 +1891,9 @@ function gameLoop() {
                 ctx.fillText('시작/재시작 버튼을 눌러 재시작', canvas.width/2, canvas.height/2 + 160);
             }
         }
-        requestAnimationFrame(gameLoop);
+        if (gameLoopRunning) {
+            requestAnimationFrame(gameLoop);
+        }
         return;
     }
 
@@ -2075,11 +2081,15 @@ function gameLoop() {
         // 보스 총알 처리 (별도 함수)
         handleBossBullets();
 
-        // 다음 프레임 요청
-        requestAnimationFrame(gameLoop);
+        // 다음 프레임 요청 (게임 루프가 실행 중일 때만)
+        if (gameLoopRunning) {
+            requestAnimationFrame(gameLoop);
+        }
     } catch (error) {
         console.error('게임 루프 실행 중 오류:', error);
-        requestAnimationFrame(gameLoop);
+        if (gameLoopRunning) {
+            requestAnimationFrame(gameLoop);
+        }
     }
 }
 
@@ -2835,6 +2845,11 @@ function handleSpecialWeapon() {
 
 // 폭발 효과 업데이트 및 그리기
 function handleExplosions() {
+    // 성능 최적화: 폭발 효과 배열 길이 제한
+    if (explosions.length > 30) {
+        explosions.splice(0, explosions.length - 20); // 오래된 폭발 효과 10개 제거
+    }
+    
     explosions = explosions.filter(explosion => {
         explosion.draw();
         return explosion.update();
@@ -3993,6 +4008,11 @@ function executeBossPattern(boss, pattern, currentTime) {
 
 // 보스 총알 생성 함수 수정
 function createBossBullet(boss, angle) {
+    // 성능 최적화: 보스 총알 배열 길이 제한
+    if (bossBullets.length > 50) {
+        bossBullets.splice(0, bossBullets.length - 40); // 오래된 보스 총알 10개 제거
+    }
+    
     const bullet = {
         x: boss.x + boss.width/2,
         y: boss.y + boss.height/2,
@@ -4725,6 +4745,7 @@ async function initializeGame() {
         scoreForSpread = 0;
         bullets = [];           // 총알 배열 초기화
         enemies = [];           // 적 비행기 배열 초기화
+        bossBullets = [];       // 보스 총알 배열 초기화
         explosions = [];        // 폭발 효과 배열 초기화
         bombs = [];             // 폭탄 배열 초기화
         dynamites = [];         // 다이나마이트 배열 초기화
@@ -4852,6 +4873,7 @@ function restartGame() {
     isGameActive = true;
     isSoundControlActive = false;
     isGameOver = false;
+    gameLoopRunning = false; // 게임 루프 중복 실행 방지
     
     console.log('게임 재시작 - 재시작 전 최고 점수:', highScore);
     
@@ -4872,6 +4894,7 @@ function restartGame() {
     // 2. 모든 배열 완전 초기화
     enemies = [];           // 적 비행기 배열 초기화
     bullets = [];           // 총알 배열 초기화
+    bossBullets = [];       // 보스 총알 배열 초기화
     explosions = [];        // 폭발 효과 배열 초기화
     bombs = [];             // 폭탄 배열 초기화
     dynamites = [];         // 다이나마이트 배열 초기화
@@ -4966,6 +4989,7 @@ function restartGame() {
     console.log('초기화된 상태:', {
         enemies: enemies.length,
         bullets: bullets.length,
+        bossBullets: bossBullets.length,
         explosions: explosions.length,
         bombs: bombs.length,
         dynamites: dynamites.length,
@@ -5109,6 +5133,11 @@ function drawSnakeEnemy(x, y, width, height) {
 function createEnemyMissile(enemy, missileType = 'missile1', angle = null) {
     // 파괴된 적은 미사일 발사하지 않음
     if (enemy.isHit) return;
+    
+    // 성능 최적화: 적 미사일 배열 길이 제한
+    if (enemyMissiles.length > 40) {
+        enemyMissiles.splice(0, enemyMissiles.length - 30); // 오래된 미사일 10개 제거
+    }
     
     const missileSize = Math.min(enemy.width, enemy.height) * 1.2; // 적 비행기보다 20% 크게
     const missile = {
@@ -5611,6 +5640,11 @@ function fireBullet() {
     const currentTime = Date.now();
     if (currentTime - lastFireTime < fireDelay) return;
     
+    // 성능 최적화: 총알 배열 길이 제한
+    if (bullets.length > 100) {
+        bullets.splice(0, bullets.length - 80); // 오래된 총알 20개 제거
+    }
+    
     // 확산탄 발사
     if (hasSpreadShot) {
         const spreadAngles = [-15, -10, -5, 0, 5, 10, 15];
@@ -5647,6 +5681,11 @@ function fireBullet() {
             speed: 8
         };
         bullets.push(bullet);
+    }
+    
+    // 성능 최적화: 총알 배열 길이 제한 (두 번째 비행기 발사 후)
+    if (bullets.length > 100) {
+        bullets.splice(0, bullets.length - 80); // 오래된 총알 20개 제거
     }
     
     lastFireTime = currentTime;
@@ -5760,7 +5799,10 @@ function setupTouchDragControls() {
 function startGameLoop() {
     if (!gameLoopRunning) {
         gameLoopRunning = true;
+        console.log('게임 루프 시작');
         gameLoop();
+    } else {
+        console.log('게임 루프가 이미 실행 중입니다');
     }
 }
 
