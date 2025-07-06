@@ -758,18 +758,53 @@ const ScoreManager = {
 
     async reset() {
         try {
-            // Electron IPC를 통해 점수 초기화
-            await window.electron.ipcRenderer.invoke('reset-score');
+            // 모든 저장소에서 점수 초기화
+            highScore = 0;
+            
+            // localStorage 리셋
+            try {
+                localStorage.setItem('highScore', '0');
+                localStorage.setItem('highScore_backup', '0');
+                localStorage.setItem('highScore_timestamp', Date.now().toString());
+                console.log('ScoreManager localStorage 리셋 완료');
+            } catch (e) {
+                console.warn('ScoreManager localStorage 리셋 실패:', e);
+            }
+            
+            // sessionStorage 리셋
+            try {
+                sessionStorage.setItem('currentHighScore', '0');
+                console.log('ScoreManager sessionStorage 리셋 완료');
+            } catch (e) {
+                console.warn('ScoreManager sessionStorage 리셋 실패:', e);
+            }
+            
+            // IndexedDB 리셋
+            try {
+                await saveScoreToIndexedDB(0);
+                console.log('ScoreManager IndexedDB 리셋 완료');
+            } catch (e) {
+                console.warn('ScoreManager IndexedDB 리셋 실패:', e);
+            }
+            
+            // Electron IPC 리셋 (Electron 환경에서만)
+            try {
+                if (window.electron && window.electron.ipcRenderer) {
+                    await window.electron.ipcRenderer.invoke('reset-score');
+                    console.log('ScoreManager Electron IPC 리셋 완료');
+                }
+            } catch (e) {
+                console.warn('ScoreManager Electron IPC 리셋 실패:', e);
+            }
             
             score = 0;
             levelScore = 0;
             scoreForSpread = 0;
             gameLevel = 1;
             
-            highScore = await this.getHighScore();
-            console.log('게임 리셋 - 현재 최고 점수:', highScore);
+            console.log('ScoreManager 모든 저장소 리셋 완료 - 현재 최고 점수:', highScore);
         } catch (error) {
-            console.error('게임 리셋 중 오류:', error);
+            console.error('ScoreManager 리셋 중 오류:', error);
         }
     }
 };
@@ -4684,10 +4719,53 @@ function handleGameInput(e) {
     if (e.code === 'KeyR') {
         console.log('R키 눌림 - 최고 점수 리셋 시도');
         if (confirm('최고 점수를 리셋하시겠습니까?')) {
+            // 모든 저장소에서 최고 점수 리셋
             highScore = 0;
-            localStorage.setItem('highScore', '0');
+            
+            // localStorage 리셋
+            try {
+                localStorage.setItem('highScore', '0');
+                localStorage.setItem('highScore_backup', '0');
+                localStorage.setItem('highScore_timestamp', Date.now().toString());
+                console.log('localStorage 리셋 완료');
+            } catch (e) {
+                console.warn('localStorage 리셋 실패:', e);
+            }
+            
+            // sessionStorage 리셋
+            try {
+                sessionStorage.setItem('currentHighScore', '0');
+                console.log('sessionStorage 리셋 완료');
+            } catch (e) {
+                console.warn('sessionStorage 리셋 실패:', e);
+            }
+            
+            // IndexedDB 리셋
+            try {
+                saveScoreToIndexedDB(0).then(() => {
+                    console.log('IndexedDB 리셋 완료');
+                }).catch(e => {
+                    console.warn('IndexedDB 리셋 실패:', e);
+                });
+            } catch (e) {
+                console.warn('IndexedDB 리셋 실패:', e);
+            }
+            
+            // Electron IPC 리셋 (Electron 환경에서만)
+            try {
+                if (window.electron && window.electron.ipcRenderer) {
+                    window.electron.ipcRenderer.invoke('reset-score').then(() => {
+                        console.log('Electron IPC 리셋 완료');
+                    }).catch(e => {
+                        console.warn('Electron IPC 리셋 실패:', e);
+                    });
+                }
+            } catch (e) {
+                console.warn('Electron IPC 리셋 실패:', e);
+            }
+            
             alert('최고 점수가 리셋되었습니다.');
-            console.log('최고 점수 리셋 완료');
+            console.log('모든 저장소에서 최고 점수 리셋 완료');
         }
         return;
     }
