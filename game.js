@@ -290,7 +290,8 @@ const secondPlane = {
 secondPlane.y = canvas.height - secondPlane.height - 10;
 
 // 게임 상태 변수 설정
-let bullets = [];          // 총알 배열
+let bullets = [];          // 플레이어 총알 배열
+let bossBullets = [];      // 보스 총알 배열 (별도 분리)
 let enemies = [];         // 적 배열
 let explosions = [];      // 폭발 효과 배열
 let enemyMissiles = [];   // 적 미사일 배열
@@ -2071,6 +2072,9 @@ function gameLoop() {
             drawUI();
         }
 
+        // 보스 총알 처리 (별도 함수)
+        handleBossBullets();
+
         // 다음 프레임 요청
         requestAnimationFrame(gameLoop);
     } catch (error) {
@@ -2641,10 +2645,40 @@ function checkEnemyCollisions(enemy) {
     }
 
     // 화면 밖으로 나간 적 제거
-    return enemy.y < canvas.height + 100 && 
+            return enemy.y < canvas.height + 100 && 
            enemy.y > -100 && 
            enemy.x > -100 && 
            enemy.x < canvas.width + 100;
+}
+
+// 보스 총알 처리 함수 (별도 분리)
+function handleBossBullets() {
+    bossBullets = bossBullets.filter(bullet => {
+        // 보스 총알 이동 (최적화: 복잡한 효과 제거)
+        bullet.x += Math.cos(bullet.angle) * bullet.speed;
+        bullet.y += Math.sin(bullet.angle) * bullet.speed;
+        
+        // 총알 그리기 (최적화: 단순한 원형)
+        ctx.fillStyle = 'red';
+        ctx.beginPath();
+        ctx.arc(bullet.x, bullet.y, bullet.width/2, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // 보스 총알과 플레이어 충돌 체크
+        if (checkCollision(bullet, player) || 
+            (hasSecondPlane && checkCollision(bullet, secondPlane))) {
+            handleCollision();
+            // 총알 충돌 시 작은 폭발 효과
+            explosions.push(new Explosion(bullet.x, bullet.y, false));
+            return false;
+        }
+        
+        // 화면 밖으로 나간 총알 제거
+        return bullet.y < canvas.height + 50 && 
+               bullet.y > -50 && 
+               bullet.x > -50 && 
+               bullet.x < canvas.width + 50;
+    });
 }
 
 // 총알 발사 처리 함수 수정
@@ -3337,26 +3371,7 @@ function handleSpreadShot() {
 // 총알 이동 및 충돌 체크 함수 수정
 function handleBullets() {
     bullets = bullets.filter(bullet => {
-        if (bullet.isBossBullet) {
-            // 보스 총알 이동 (최적화: 복잡한 효과 제거)
-            bullet.x += Math.cos(bullet.angle) * bullet.speed;
-            bullet.y += Math.sin(bullet.angle) * bullet.speed;
-            
-            // 총알 그리기 (최적화: 단순한 원형)
-            ctx.fillStyle = 'red';
-            ctx.beginPath();
-            ctx.arc(bullet.x, bullet.y, bullet.width/2, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // 보스 총알과 플레이어 충돌 체크
-            if (checkCollision(bullet, player) || 
-                (hasSecondPlane && checkCollision(bullet, secondPlane))) {
-                handleCollision();
-                // 총알 충돌 시 작은 폭발 효과
-                explosions.push(new Explosion(bullet.x, bullet.y, false));
-                return false;
-            }
-        } else if (bullet.isSpecial) {
+        if (bullet.isSpecial) {
             // 특수 무기 총알 이동 및 효과 (최적화: 복잡한 효과 제거)
             bullet.x += Math.cos(bullet.angle) * bullet.speed;
             bullet.y += Math.sin(bullet.angle) * bullet.speed;
@@ -3391,12 +3406,7 @@ function handleBullets() {
             }
         }
         
-        // 보스 총알과 플레이어 충돌 체크
-        if (bullet.isBossBullet && (checkCollision(bullet, player) || 
-            (hasSecondPlane && checkCollision(bullet, secondPlane)))) {
-            handleCollision();
-            return false;
-        }
+        // 보스 총알과 플레이어 충돌 체크는 별도 함수에서 처리
         
         // 폭탄과 총알 충돌 체크 (최적화: 중복 재생 방지)
         bombs = bombs.filter(bomb => {
@@ -3997,7 +4007,7 @@ function createBossBullet(boss, angle) {
         rotation: 0, // 회전 효과를 위한 값
         rotationSpeed: 0.1 // 회전 속도
     };
-    bullets.push(bullet);
+    bossBullets.push(bullet); // 보스 총알 배열에 추가
 }
 
 // 레벨업 체크 함수 수정
