@@ -4812,7 +4812,7 @@ async function initializeGame() {
         });
         
         // 게임 루프 시작
-        requestAnimationFrame(gameLoop);
+        startGameLoop();
         console.log('게임 루프 시작됨');
         
     } catch (error) {
