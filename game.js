@@ -4583,7 +4583,7 @@ function drawStartScreen() {
     }
 
     // 조작법 안내
-    ctx.font = '16px Arial';
+    ctx.font = '18px Arial';
     ctx.fillStyle = '#ffffff';
     ctx.textAlign = 'left';
     ctx.fillText('플레이어 비행기를 손가락으로 터치하면', 50, canvas.height - 200);
