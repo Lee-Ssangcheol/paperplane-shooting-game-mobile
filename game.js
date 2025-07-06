@@ -179,11 +179,16 @@ function setupMobileControls() {
         
         // 최고 점수 리셋 확인
         if (confirm('최고 점수를 리셋하시겠습니까?')) {
-            highScore = 0;
-            localStorage.removeItem('ShootingGameHighScore');
-            localStorage.removeItem('ShootingGameHighScore_backup');
-            sessionStorage.removeItem('ShootingGameCurrentHighScore');
-            console.log('최고 점수 리셋');
+            ScoreManager.reset().then(() => {
+                console.log('ScoreManager를 통한 최고 점수 리셋 완료');
+            }).catch(error => {
+                console.error('ScoreManager 리셋 실패:', error);
+                // 백업 리셋 방법
+                highScore = 0;
+                localStorage.clear();
+                sessionStorage.clear();
+                console.log('백업 방법으로 최고 점수 리셋');
+            });
         }
     }, { passive: false });
     
@@ -200,11 +205,16 @@ function setupMobileControls() {
         
         // 최고 점수 리셋 확인
         if (confirm('최고 점수를 리셋하시겠습니까?')) {
-            highScore = 0;
-            localStorage.removeItem('ShootingGameHighScore');
-            localStorage.removeItem('ShootingGameHighScore_backup');
-            sessionStorage.removeItem('ShootingGameCurrentHighScore');
-            console.log('최고 점수 리셋');
+            ScoreManager.reset().then(() => {
+                console.log('ScoreManager를 통한 최고 점수 리셋 완료');
+            }).catch(error => {
+                console.error('ScoreManager 리셋 실패:', error);
+                // 백업 리셋 방법
+                highScore = 0;
+                localStorage.clear();
+                sessionStorage.clear();
+                console.log('백업 방법으로 최고 점수 리셋');
+            });
         }
     });
     
@@ -758,25 +768,66 @@ const ScoreManager = {
 
     async reset() {
         try {
+            console.log('ScoreManager 리셋 시작');
+            
             // 모든 저장소에서 점수 초기화
             highScore = 0;
             
-            // localStorage 리셋
+            // localStorage 완전 리셋
             try {
+                // 모든 관련 키들을 제거
+                const keysToRemove = [
+                    'highScore', 'highScore_backup', 'highScore_timestamp',
+                    'ShootingGameHighScore', 'ShootingGameHighScore_backup',
+                    'gameScore', 'gameHighScore', 'currentScore'
+                ];
+                
+                keysToRemove.forEach(key => {
+                    localStorage.removeItem(key);
+                });
+                
+                // 0으로 설정
                 localStorage.setItem('highScore', '0');
                 localStorage.setItem('highScore_backup', '0');
                 localStorage.setItem('highScore_timestamp', Date.now().toString());
-                console.log('ScoreManager localStorage 리셋 완료');
+                
+                console.log('ScoreManager localStorage 완전 리셋 완료');
             } catch (e) {
                 console.warn('ScoreManager localStorage 리셋 실패:', e);
+                // 실패 시 전체 클리어 시도
+                try {
+                    localStorage.clear();
+                    console.log('localStorage 전체 클리어 완료');
+                } catch (clearError) {
+                    console.error('localStorage 전체 클리어 실패:', clearError);
+                }
             }
             
-            // sessionStorage 리셋
+            // sessionStorage 완전 리셋
             try {
+                // 모든 관련 키들을 제거
+                const sessionKeysToRemove = [
+                    'currentHighScore', 'ShootingGameCurrentHighScore',
+                    'gameScore', 'gameHighScore', 'currentScore'
+                ];
+                
+                sessionKeysToRemove.forEach(key => {
+                    sessionStorage.removeItem(key);
+                });
+                
+                // 0으로 설정
                 sessionStorage.setItem('currentHighScore', '0');
-                console.log('ScoreManager sessionStorage 리셋 완료');
+                
+                console.log('ScoreManager sessionStorage 완전 리셋 완료');
             } catch (e) {
                 console.warn('ScoreManager sessionStorage 리셋 실패:', e);
+                // 실패 시 전체 클리어 시도
+                try {
+                    sessionStorage.clear();
+                    console.log('sessionStorage 전체 클리어 완료');
+                } catch (clearError) {
+                    console.error('sessionStorage 전체 클리어 실패:', clearError);
+                }
             }
             
             // IndexedDB 리셋
@@ -797,14 +848,26 @@ const ScoreManager = {
                 console.warn('ScoreManager Electron IPC 리셋 실패:', e);
             }
             
+            // 게임 변수들 리셋
             score = 0;
             levelScore = 0;
             scoreForSpread = 0;
             gameLevel = 1;
             
+            // 페이지 새로고침을 통한 완전한 리셋
+            setTimeout(() => {
+                console.log('페이지 새로고침으로 완전한 리셋 실행');
+                window.location.reload();
+            }, 100);
+            
             console.log('ScoreManager 모든 저장소 리셋 완료 - 현재 최고 점수:', highScore);
         } catch (error) {
             console.error('ScoreManager 리셋 중 오류:', error);
+            // 오류 발생 시 강제 새로고침
+            setTimeout(() => {
+                console.log('오류로 인한 강제 페이지 새로고침');
+                window.location.reload();
+            }, 100);
         }
     }
 };
