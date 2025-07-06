@@ -8,7 +8,7 @@
 html, body {
     width: 100vw;
     height: 100vh;
-    background: #E0E0E0;
+    background: rgba(0, 0, 0, 0.3); /* 모바일 키 패널과 동일한 배경색 */
     margin: 0;
     padding: 0;
     overflow: hidden;
@@ -23,7 +23,7 @@ html, body {
 body {
     margin: 0;
     padding: 0;
-    background: #E0E0E0;
+    background: rgba(0, 0, 0, 0.3); /* 모바일 키 패널과 동일한 배경색 */
     width: 100vw;
     height: 100vh;
     display: flex;
@@ -42,6 +42,7 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    background: rgba(0, 0, 0, 0.3); /* 모바일 키 패널과 동일한 배경색 */
 }
 
 #canvas-container {
@@ -55,6 +56,7 @@ body {
     position: absolute;
     top: 0;
     left: 0;
+    background: rgba(0, 0, 0, 0.3); /* 모바일 키 패널과 동일한 배경색 */
 }
 
 #gameCanvas {
@@ -231,6 +233,7 @@ body {
         display: flex;
         align-items: center;
         justify-content: center;
+        background: rgba(0, 0, 0, 0.3); /* 모바일 키 패널과 동일한 배경색 */
         /* iOS Safari에서 추가 설정 */
         -webkit-transform: translateZ(0);
         transform: translateZ(0);
