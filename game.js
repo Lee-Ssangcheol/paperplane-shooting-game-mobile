@@ -130,7 +130,6 @@ function setupMobileControls() {
         // 시작 화면에서 버튼을 누르면 게임 시작
         if (isStartScreen) {
             isStartScreen = false;
-            gameStarted = true;
             console.log('모바일에서 게임 시작');
         }
         
@@ -155,7 +154,6 @@ function setupMobileControls() {
         
         if (isStartScreen) {
             isStartScreen = false;
-            gameStarted = true;
             console.log('모바일에서 게임 시작');
         }
         
@@ -251,7 +249,6 @@ function setupMobileControls() {
         
         if (isStartScreen) {
             isStartScreen = false;
-            gameStarted = true;
             console.log('모바일에서 게임 시작');
         }
     });
@@ -358,7 +355,6 @@ let gameVersion = '1.0.0-202506161826';  // 게임 버전
 
 // 게임 상태 변수에 추가
 let isStartScreen = true;  // 시작 화면 상태
-let gameStarted = false;   // 게임 시작 상태
 let bossActive = false;
 let bossHealth = 0;
 let bossPattern = 0;
@@ -5604,7 +5600,7 @@ let gameLoopRunning = false;
 
 // 총알 발사 함수
 function fireBullet() {
-    if (!canFire || !gameStarted || isGameOver) return;
+    if (!canFire || isGameOver) return;
     
     const currentTime = Date.now();
     if (currentTime - lastFireTime < fireDelay) return;
@@ -5688,7 +5684,7 @@ function setupTouchDragControls() {
         isDragging = true;
         
         // 드래그 시작 시 자동 연속발사 시작
-        if (gameStarted && !isGameOver && !isStartScreen) {
+        if (!isGameOver && !isStartScreen) {
             keys.Space = true;
             isSpacePressed = true;
             spacePressTime = Date.now();
@@ -5742,7 +5738,7 @@ function setupTouchDragControls() {
         isDragging = false;
         
         // 드래그 종료 시 연속발사 중지
-        if (gameStarted && !isGameOver && !isStartScreen) {
+        if (!isGameOver && !isStartScreen) {
             keys.Space = false;
             isSpacePressed = false;
             lastReleaseTime = Date.now();
