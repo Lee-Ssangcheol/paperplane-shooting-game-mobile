@@ -59,13 +59,7 @@ let mobileContinuousFireInterval = null;
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-// 캔버스 초기화 확인
-console.log('캔버스 초기화:', {
-    canvas: canvas,
-    ctx: ctx,
-    width: canvas?.width,
-    height: canvas?.height
-});
+
 
 // 모바일 터치 컨트롤 요소들
 const mobileControls = {
@@ -183,12 +177,14 @@ function setupMobileControls() {
         e.stopPropagation();
         console.log('재시작 버튼 터치');
         
-        // 최고 점수 리셋
-        highScore = 0;
-        localStorage.removeItem('ShootingGameHighScore');
-        localStorage.removeItem('ShootingGameHighScore_backup');
-        sessionStorage.removeItem('ShootingGameCurrentHighScore');
-        console.log('최고 점수 리셋');
+        // 최고 점수 리셋 확인
+        if (confirm('최고 점수를 리셋하시겠습니까?')) {
+            highScore = 0;
+            localStorage.removeItem('ShootingGameHighScore');
+            localStorage.removeItem('ShootingGameHighScore_backup');
+            sessionStorage.removeItem('ShootingGameCurrentHighScore');
+            console.log('최고 점수 리셋');
+        }
     }, { passive: false });
     
     mobileControls.btnReset.addEventListener('touchend', (e) => {
@@ -202,12 +198,14 @@ function setupMobileControls() {
         e.stopPropagation();
         console.log('재시작 버튼 클릭');
         
-        // 최고 점수 리셋
-        highScore = 0;
-        localStorage.removeItem('ShootingGameHighScore');
-        localStorage.removeItem('ShootingGameHighScore_backup');
-        sessionStorage.removeItem('ShootingGameCurrentHighScore');
-        console.log('최고 점수 리셋');
+        // 최고 점수 리셋 확인
+        if (confirm('최고 점수를 리셋하시겠습니까?')) {
+            highScore = 0;
+            localStorage.removeItem('ShootingGameHighScore');
+            localStorage.removeItem('ShootingGameHighScore_backup');
+            sessionStorage.removeItem('ShootingGameCurrentHighScore');
+            console.log('최고 점수 리셋');
+        }
     });
     
     // 마우스 이벤트도 추가 (데스크탑용)
@@ -1895,7 +1893,6 @@ function gameLoop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     if (isStartScreen) {
-        console.log('시작 화면 그리기 중...');
         drawStartScreen();
         requestAnimationFrame(gameLoop);
         return;
@@ -2793,24 +2790,24 @@ function drawUI() {
     
     // 남은 목숨 표시 (붉은색으로)
     ctx.fillStyle = 'red';
-    ctx.fillText(`남은 목숨: ${maxLives - collisionCount}`, 10, 200);
+    ctx.fillText(`남은 목숨: ${maxLives - collisionCount}`, 10, 210);
     
     // 특수 무기 게이지 표시
     if (!specialWeaponCharged) {
         // 게이지 바 배경
         ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-        ctx.fillRect(10, 210, 200, 20);
+        ctx.fillRect(10, 240, 200, 20);
         
         // 게이지 바
         ctx.fillStyle = 'rgba(0, 255, 255, 0.8)';
-        ctx.fillRect(10, 210, (specialWeaponCharge / SPECIAL_WEAPON_MAX_CHARGE) * 200, 20);
+        ctx.fillRect(10, 240, (specialWeaponCharge / SPECIAL_WEAPON_MAX_CHARGE) * 200, 20);
         
         // 게이지 바 위에 텍스트 표시
         ctx.fillStyle = 'white';
         ctx.font = 'bold 16px Arial';
         ctx.textAlign = 'center';
         const percentText = `특수 무기 : ${Math.floor((specialWeaponCharge / SPECIAL_WEAPON_MAX_CHARGE) * 100)}%`;
-        ctx.fillText(percentText, 110, 225);
+        ctx.fillText(percentText, 110, 255);
     } else {
         // 깜빡이는 효과를 위한 시간 계산
         const blinkSpeed = 500; // 깜빡임 속도 (밀리초)
@@ -2819,29 +2816,29 @@ function drawUI() {
         
         // 배경색 설정 (게이지 바)
         ctx.fillStyle = isRed ? 'rgba(255, 0, 0, 0.3)' : 'rgba(0, 0, 255, 0.3)';
-        ctx.fillRect(10, 210, 200, 20);
+        ctx.fillRect(10, 240, 200, 20);
         
         // 테두리 효과
         ctx.strokeStyle = isRed ? 'red' : 'cyan';
         ctx.lineWidth = 2;
-        ctx.strokeRect(10, 210, 200, 20);
+        ctx.strokeRect(10, 240, 200, 20);
         
         // 게이지 바 위에 텍스트 표시
         ctx.fillStyle = isRed ? 'red' : 'cyan';
         ctx.font = 'bold 16px Arial';
         ctx.textAlign = 'center';
         const percentText = `특수 무기 : ${Math.floor((specialWeaponCharge / SPECIAL_WEAPON_MAX_CHARGE) * 100)}%`;
-        ctx.fillText(percentText, 110, 225);
+        ctx.fillText(percentText, 110, 255);
         
         // 준비 완료 메시지 배경
         ctx.fillStyle = isRed ? 'rgba(255, 0, 0, 0.2)' : 'rgba(0, 0, 255, 0.2)';
-        ctx.fillRect(10, 230, 300, 30);
+        ctx.fillRect(10, 260, 300, 30);
         
         // 텍스트 색상 설정
         ctx.fillStyle = isRed ? 'red' : 'cyan';
         ctx.font = 'bold 20px Arial';
         ctx.textAlign = 'left';
-        ctx.fillText('특수무기 사용준비 완료', 15, 250);
+        ctx.fillText('특수무기 사용준비 완료', 15, 280);
     }
 
     // 제작자 정보 표시
@@ -4263,10 +4260,6 @@ function initStartScreen() {
 
 // 시작 화면 그리기 함수
 function drawStartScreen() {
-    console.log('drawStartScreen 실행됨');
-    console.log('캔버스 크기:', canvas.width, 'x', canvas.height);
-    console.log('컨텍스트:', ctx);
-    
     // 배경 그라데이션
     const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
     gradient.addColorStop(0, '#000033');
@@ -4319,7 +4312,7 @@ function drawStartScreen() {
     const isVisible = Math.floor(currentTime / blinkSpeed) % 2 === 0;
     
     if (isVisible) {
-        ctx.font = 'bold 25px Arial';
+        ctx.font = 'bold 20px Arial';
         ctx.fillStyle = '#ffff00';
         ctx.fillText('시작/재시작 버튼을 눌러 게임 시작', canvas.width/2, subtitleY);
     }
