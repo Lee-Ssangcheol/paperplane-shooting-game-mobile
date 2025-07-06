@@ -73,30 +73,23 @@ body {
     bottom: 0;
     left: 0;
     right: 0;
-    height: 120px; /* 높이를 120px로 증가 */
+    height: 80px; /* 높이를 80px로 줄임 */
     background: rgba(0, 0, 0, 0.3);
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
-    padding: 10px 20px;
+    padding: 10px;
     box-sizing: border-box;
     z-index: 1000;
 }
 
-/* 액션 버튼들을 왼쪽에 배치 */
+/* 액션 버튼들을 중앙에 가로로 배치 */
 #action-buttons {
     display: flex;
-    flex-direction: column;
-    gap: 8px;
+    flex-direction: row;
+    gap: 15px;
     justify-content: center;
-}
-
-/* 방향키를 오른쪽에 배치 */
-#control-pad {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    justify-content: center;
+    align-items: center;
 }
 
 .control-row {
@@ -231,7 +224,7 @@ body {
         padding: 0;
         margin: 0;
         width: 100vw;
-        height: calc(100vh - 120px);
+        height: calc(100vh - 80px);
         position: fixed;
         top: 0;
         left: 0;
@@ -259,7 +252,7 @@ body {
     #mobile-controls {
         position: fixed;
         bottom: 0;
-        height: 120px;
+        height: 80px;
         left: 0;
         right: 0;
         z-index: 1000;
