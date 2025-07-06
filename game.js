@@ -1648,26 +1648,11 @@ class Explosion {
         this.x = x;
         this.y = y;
         this.radius = 1;
-        this.maxRadius = isFinal ? 100 : 50; // 최종 폭발은 더 크게
-        this.speed = isFinal ? 1 : 1.5;
-        this.particles = [];
+        this.maxRadius = isFinal ? 60 : 30; // 최적화: 크기 감소
+        this.speed = isFinal ? 1.5 : 2; // 최적화: 속도 증가
         this.isFinal = isFinal;
         
-        // 파티클 생성
-        if (isFinal) {
-            for (let i = 0; i < 20; i++) {
-                this.particles.push({
-                    x: this.x,
-                    y: this.y,
-                    speed: Math.random() * 8 + 2,
-                    angle: (Math.PI * 2 / 20) * i,
-                    size: Math.random() * 4 + 2,
-                    life: 1
-                });
-            }
-        }
-
-        // 폭발 시 주변 적에게 데미지
+        // 폭발 시 주변 적에게 데미지 (최적화: 간소화)
         if (isFinal) {
             enemies.forEach(enemy => {
                 const dx = enemy.x + enemy.width/2 - this.x;
@@ -1694,61 +1679,12 @@ class Explosion {
 
     update() {
         this.radius += this.speed;
-        
-        if (this.isFinal) {
-            // 파티클 업데이트
-            for (let particle of this.particles) {
-                particle.x += Math.cos(particle.angle) * particle.speed;
-                particle.y += Math.sin(particle.angle) * particle.speed;
-                particle.life -= 0.02;
-                particle.size *= 0.98;
-            }
-            
-            // 파티클이 모두 사라졌는지 확인
-            return this.particles.some(p => p.life > 0);
-        }
-        
         return this.radius < this.maxRadius;
     }
 
     draw() {
         if (this.isFinal) {
-            // 중심 폭발
-            const gradient = ctx.createRadialGradient(
-                this.x, this.y, 0,
-                this.x, this.y, this.radius
-            );
-            gradient.addColorStop(0, 'rgba(255, 255, 200, 0.8)');
-            gradient.addColorStop(0.4, 'rgba(255, 100, 0, 0.6)');
-            gradient.addColorStop(1, 'rgba(255, 0, 0, 0)');
-            
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-            ctx.fillStyle = gradient;
-            ctx.fill();
-            
-            // 파티클 그리기
-            for (let particle of this.particles) {
-                if (particle.life > 0) {
-                    ctx.beginPath();
-                    ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-                    ctx.fillStyle = `rgba(255, ${Math.floor(200 * particle.life)}, 0, ${particle.life})`;
-                    ctx.fill();
-                    
-                    // 파티클 꼬리 효과
-                    ctx.beginPath();
-                    ctx.moveTo(particle.x, particle.y);
-                    ctx.lineTo(
-                        particle.x - Math.cos(particle.angle) * (particle.speed * 4),
-                        particle.y - Math.sin(particle.angle) * (particle.speed * 4)
-                    );
-                    ctx.strokeStyle = `rgba(255, ${Math.floor(100 * particle.life)}, 0, ${particle.life * 0.5})`;
-                    ctx.lineWidth = particle.size * 0.8;
-                    ctx.stroke();
-                }
-            }
-        } else {
-            // 일반 폭발 효과
+            // 최종 폭발 효과 (최적화: 단순화)
             ctx.beginPath();
             ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
             ctx.fillStyle = `rgba(255, 200, 0, ${1 - this.radius / this.maxRadius})`;
@@ -1758,10 +1694,11 @@ class Explosion {
             ctx.arc(this.x, this.y, this.radius * 0.7, 0, Math.PI * 2);
             ctx.fillStyle = `rgba(255, 100, 0, ${1 - this.radius / this.maxRadius})`;
             ctx.fill();
-            
+        } else {
+            // 일반 폭발 효과 (최적화: 단순화)
             ctx.beginPath();
-            ctx.arc(this.x, this.y, this.radius * 0.4, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(255, 50, 0, ${1 - this.radius / this.maxRadius})`;
+            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255, 200, 0, ${1 - this.radius / this.maxRadius})`;
             ctx.fill();
         }
     }
@@ -1946,85 +1883,185 @@ function gameLoop() {
     }
 
     try {
-        // 깜박임 효과 처리
-        if (flashTimer > 0) {
-            ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            flashTimer -= 16;
-        }
-
-        // 플레이어 이동 처리
-        handlePlayerMovement();
-
-        // 총알 발사 처리
-        handleBulletFiring();
-        
-        // 특수 무기 처리
-        handleSpecialWeapon();
-
-        // 적 생성 및 이동 처리
-        handleEnemies();
-        
-        // 보스 체크 및 생성
-        const currentTime = Date.now();
-        if (!bossActive) {  // bossDestroyed 조건 제거
-            const timeSinceLastBoss = currentTime - lastBossSpawnTime;
+        // 성능 모니터링 (레벨 9 이상에서만)
+        if (gameLevel >= 9) {
+            const startTime = performance.now();
             
-            if (timeSinceLastBoss >= BOSS_SETTINGS.SPAWN_INTERVAL) {
-                console.log('보스 생성 조건 만족:', {
-                    currentTime,
-                    lastBossSpawnTime,
-                    timeSinceLastBoss,
-                    interval: BOSS_SETTINGS.SPAWN_INTERVAL
+            // 깜박임 효과 처리
+            if (flashTimer > 0) {
+                ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                flashTimer -= 16;
+            }
+
+            // 플레이어 이동 처리
+            handlePlayerMovement();
+
+            // 총알 발사 처리
+            handleBulletFiring();
+            
+            // 특수 무기 처리
+            handleSpecialWeapon();
+
+            // 적 생성 및 이동 처리
+            handleEnemies();
+            
+            // 보스 체크 및 생성
+            const currentTime = Date.now();
+            if (!bossActive) {  // bossDestroyed 조건 제거
+                const timeSinceLastBoss = currentTime - lastBossSpawnTime;
+                
+                if (timeSinceLastBoss >= BOSS_SETTINGS.SPAWN_INTERVAL) {
+                    console.log('보스 생성 조건 만족:', {
+                        currentTime,
+                        lastBossSpawnTime,
+                        timeSinceLastBoss,
+                        interval: BOSS_SETTINGS.SPAWN_INTERVAL
+                    });
+                    createBoss();
+                }
+            } else {
+                // 보스가 존재하는 경우 보스 패턴 처리
+                const boss = enemies.find(enemy => enemy.isBoss);
+                if (boss) {
+                    handleBossPattern(boss);
+                } else {
+                    // 보스가 enemies 배열에서 제거된 경우 상태 초기화
+                    bossActive = false;
+                    bossHealth = 0;
+                    bossDestroyed = false;  // 보스 파괴 상태 초기화
+                    console.log('보스가 제거되어 상태 초기화');
+                }
+            }
+
+            // 총알 이동 및 충돌 체크
+            handleBullets();
+
+            // 적 미사일 발사 처리
+            handleEnemyMissileFiring();
+
+            // 적 미사일 업데이트
+            updateEnemyMissiles();
+
+            // 방어막 적 업데이트
+            updateShieldedEnemies();
+
+            // 확산탄 처리
+            handleSpreadShot();
+
+            // 두 번째 비행기 처리
+            handleSecondPlane();
+
+            // 레벨업 체크
+            checkLevelUp();
+
+            // 폭발 효과 업데이트 및 그리기
+            handleExplosions();
+
+            // 폭탄 처리 추가
+            handleBombs();
+
+            // 다이나마이트 처리 추가
+            handleDynamites();
+
+            // UI 그리기
+            drawUI();
+
+            // 성능 측정 및 로그 (1초에 한 번만)
+            const endTime = performance.now();
+            const frameTime = endTime - startTime;
+            
+            if (Math.random() < 0.016) { // 약 60fps에서 1초에 한 번
+                console.log('성능 모니터링:', {
+                    frameTime: frameTime.toFixed(2) + 'ms',
+                    enemies: enemies.length,
+                    bullets: bullets.length,
+                    explosions: explosions.length,
+                    level: gameLevel
                 });
-                createBoss();
             }
         } else {
-            // 보스가 존재하는 경우 보스 패턴 처리
-            const boss = enemies.find(enemy => enemy.isBoss);
-            if (boss) {
-                handleBossPattern(boss);
-            } else {
-                // 보스가 enemies 배열에서 제거된 경우 상태 초기화
-                bossActive = false;
-                bossHealth = 0;
-                bossDestroyed = false;  // 보스 파괴 상태 초기화
-                console.log('보스가 제거되어 상태 초기화');
+            // 레벨 9 미만에서는 기존 로직
+            // 깜박임 효과 처리
+            if (flashTimer > 0) {
+                ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                flashTimer -= 16;
             }
+
+            // 플레이어 이동 처리
+            handlePlayerMovement();
+
+            // 총알 발사 처리
+            handleBulletFiring();
+            
+            // 특수 무기 처리
+            handleSpecialWeapon();
+
+            // 적 생성 및 이동 처리
+            handleEnemies();
+            
+            // 보스 체크 및 생성
+            const currentTime = Date.now();
+            if (!bossActive) {  // bossDestroyed 조건 제거
+                const timeSinceLastBoss = currentTime - lastBossSpawnTime;
+                
+                if (timeSinceLastBoss >= BOSS_SETTINGS.SPAWN_INTERVAL) {
+                    console.log('보스 생성 조건 만족:', {
+                        currentTime,
+                        lastBossSpawnTime,
+                        timeSinceLastBoss,
+                        interval: BOSS_SETTINGS.SPAWN_INTERVAL
+                    });
+                    createBoss();
+                }
+            } else {
+                // 보스가 존재하는 경우 보스 패턴 처리
+                const boss = enemies.find(enemy => enemy.isBoss);
+                if (boss) {
+                    handleBossPattern(boss);
+                } else {
+                    // 보스가 enemies 배열에서 제거된 경우 상태 초기화
+                    bossActive = false;
+                    bossHealth = 0;
+                    bossDestroyed = false;  // 보스 파괴 상태 초기화
+                    console.log('보스가 제거되어 상태 초기화');
+                }
+            }
+
+            // 총알 이동 및 충돌 체크
+            handleBullets();
+
+            // 적 미사일 발사 처리
+            handleEnemyMissileFiring();
+
+            // 적 미사일 업데이트
+            updateEnemyMissiles();
+
+            // 방어막 적 업데이트
+            updateShieldedEnemies();
+
+            // 확산탄 처리
+            handleSpreadShot();
+
+            // 두 번째 비행기 처리
+            handleSecondPlane();
+
+            // 레벨업 체크
+            checkLevelUp();
+
+            // 폭발 효과 업데이트 및 그리기
+            handleExplosions();
+
+            // 폭탄 처리 추가
+            handleBombs();
+
+            // 다이나마이트 처리 추가
+            handleDynamites();
+
+            // UI 그리기
+            drawUI();
         }
-
-        // 총알 이동 및 충돌 체크
-        handleBullets();
-
-        // 적 미사일 발사 처리
-        handleEnemyMissileFiring();
-
-        // 적 미사일 업데이트
-        updateEnemyMissiles();
-
-        // 방어막 적 업데이트
-        updateShieldedEnemies();
-
-        // 확산탄 처리
-        handleSpreadShot();
-
-        // 두 번째 비행기 처리
-        handleSecondPlane();
-
-        // 레벨업 체크
-        checkLevelUp();
-
-        // 폭발 효과 업데이트 및 그리기
-        handleExplosions();
-
-        // 폭탄 처리 추가
-        handleBombs();
-
-        // 다이나마이트 처리 추가
-        handleDynamites();
-
-        // UI 그리기
-        drawUI();
 
         // 다음 프레임 요청
         requestAnimationFrame(gameLoop);
@@ -2424,17 +2461,17 @@ function checkEnemyCollisions(enemy) {
                     // 보스 파괴 시 목숨 1개 추가
                     maxLives++; // 최대 목숨 증가
                     
-                    // 큰 폭발 효과
+                    // 큰 폭발 효과 (최적화: 개수 감소)
                     explosions.push(new Explosion(
                         enemy.x + enemy.width/2,
                         enemy.y + enemy.height/2,
                         true
                     ));
                     
-                    // 추가 폭발 효과
-                    for (let i = 0; i < 8; i++) {
-                        const angle = (Math.PI * 2 / 8) * i;
-                        const distance = 50;
+                    // 추가 폭발 효과 (개수 감소)
+                    for (let i = 0; i < 4; i++) {
+                        const angle = (Math.PI * 2 / 4) * i;
+                        const distance = 30;
                         explosions.push(new Explosion(
                             enemy.x + enemy.width/2 + Math.cos(angle) * distance,
                             enemy.y + enemy.height/2 + Math.sin(angle) * distance,
@@ -2456,7 +2493,7 @@ function checkEnemyCollisions(enemy) {
                     enemy.lastHitTime = currentTime;
                 }
                 
-                // 보스가 맞았을 때 시각 효과 추가
+                // 보스가 맞았을 때 시각 효과 추가 (최적화: 작은 폭발만)
                 explosions.push(new Explosion(
                     bullet.x,
                     bullet.y,
@@ -2467,12 +2504,15 @@ function checkEnemyCollisions(enemy) {
                 enemy.health -= 100;
                 bossHealth = enemy.health;
                 
-                // 보스 피격음 재생
-                applyGlobalVolume();
-                collisionSound.currentTime = 0;
-                collisionSound.play().catch(error => {
-                    console.log('오디오 재생 실패:', error);
-                });
+                // 보스 피격음 재생 (최적화: 중복 재생 방지)
+                if (currentTime - lastCollisionTime > 100) {
+                    applyGlobalVolume();
+                    collisionSound.currentTime = 0;
+                    collisionSound.play().catch(error => {
+                        console.log('오디오 재생 실패:', error);
+                    });
+                    lastCollisionTime = currentTime;
+                }
                 
                 // 피격 시간이 전체 출현 시간의 50%를 넘으면 파괴
                 const totalTime = currentTime - enemy.lastUpdateTime;
@@ -2493,17 +2533,17 @@ function checkEnemyCollisions(enemy) {
                         maxLives++; // 최대 목숨 증가
                     }
                     
-                    // 큰 폭발 효과
+                    // 큰 폭발 효과 (최적화: 개수 감소)
                     explosions.push(new Explosion(
                         enemy.x + enemy.width/2,
                         enemy.y + enemy.height/2,
                         true
                     ));
                     
-                    // 추가 폭발 효과
-                    for (let i = 0; i < 8; i++) {
-                        const angle = (Math.PI * 2 / 8) * i;
-                        const distance = 50;
+                    // 추가 폭발 효과 (개수 감소)
+                    for (let i = 0; i < 4; i++) {
+                        const angle = (Math.PI * 2 / 4) * i;
+                        const distance = 30;
                         explosions.push(new Explosion(
                             enemy.x + enemy.width/2 + Math.cos(angle) * distance,
                             enemy.y + enemy.height/2 + Math.sin(angle) * distance,
@@ -2511,12 +2551,15 @@ function checkEnemyCollisions(enemy) {
                         ));
                     }
                     
-                    // 보스 파괴 시 폭발음 재생
-                    applyGlobalVolume();
-                    explosionSound.currentTime = 0;
-                    explosionSound.play().catch(error => {
-                        console.log('오디오 재생 실패:', error);
-                    });
+                    // 보스 파괴 시 폭발음 재생 (최적화: 중복 재생 방지)
+                    if (currentTime - lastExplosionTime > 200) {
+                        applyGlobalVolume();
+                        explosionSound.currentTime = 0;
+                        explosionSound.play().catch(error => {
+                            console.log('오디오 재생 실패:', error);
+                        });
+                        lastExplosionTime = currentTime;
+                    }
                     
                     bossActive = false;
                     return false;
@@ -2537,12 +2580,16 @@ function checkEnemyCollisions(enemy) {
                 // removeEnemyMissiles(enemy);
             }
             
-            // 적을 맞췄을 때 효과음 재생
-            applyGlobalVolume();
-            shootSound.currentTime = 0;
-            shootSound.play().catch(error => {
-                console.log('오디오 재생 실패:', error);
-            });
+            // 적을 맞췄을 때 효과음 재생 (최적화: 중복 재생 방지)
+            const currentTime = Date.now();
+            if (currentTime - lastCollisionTime > 50) {
+                applyGlobalVolume();
+                shootSound.currentTime = 0;
+                shootSound.play().catch(error => {
+                    console.log('오디오 재생 실패:', error);
+                });
+                lastCollisionTime = currentTime;
+            }
             
             isHit = true;
             return false;
@@ -3278,49 +3325,15 @@ function handleSpreadShot() {
 function handleBullets() {
     bullets = bullets.filter(bullet => {
         if (bullet.isBossBullet) {
-            // 보스 총알 이동
+            // 보스 총알 이동 (최적화: 복잡한 효과 제거)
             bullet.x += Math.cos(bullet.angle) * bullet.speed;
             bullet.y += Math.sin(bullet.angle) * bullet.speed;
-            bullet.rotation += bullet.rotationSpeed;
             
-            // 총알 꼬리 효과 추가
-            bullet.trail.unshift({x: bullet.x, y: bullet.y});
-            if (bullet.trail.length > 5) bullet.trail.pop();
-            
-            // 총알 그리기
-            ctx.save();
-            ctx.translate(bullet.x, bullet.y);
-            ctx.rotate(bullet.rotation);
-            
-            // 총알 본체
-            const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, bullet.width/2);
-            gradient.addColorStop(0, 'rgba(255, 0, 0, 0.8)');
-            gradient.addColorStop(1, 'rgba(255, 0, 0, 0)');
-            ctx.fillStyle = gradient;
+            // 총알 그리기 (최적화: 단순한 원형)
+            ctx.fillStyle = 'red';
             ctx.beginPath();
-            ctx.arc(0, 0, bullet.width/2, 0, Math.PI * 2);
+            ctx.arc(bullet.x, bullet.y, bullet.width/2, 0, Math.PI * 2);
             ctx.fill();
-            
-            // 총알 꼬리
-            bullet.trail.forEach((pos, index) => {
-                const alpha = 1 - (index / bullet.trail.length);
-                ctx.fillStyle = `rgba(255, 0, 0, ${alpha * 0.5})`;
-                ctx.beginPath();
-                ctx.arc(pos.x - bullet.x, pos.y - bullet.y, 
-                        bullet.width/2 * (1 - index/bullet.trail.length), 0, Math.PI * 2);
-                ctx.fill();
-            });
-            
-            // 총알 주변에 빛나는 효과
-            const glowGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, bullet.width);
-            glowGradient.addColorStop(0, 'rgba(255, 0, 0, 0.3)');
-            glowGradient.addColorStop(1, 'rgba(255, 0, 0, 0)');
-            ctx.fillStyle = glowGradient;
-            ctx.beginPath();
-            ctx.arc(0, 0, bullet.width, 0, Math.PI * 2);
-            ctx.fill();
-            
-            ctx.restore();
             
             // 보스 총알과 플레이어 충돌 체크
             if (checkCollision(bullet, player) || 
@@ -3331,37 +3344,13 @@ function handleBullets() {
                 return false;
             }
         } else if (bullet.isSpecial) {
-            // 특수 무기 총알 이동 및 효과
+            // 특수 무기 총알 이동 및 효과 (최적화: 복잡한 효과 제거)
             bullet.x += Math.cos(bullet.angle) * bullet.speed;
             bullet.y += Math.sin(bullet.angle) * bullet.speed;
             
-            // 꼬리 효과 추가
-            bullet.trail.unshift({x: bullet.x, y: bullet.y});
-            if (bullet.trail.length > 5) bullet.trail.pop();
-            
-            // 총알 그리기
+            // 총알 그리기 (최적화: 단순한 사각형)
             ctx.fillStyle = '#00ffff';
             ctx.fillRect(bullet.x - bullet.width/2, bullet.y - bullet.height/2, bullet.width, bullet.height);
-            
-            // 꼬리 그리기
-            bullet.trail.forEach((pos, index) => {
-                const alpha = 1 - (index / bullet.trail.length);
-                ctx.fillStyle = `rgba(0, 255, 255, ${alpha * 0.5})`;
-                ctx.fillRect(pos.x - bullet.width/2, pos.y - bullet.height/2, 
-                            bullet.width * (1 - index/bullet.trail.length), 
-                            bullet.height * (1 - index/bullet.trail.length));
-            });
-            
-            // 총알 주변에 빛나는 효과
-            const gradient = ctx.createRadialGradient(
-                bullet.x, bullet.y, 0,
-                bullet.x, bullet.y, bullet.width
-            );
-            gradient.addColorStop(0, 'rgba(0, 255, 255, 0.3)');
-            gradient.addColorStop(1, 'rgba(0, 255, 255, 0)');
-            ctx.fillStyle = gradient;
-            ctx.fillRect(bullet.x - bullet.width, bullet.y - bullet.height, 
-                        bullet.width * 2, bullet.height * 2);
             
             // 총알 지속 시간 감소
             bullet.life--;
@@ -3386,67 +3375,66 @@ function handleBullets() {
             return false;
         }
         
-        // 폭탄과 총알 충돌 체크
+        // 폭탄과 총알 충돌 체크 (최적화: 중복 재생 방지)
         bombs = bombs.filter(bomb => {
             if (checkCollision(bullet, bomb)) {
                 // 폭탄 폭발
                 explosions.push(new Explosion(bomb.x, bomb.y, true));
-                // 폭발음 재생
-                applyGlobalVolume();
-                explosionSound.currentTime = 0;
-                explosionSound.play().catch(error => {
-                    console.log('오디오 재생 실패:', error);
-                });
+                // 폭발음 재생 (최적화: 중복 재생 방지)
+                const currentTime = Date.now();
+                if (currentTime - lastExplosionTime > 200) {
+                    applyGlobalVolume();
+                    explosionSound.currentTime = 0;
+                    explosionSound.play().catch(error => {
+                        console.log('오디오 재생 실패:', error);
+                    });
+                    lastExplosionTime = currentTime;
+                }
                 return false;
             }
             return true;
         });
 
-        // 다이나마이트와 총알 충돌 체크
+        // 다이나마이트와 총알 충돌 체크 (최적화: 중복 재생 방지)
         dynamites = dynamites.filter(dynamite => {
             if (checkCollision(bullet, dynamite)) {
                 // 다이나마이트 폭발
                 explosions.push(new Explosion(dynamite.x, dynamite.y, true));
-                // 폭발음 재생
-                applyGlobalVolume();
-                explosionSound.currentTime = 0;
-                explosionSound.play().catch(error => {
-                    console.log('오디오 재생 실패:', error);
-                });
+                // 폭발음 재생 (최적화: 중복 재생 방지)
+                const currentTime = Date.now();
+                if (currentTime - lastExplosionTime > 200) {
+                    applyGlobalVolume();
+                    explosionSound.currentTime = 0;
+                    explosionSound.play().catch(error => {
+                        console.log('오디오 재생 실패:', error);
+                    });
+                    lastExplosionTime = currentTime;
+                }
                 return false;
             }
             return true;
         });
         
-        // 적 미사일과 총알 충돌 체크
+        // 적 미사일과 총알 충돌 체크 (최적화: 폭발 효과 감소)
         for (let i = enemyMissiles.length - 1; i >= 0; i--) {
             const missile = enemyMissiles[i];
             if (checkCollision(bullet, missile)) {
                 // 미사일 파괴
                 enemyMissiles.splice(i, 1);
                 
-                // 화려한 폭발 효과 (중앙 + 주변 4개)
+                // 폭발 효과 (최적화: 개수 감소)
                 explosions.push(new Explosion(missile.x + missile.width/2, missile.y + missile.height/2, false));
                 
-                // 주변 추가 폭발 효과
-                for (let j = 0; j < 4; j++) {
-                    const angle = (Math.PI * 2 / 4) * j;
-                    const distance = 15;
-                    const offsetX = Math.cos(angle) * distance;
-                    const offsetY = Math.sin(angle) * distance;
-                    explosions.push(new Explosion(
-                        missile.x + missile.width/2 + offsetX,
-                        missile.y + missile.height/2 + offsetY,
-                        false
-                    ));
+                // 미사일 파괴 효과음 재생 (최적화: 중복 재생 방지)
+                const currentTime = Date.now();
+                if (currentTime - lastCollisionTime > 50) {
+                    applyGlobalVolume();
+                    collisionSound.currentTime = 0;
+                    collisionSound.play().catch(error => {
+                        console.log('미사일 파괴 효과음 재생 실패:', error);
+                    });
+                    lastCollisionTime = currentTime;
                 }
-                
-                // 미사일 파괴 효과음 재생
-                applyGlobalVolume();
-                collisionSound.currentTime = 0;
-                collisionSound.play().catch(error => {
-                    console.log('미사일 파괴 효과음 재생 실패:', error);
-                });
                 
                 // 미사일 파괴 보너스 점수
                 updateScore(10);
@@ -3456,19 +3444,23 @@ function handleBullets() {
             }
         }
         
-        // 방어막 적과 총알 충돌 체크
+        // 방어막 적과 총알 충돌 체크 (최적화: 중복 재생 방지)
         for (let i = shieldedEnemies.length - 1; i >= 0; i--) {
             const enemy = shieldedEnemies[i];
             if (checkCollision(bullet, enemy)) {
                 // 체력 감소
                 enemy.health--;
                 
-                // 피격 효과음 재생
-                applyGlobalVolume();
-                collisionSound.currentTime = 0;
-                collisionSound.play().catch(error => {
-                    console.log('방어막 적 피격 효과음 재생 실패:', error);
-                });
+                // 피격 효과음 재생 (최적화: 중복 재생 방지)
+                const currentTime = Date.now();
+                if (currentTime - lastCollisionTime > 50) {
+                    applyGlobalVolume();
+                    collisionSound.currentTime = 0;
+                    collisionSound.play().catch(error => {
+                        console.log('방어막 적 피격 효과음 재생 실패:', error);
+                    });
+                    lastCollisionTime = currentTime;
+                }
                 
                 // 피격 효과
                 explosions.push(new Explosion(bullet.x, bullet.y, false));
