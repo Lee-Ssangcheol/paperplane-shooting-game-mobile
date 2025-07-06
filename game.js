@@ -59,12 +59,16 @@ let mobileContinuousFireInterval = null;
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
+// 캔버스 초기화 확인
+console.log('캔버스 초기화:', {
+    canvas: canvas,
+    ctx: ctx,
+    width: canvas?.width,
+    height: canvas?.height
+});
+
 // 모바일 터치 컨트롤 요소들
 const mobileControls = {
-    btnUp: document.getElementById('btn-up'),
-    btnDown: document.getElementById('btn-down'),
-    btnLeft: document.getElementById('btn-left'),
-    btnRight: document.getElementById('btn-right'),
     btnFire: document.getElementById('btn-fire'),
     btnSpecial: document.getElementById('btn-special'),
     btnPause: document.getElementById('btn-pause'),
@@ -84,42 +88,7 @@ function setupMobileControls() {
         return;
     }
     
-    // 방향키 터치 이벤트
-    mobileControls.btnUp.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        keys.ArrowUp = true;
-    }, { passive: false });
-    mobileControls.btnUp.addEventListener('touchend', (e) => {
-        e.preventDefault();
-        keys.ArrowUp = false;
-    }, { passive: false });
-    
-    mobileControls.btnDown.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        keys.ArrowDown = true;
-    }, { passive: false });
-    mobileControls.btnDown.addEventListener('touchend', (e) => {
-        e.preventDefault();
-        keys.ArrowDown = false;
-    }, { passive: false });
-    
-    mobileControls.btnLeft.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        keys.ArrowLeft = true;
-    }, { passive: false });
-    mobileControls.btnLeft.addEventListener('touchend', (e) => {
-        e.preventDefault();
-        keys.ArrowLeft = false;
-    }, { passive: false });
-    
-    mobileControls.btnRight.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        keys.ArrowRight = true;
-    }, { passive: false });
-    mobileControls.btnRight.addEventListener('touchend', (e) => {
-        e.preventDefault();
-        keys.ArrowRight = false;
-    }, { passive: false });
+
     
     // 시작/재시작 버튼 터치 이벤트
     mobileControls.btnFire.addEventListener('touchstart', (e) => {
@@ -1926,6 +1895,7 @@ function gameLoop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     if (isStartScreen) {
+        console.log('시작 화면 그리기 중...');
         drawStartScreen();
         requestAnimationFrame(gameLoop);
         return;
@@ -4293,6 +4263,10 @@ function initStartScreen() {
 
 // 시작 화면 그리기 함수
 function drawStartScreen() {
+    console.log('drawStartScreen 실행됨');
+    console.log('캔버스 크기:', canvas.width, 'x', canvas.height);
+    console.log('컨텍스트:', ctx);
+    
     // 배경 그라데이션
     const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
     gradient.addColorStop(0, '#000033');
