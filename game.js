@@ -4310,19 +4310,22 @@ function calculateBulletSize() {
     
     let size = baseBulletSize;
     
-    // 현재 게임 점수에 따른 크기 증가 (최적화: 단순화)
+    // 현재 게임 점수에 따른 크기 증가 (최대 5.5로 제한)
     if (score >= 10000) {
-        size = 7.0;  // 크기 감소로 성능 향상
+        size = 5.5;  // 최대 크기 제한
     } else if (score >= 5000) {
-        size = 6.0;  // 크기 감소로 성능 향상
+        size = 5.0;  // 크기 조정
     }
     
-    // 난이도에 따른 크기 증가 (최적화: 단순화)
+    // 난이도에 따른 크기 증가 (최대 5.5로 제한)
     if (gameLevel >= 4) {
-        size = Math.max(size, 6.5);  // 크기 감소로 성능 향상
+        size = Math.max(size, 5.5);  // 최대 크기 제한
     } else if (gameLevel >= 3) {
-        size = Math.max(size, 5.5);  // 크기 감소로 성능 향상
+        size = Math.max(size, 4.5);  // 크기 조정
     }
+    
+    // 최대 크기를 5.5로 제한
+    size = Math.min(size, 5.5);
     
     // 캐시 업데이트
     cachedBulletSize = size;
