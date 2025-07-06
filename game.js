@@ -1692,6 +1692,15 @@ class Explosion {
     }
 
     draw() {
+        // 성능 모드에서는 단순한 폭발 효과만 표시
+        if (adaptiveFrameRate.performanceMode) {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+            ctx.fillStyle = this.isFinal ? 'rgba(255, 100, 0, 0.8)' : 'rgba(255, 200, 0, 0.6)';
+            ctx.fill();
+            return;
+        }
+        
         if (this.isFinal) {
             // 최종 폭발 효과 (최적화: 단순화)
             ctx.beginPath();
@@ -1830,7 +1839,18 @@ function drawAirplane(x, y, width, height, color, isEnemy = false) {
 
 // 게임 루프 수정
 function gameLoop() {
+    // 적응형 프레임 레이트 업데이트
+    adaptiveFrameRate.update();
+    
     if (isPaused) {
+        if (gameLoopRunning) {
+            requestAnimationFrame(gameLoop);
+        }
+        return;
+    }
+
+    // 성능 모드에서 프레임 스킵
+    if (adaptiveFrameRate.shouldSkipFrame()) {
         if (gameLoopRunning) {
             requestAnimationFrame(gameLoop);
         }
@@ -1992,7 +2012,10 @@ function gameLoop() {
                     enemies: enemies.length,
                     bullets: bullets.length,
                     explosions: explosions.length,
-                    level: gameLevel
+                    level: gameLevel,
+                    fps: adaptiveFrameRate.currentFPS,
+                    frameSkip: adaptiveFrameRate.frameSkip,
+                    performanceMode: adaptiveFrameRate.performanceMode
                 });
             }
         } else {
@@ -2142,10 +2165,15 @@ function handleEnemies() {
         handleSnakePattern();
     }
 
-    // 일반 적 생성 - 시간 기반 생성 로직으로 변경
+    // 일반 적 생성 - 시간 기반 생성 로직으로 변경 (성능 모드에서 빈도 조절)
+    const spawnRate = adaptiveFrameRate.performanceMode ? 
+        currentDifficulty.enemySpawnRate * 0.7 : currentDifficulty.enemySpawnRate;
+    const maxEnemies = adaptiveFrameRate.performanceMode ? 
+        Math.min(currentDifficulty.maxEnemies, 15) : currentDifficulty.maxEnemies;
+    
     if (currentTime - lastEnemySpawnTime >= MIN_ENEMY_SPAWN_INTERVAL &&
-        Math.random() < currentDifficulty.enemySpawnRate && 
-        enemies.length < currentDifficulty.maxEnemies &&
+        Math.random() < spawnRate && 
+        enemies.length < maxEnemies &&
         !isGameOver) {
         createEnemy();
         lastEnemySpawnTime = currentTime;
@@ -2872,6 +2900,18 @@ function drawUI() {
             });
         }
         drawPlayer(secondPlane.x, secondPlane.y, secondPlane.width, secondPlane.height);
+    }
+    
+    // 성능 모드에서는 UI 요소 최소화
+    if (adaptiveFrameRate.performanceMode) {
+        // 기본 점수만 표시
+        ctx.fillStyle = 'white';
+        ctx.font = '16px Arial';
+        ctx.textAlign = 'left';
+        ctx.fillText(`점수: ${score}`, 10, 30);
+        ctx.fillText(`레벨: ${gameLevel}`, 10, 50);
+        ctx.fillText(`목숨: ${maxLives - collisionCount}`, 10, 70);
+        return;
     }
 
     // 적 미사일 그리기
@@ -4587,6 +4627,11 @@ function applyGlobalVolume() {
 }
 
 function playExplosionSound(isSnakePattern = false) {
+    // 성능 모드에서는 사운드 재생 빈도 감소
+    if (adaptiveFrameRate.performanceMode && Math.random() < 0.5) {
+        return; // 50% 확률로 사운드 스킵
+    }
+    
     const currentTime = Date.now();
     let volumeMultiplier = 1.0;
     
@@ -4979,12 +5024,17 @@ function restartGame() {
     levelBossPatterns.usedPatterns = [];
     levelBossPatterns.currentLevelPattern = null;
     
-    // 15. 캔버스 포커스 설정
+    // 15. 적응형 프레임 레이트 시스템 초기화
+    adaptiveFrameRate.frameSkip = 0;
+    adaptiveFrameRate.performanceMode = false;
+    adaptiveFrameRate.currentFPS = 60;
+    
+    // 16. 캔버스 포커스 설정
     setTimeout(() => {
         document.getElementById('gameCanvas').focus();
     }, 100);
     
-    // 16. 게임 루프 재시작
+    // 17. 게임 루프 재시작
     setTimeout(() => {
         startGameLoop();
     }, 200);
@@ -5637,6 +5687,41 @@ function removeEnemyMissiles(enemy) {
 
 // 게임 루프 실행 상태 변수
 let gameLoopRunning = false;
+
+// 성능 최적화를 위한 적응형 프레임 레이트 시스템
+let adaptiveFrameRate = {
+    targetFPS: 60,
+    currentFPS: 60,
+    frameCount: 0,
+    lastTime: 0,
+    frameSkip: 0,
+    maxFrameSkip: 2,
+    performanceMode: false,
+    
+    update() {
+        const currentTime = performance.now();
+        this.frameCount++;
+        
+        if (currentTime - this.lastTime >= 1000) {
+            this.currentFPS = this.frameCount;
+            this.frameCount = 0;
+            this.lastTime = currentTime;
+            
+            // 성능에 따른 프레임 스킵 조정
+            if (this.currentFPS < 30) {
+                this.frameSkip = Math.min(this.maxFrameSkip, this.frameSkip + 1);
+                this.performanceMode = true;
+            } else if (this.currentFPS > 50) {
+                this.frameSkip = Math.max(0, this.frameSkip - 1);
+                this.performanceMode = false;
+            }
+        }
+    },
+    
+    shouldSkipFrame() {
+        return this.frameSkip > 0 && this.frameCount % (this.frameSkip + 1) === 0;
+    }
+};
 
 // 총알 발사 함수
 function fireBullet() {
