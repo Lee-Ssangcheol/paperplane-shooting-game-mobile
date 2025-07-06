@@ -358,6 +358,7 @@ let gameVersion = '1.0.0-202506161826';  // 게임 버전
 
 // 게임 상태 변수에 추가
 let isStartScreen = true;  // 시작 화면 상태
+let gameStarted = false;   // 게임 시작 상태
 let bossActive = false;
 let bossHealth = 0;
 let bossPattern = 0;
@@ -4734,6 +4735,7 @@ async function initializeGame() {
         // 3. 게임 상태 초기화
         isGameOver = false;
         isPaused = false;
+        gameStarted = false;  // 게임 시작 상태 초기화
         flashTimer = 0;
         gameOverStartTime = null;
         
@@ -4942,6 +4944,7 @@ function restartGame() {
     // 12. 게임 화면 상태 초기화
     isStartScreen = false;
     isPaused = false;
+    gameStarted = false;  // 게임 시작 상태 초기화
     
     // 13. 사운드 관련 상태 초기화
     lastCollisionTime = 0;
