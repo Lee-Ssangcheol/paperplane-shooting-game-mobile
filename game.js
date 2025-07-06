@@ -1,3 +1,8 @@
+// 게임 상수 정의
+const SPECIAL_WEAPON_MAX_CHARGE = 1000;  // 특수무기 최대 충전량
+const SPECIAL_WEAPON_CHARGE_RATE = 10;   // 특수무기 충전 속도
+const TOP_EFFECT_ZONE = 20;  // 상단 효과 무시 영역 (픽셀)
+
 // 모바일 디바이스 감지
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
@@ -358,7 +363,6 @@ let bossHealth = 0;
 let bossPattern = 0;
 let specialWeaponCharged = false;
 let specialWeaponCharge = 0;
-const SPECIAL_WEAPON_MAX_CHARGE = 5000;  // 특수무기 최대 충전량을 5000으로 설정
 
 // 보스 경고 시스템 변수 추가
 let bossWarning = {
@@ -901,6 +905,11 @@ async function initializeGame() {
         // 모바일 컨트롤 설정
         setupMobileControls();
         
+        // 모바일에서 터치 드래그 컨트롤 설정
+        if (isMobile) {
+            setupTouchDragControls();
+        }
+        
         // 종료 이벤트 핸들러 설정
         setupExitHandlers();
         
@@ -970,9 +979,9 @@ async function initializeGame() {
         lastFireTime = 0;
         isSpacePressed = false;
         spacePressTime = 0;
-        fireDelay = 600;
-        continuousFireDelay = 50;
-        bulletSpeed = 12;
+        fireDelay = 400;
+        continuousFireDelay = 30;
+        bulletSpeed = 7;
         baseBulletSize = 4.5;
         isContinuousFire = false;
         canFire = true;
@@ -1957,15 +1966,15 @@ function gameLoop() {
                 gradient.addColorStop(1, '#ff0000');
                 
                 ctx.fillStyle = gradient;
-                ctx.font = 'bold 64px Arial';
+                ctx.font = 'bold 48px Arial';
                 ctx.textAlign = 'center';
                 ctx.fillText('GAME OVER', canvas.width/2, canvas.height/2);
                 
-                ctx.font = 'bold 32px Arial';
+                ctx.font = 'bold 24px Arial';
                 ctx.fillStyle = '#ffffff';
                 ctx.fillText(`최종 점수: ${score}`, canvas.width/2, canvas.height/2 + 60);
                 ctx.fillText(`충돌 횟수: ${collisionCount}`, canvas.width/2, canvas.height/2 + 100);
-                ctx.fillText('스페이스바를 눌러 재시작', canvas.width/2, canvas.height/2 + 160);
+                ctx.fillText('시작/재시작 버튼을 눌러 재시작', canvas.width/2, canvas.height/2 + 160);
             }
         }
         requestAnimationFrame(gameLoop);
@@ -2806,16 +2815,73 @@ function drawUI() {
     ctx.fillText(`레벨: ${gameLevel} (${getDifficultyName(gameLevel)})`, 10, 60);
     ctx.fillText(`다음 레벨까지: ${Math.max(0, levelUpScore - levelScore)}`, 10, 90);
     ctx.fillText(`최고 점수: ${highScore}`, 10, 120);
-    ctx.fillText(`최고 점수 리셋: R키`, 10, 150);
-    ctx.fillText(`다음 확산탄까지: ${2000 - scoreForSpread}점`, 10, 180);
+    ctx.fillText(`다음 확산탄까지: ${2000 - scoreForSpread}점`, 10, 150);
     if (!hasSecondPlane) {
         const nextPlaneScore = Math.ceil(score / 4000) * 4000;
-        ctx.fillText(`다음 추가 비행기까지: ${nextPlaneScore - score}점`, 10, 210);
+        ctx.fillText(`다음 추가 비행기까지: ${nextPlaneScore - score}점`, 10, 180);
     } else {
         const remainingTime = Math.ceil((10000 - (Date.now() - secondPlaneTimer)) / 1000);
-        ctx.fillText(`추가 비행기 남은 시간: ${remainingTime}초`, 10, 210);
+        ctx.fillText(`추가 비행기 남은 시간: ${remainingTime}초`, 10, 180);
     }
-    ctx.fillText(`일시정지: P키`, 10, 240);
+    
+    // 남은 목숨 표시 (붉은색으로)
+    ctx.fillStyle = 'red';
+    ctx.fillText(`남은 목숨: ${maxLives - collisionCount}`, 10, 200);
+    
+    // 특수 무기 게이지 표시
+    if (!specialWeaponCharged) {
+        // 게이지 바 배경
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+        ctx.fillRect(10, 210, 200, 20);
+        
+        // 게이지 바
+        ctx.fillStyle = 'rgba(0, 255, 255, 0.8)';
+        ctx.fillRect(10, 210, (specialWeaponCharge / SPECIAL_WEAPON_MAX_CHARGE) * 200, 20);
+        
+        // 게이지 바 위에 텍스트 표시
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 16px Arial';
+        ctx.textAlign = 'center';
+        const percentText = `특수 무기 : ${Math.floor((specialWeaponCharge / SPECIAL_WEAPON_MAX_CHARGE) * 100)}%`;
+        ctx.fillText(percentText, 110, 225);
+    } else {
+        // 깜빡이는 효과를 위한 시간 계산
+        const blinkSpeed = 500; // 깜빡임 속도 (밀리초)
+        const currentTime = Date.now();
+        const isRed = Math.floor(currentTime / blinkSpeed) % 2 === 0;
+        
+        // 배경색 설정 (게이지 바)
+        ctx.fillStyle = isRed ? 'rgba(255, 0, 0, 0.3)' : 'rgba(0, 0, 255, 0.3)';
+        ctx.fillRect(10, 210, 200, 20);
+        
+        // 테두리 효과
+        ctx.strokeStyle = isRed ? 'red' : 'cyan';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(10, 210, 200, 20);
+        
+        // 게이지 바 위에 텍스트 표시
+        ctx.fillStyle = isRed ? 'red' : 'cyan';
+        ctx.font = 'bold 16px Arial';
+        ctx.textAlign = 'center';
+        const percentText = `특수 무기 : ${Math.floor((specialWeaponCharge / SPECIAL_WEAPON_MAX_CHARGE) * 100)}%`;
+        ctx.fillText(percentText, 110, 225);
+        
+        // 준비 완료 메시지 배경
+        ctx.fillStyle = isRed ? 'rgba(255, 0, 0, 0.2)' : 'rgba(0, 0, 255, 0.2)';
+        ctx.fillRect(10, 230, 300, 30);
+        
+        // 텍스트 색상 설정
+        ctx.fillStyle = isRed ? 'red' : 'cyan';
+        ctx.font = 'bold 20px Arial';
+        ctx.textAlign = 'left';
+        ctx.fillText('특수무기 사용준비 완료', 15, 250);
+    }
+
+    // 제작자 정보 표시
+    ctx.fillStyle = 'white';
+    ctx.font = '16px Arial';
+    ctx.textAlign = 'right';
+    ctx.fillText('제작/저작권자:Lee.SS.C', canvas.width - 20, canvas.height - 30);
     
     // 일시정지 상태 표시
     if (isPaused) {
@@ -2836,82 +2902,6 @@ function drawUI() {
         
         // 텍스트 정렬을 다시 왼쪽으로 복원
         ctx.textAlign = 'left';
-    }
-    
-    // 현재 난이도 설정 가져오기
-    const currentDifficulty = difficultySettings[Math.min(gameLevel, 5)] || {
-        enemySpeed: 6 + (gameLevel - 5) * 0.5,
-        enemySpawnRate: 0.06 + (gameLevel - 5) * 0.01,
-        horizontalSpeedRange: 6 + (gameLevel - 5) * 0.5,
-        patternChance: 1.0,
-        maxEnemies: 20 + (gameLevel - 5) * 2,
-        bossHealth: 2000 + (gameLevel - 5) * 500,
-        bossSpawnInterval: Math.max(10000, 20000 - (gameLevel - 5) * 1000),
-        powerUpChance: 0.3,
-        bombDropChance: 0.3,
-        dynamiteDropChance: 0.25
-    };
-    
-    ctx.fillText(`현재 적 수: ${enemies.length}/${currentDifficulty.maxEnemies}`, 10, 270);
-    
-    // 충돌 횟수 표시 (붉은색으로)
-    ctx.fillStyle = 'red';
-    ctx.fillText(`남은 목숨: ${maxLives - collisionCount}`, 10, 400);  // 300에서 400으로 변경
-
-    // 제작자 정보 표시
-    ctx.fillStyle = 'white';
-    ctx.font = '16px Arial';
-    ctx.textAlign = 'right';
-    ctx.fillText('제작/저작권자:Lee.SS.C', canvas.width - 20, canvas.height - 30);  // 40에서 30으로 변경
-
-    
-    // 특수 무기 게이지 표시
-    if (!specialWeaponCharged) {
-        // 게이지 바 배경
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-        ctx.fillRect(10, 440, 200, 20);  // 340에서 440으로 변경
-        
-        // 게이지 바
-        ctx.fillStyle = 'rgba(0, 255, 255, 0.8)';
-        ctx.fillRect(10, 440, (specialWeaponCharge / SPECIAL_WEAPON_MAX_CHARGE) * 200, 20);  // 340에서 440으로 변경
-        
-        // 게이지 바 위에 텍스트 표시
-        ctx.fillStyle = 'white';
-        ctx.font = 'bold 16px Arial';
-        ctx.textAlign = 'center';
-        const percentText = `특수 무기 : ${Math.floor((specialWeaponCharge / SPECIAL_WEAPON_MAX_CHARGE) * 100)}%`;
-        ctx.fillText(percentText, 110, 455);  // 355에서 455로 변경
-    } else {
-        // 깜빡이는 효과를 위한 시간 계산
-        const blinkSpeed = 500; // 깜빡임 속도 (밀리초)
-        const currentTime = Date.now();
-        const isRed = Math.floor(currentTime / blinkSpeed) % 2 === 0;
-        
-        // 배경색 설정 (게이지 바)
-        ctx.fillStyle = isRed ? 'rgba(255, 0, 0, 0.3)' : 'rgba(0, 0, 255, 0.3)';
-        ctx.fillRect(10, 440, 200, 20);  // 340에서 440으로 변경
-        
-        // 테두리 효과
-        ctx.strokeStyle = isRed ? 'red' : 'cyan';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(10, 440, 200, 20);  // 340에서 440으로 변경
-        
-        // 게이지 바 위에 텍스트 표시
-        ctx.fillStyle = isRed ? 'red' : 'cyan';
-        ctx.font = 'bold 16px Arial';
-        ctx.textAlign = 'center';
-        const percentText = `특수 무기 : ${Math.floor((specialWeaponCharge / SPECIAL_WEAPON_MAX_CHARGE) * 100)}%`;
-        ctx.fillText(percentText, 110, 455);  // 355에서 455로 변경
-        
-        // 준비 완료 메시지 배경
-        ctx.fillStyle = isRed ? 'rgba(255, 0, 0, 0.2)' : 'rgba(0, 0, 255, 0.2)';
-        ctx.fillRect(10, 460, 300, 30);  // 360에서 460으로 변경
-        
-        // 텍스트 색상 설정
-        ctx.fillStyle = isRed ? 'red' : 'cyan';
-        ctx.font = 'bold 20px Arial';
-        ctx.textAlign = 'left';
-        ctx.fillText('특수무기 사용준비 완료(알파벳 B키 발사)', 15, 480);  // V키를 B키로 변경
     }
     
     // 보스 체력 표시 개선
@@ -4333,7 +4323,7 @@ function drawStartScreen() {
     ctx.shadowOffsetY = 5;
 
     // 제목
-    ctx.font = 'bold 60px Arial';
+    ctx.font = 'bold 30px Arial';
     ctx.fillStyle = titleGradient;
     ctx.textAlign = 'center';
     ctx.fillText('PAPER PLANE SHOOTER', canvas.width/2, titleY);
@@ -4352,20 +4342,18 @@ function drawStartScreen() {
     const isVisible = Math.floor(currentTime / blinkSpeed) % 2 === 0;
     
     if (isVisible) {
-        ctx.font = 'bold 40px Arial';
+        ctx.font = 'bold 25px Arial';
         ctx.fillStyle = '#ffff00';
-        ctx.fillText('Press SPACE to Start', canvas.width/2, subtitleY);
+        ctx.fillText('시작/재시작 버튼을 눌러 게임 시작', canvas.width/2, subtitleY);
     }
 
     // 조작법 안내
-    ctx.font = '20px Arial';
+    ctx.font = '16px Arial';
     ctx.fillStyle = '#ffffff';
     ctx.textAlign = 'left';
-    ctx.fillText('Controls:', 50, canvas.height - 200);  // 150에서 200으로 변경
-    ctx.fillText('↑↓←→ : Move', 50, canvas.height - 170);  // 120에서 170으로 변경
-    ctx.fillText('SPACE : Shoot', 50, canvas.height - 140);  // 90에서 140으로 변경
-    ctx.fillText('B : Special Weapon', 50, canvas.height - 110);  // V를 B로 변경
-    ctx.fillText('P : Pause', 50, canvas.height - 80);  // 30에서 80으로 변경
+    ctx.fillText('플레이어 비행기를 손가락으로 터치하면', 50, canvas.height - 200);
+    ctx.fillText('총알이 발사되고 드래그하여', 50, canvas.height - 170);
+    ctx.fillText('상하좌우로 움직일 수 있습니다.', 50, canvas.height - 140);
 }
 
 // 폭탄 생성 함수 추가
@@ -4698,6 +4686,14 @@ async function initializeGame() {
     try {
         // 이미지 로딩
         await loadGameImages();
+        
+        // 모바일 컨트롤 설정
+        setupMobileControls();
+        
+        // 모바일에서 터치 드래그 컨트롤 설정
+        if (isMobile) {
+            setupTouchDragControls();
+        }
         
         // 종료 이벤트 핸들러 설정
         setupExitHandlers();
@@ -5593,3 +5589,167 @@ function drawShieldedEnemies() {
 function removeEnemyMissiles(enemy) {
     enemyMissiles = enemyMissiles.filter(missile => missile.parentEnemy !== enemy);
 }
+
+// 게임 루프 실행 상태 변수
+let gameLoopRunning = false;
+
+// 총알 발사 함수
+function fireBullet() {
+    if (!canFire || !gameStarted || isGameOver) return;
+    
+    const currentTime = Date.now();
+    if (currentTime - lastFireTime < fireDelay) return;
+    
+    // 확산탄 발사
+    if (hasSpreadShot) {
+        const spreadAngles = [-15, -10, -5, 0, 5, 10, 15];
+        spreadAngles.forEach(angle => {
+            const bullet = {
+                x: player.x + player.width / 2,
+                y: player.y,
+                width: 4,
+                height: 8,
+                speed: 8,
+                angle: (angle * Math.PI) / 180
+            };
+            bullets.push(bullet);
+        });
+    } else {
+        // 일반 총알 발사
+        const bullet = {
+            x: player.x + player.width / 2,
+            y: player.y,
+            width: 4,
+            height: 8,
+            speed: 8
+        };
+        bullets.push(bullet);
+    }
+    
+    // 두 번째 비행기 발사
+    if (hasSecondPlane) {
+        const bullet = {
+            x: secondPlane.x + secondPlane.width / 2,
+            y: secondPlane.y,
+            width: 4,
+            height: 8,
+            speed: 8
+        };
+        bullets.push(bullet);
+    }
+    
+    lastFireTime = currentTime;
+    canFire = false;
+    
+    // 일정 시간 후 다시 발사 가능하도록 설정
+    setTimeout(() => {
+        canFire = true;
+    }, fireDelay);
+}
+
+// 모바일 연속 발사 시작
+function startMobileContinuousFire() {
+    isContinuousFire = true;
+    keys.Space = true; // 연속발사 상태에서 Space를 계속 true로 유지
+    isSpacePressed = true; // 웹 발사 로직과 동일하게 설정
+    spacePressTime = Date.now(); // 터치 시작 시간 설정
+}
+
+// 모바일 연속 발사 중지
+function stopMobileContinuousFire() {
+    isContinuousFire = false;
+    keys.Space = false; // 연속발사 중지 시 Space를 false로
+    isSpacePressed = false; // 웹 발사 로직과 동일하게 설정
+    lastReleaseTime = Date.now(); // 터치 종료 시간 설정
+}
+
+// 터치 드래그 컨트롤 설정
+function setupTouchDragControls() {
+    console.log('터치 드래그 컨트롤 설정');
+    
+    // 터치 시작
+    canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const rect = canvas.getBoundingClientRect();
+        touchStartX = touch.clientX - rect.left;
+        touchStartY = touch.clientY - rect.top;
+        playerStartX = player.x;
+        playerStartY = player.y;
+        isDragging = true;
+        
+        // 드래그 시작 시 자동 연속발사 시작
+        if (gameStarted && !isGameOver && !isStartScreen) {
+            keys.Space = true;
+            isSpacePressed = true;
+            spacePressTime = Date.now();
+            isContinuousFire = true;
+            console.log('드래그 연속발사 시작');
+        }
+        
+        console.log('터치 드래그 시작');
+    }, { passive: false });
+    
+    // 터치 이동
+    canvas.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        if (!isDragging) return;
+        
+        const touch = e.touches[0];
+        const rect = canvas.getBoundingClientRect();
+        const touchX = touch.clientX - rect.left;
+        const touchY = touch.clientY - rect.top;
+        
+        // 플레이어 위치 계산
+        const deltaX = touchX - touchStartX;
+        const deltaY = touchY - touchStartY;
+        
+        // 새로운 위치 계산
+        let newX = playerStartX + deltaX;
+        let newY = playerStartY + deltaY;
+        
+        // 경계 제한 (처음 위치에서 아래쪽으로도 확장)
+        const margin = 10;
+        const maxY = canvas.height - 100; // 처음 위치와 동일하게 설정
+        
+        newX = Math.max(-player.width / 2.5, Math.min(canvas.width - player.width / 1.5, newX));
+        newY = Math.max(margin, Math.min(maxY, newY));
+        
+        // 플레이어 위치 업데이트
+        player.x = newX;
+        player.y = newY;
+        
+        // 두 번째 비행기도 함께 이동
+        if (hasSecondPlane) {
+            secondPlane.x = newX + (canvas.width / 2 - 60) - (canvas.width / 2 - (240 * 0.7 * 0.7 * 0.8) / 2);
+            secondPlane.y = newY;
+        }
+        
+    }, { passive: false });
+    
+    // 터치 종료
+    canvas.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        isDragging = false;
+        
+        // 드래그 종료 시 연속발사 중지
+        if (gameStarted && !isGameOver && !isStartScreen) {
+            keys.Space = false;
+            isSpacePressed = false;
+            lastReleaseTime = Date.now();
+            isContinuousFire = false;
+            console.log('드래그 연속발사 중지');
+        }
+        
+        console.log('터치 드래그 종료');
+    }, { passive: false });
+}
+
+// 게임 루프 시작
+function startGameLoop() {
+    if (!gameLoopRunning) {
+        gameLoopRunning = true;
+        gameLoop();
+    }
+}
+
