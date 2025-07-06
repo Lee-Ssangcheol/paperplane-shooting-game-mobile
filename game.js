@@ -322,13 +322,13 @@ let flashDuration = 500;  // 깜박임 지속 시간
 let gameOverStartTime = null;  // 게임 오버 시작 시간
 let isSnakePatternActive = false;  // 뱀 패턴 활성화 상태
 let snakePatternTimer = 0;  // 뱀 패턴 타이머
-let snakePatternDuration = 10000;  // 뱀 패턴 지속 시간 (10초)
+let snakePatternDuration = 6000;  // 뱀 패턴 지속 시간 (6초로 단축)
 let snakeEnemies = [];  // 뱀 패턴의 적군 배열
 let snakePatternInterval = 0;  // 뱀 패턴 생성 간격
 let snakeGroups = [];  // 뱀 패턴 그룹 배열
 let lastSnakeGroupTime = 0;  // 마지막 뱀 그룹 생성 시간
-const snakeGroupInterval = 5000;  // 그룹 생성 간격 (5초)
-const maxSnakeGroups = 3;  // 최대 동시 그룹 수
+const snakeGroupInterval = 8000;  // 그룹 생성 간격 (8초로 증가)
+const maxSnakeGroups = 2;  // 최대 동시 그룹 수 (3에서 2로 감소)
 let gameVersion = '1.0.0-202506161826';  // 게임 버전
 
 // 게임 상태 변수에 추가
@@ -380,60 +380,60 @@ const keys = {
 
 // 난이도 설정
 const difficultySettings = {
-    1: { // 초급
-        enemySpeed: 2,
-        enemySpawnRate: 0.02,
-        horizontalSpeedRange: 2,
-        patternChance: 0.2,
-        maxEnemies: 5,
+    1: { // 초급 - 더 느리고 부드럽게 시작
+        enemySpeed: 1.2,
+        enemySpawnRate: 0.015,
+        horizontalSpeedRange: 1.5,
+        patternChance: 0.1,
+        maxEnemies: 4,
         bossHealth: 800,
         bossSpawnInterval: 60000, // 1분
         powerUpChance: 0.1,
         bombDropChance: 0.1,
         dynamiteDropChance: 0.05
     },
-    2: { // 중급
-        enemySpeed: 3,
-        enemySpawnRate: 0.03,
-        horizontalSpeedRange: 3,
-        patternChance: 0.4,
-        maxEnemies: 8,
+    2: { // 중급 - 점진적 증가
+        enemySpeed: 1.8,
+        enemySpawnRate: 0.025,
+        horizontalSpeedRange: 2.2,
+        patternChance: 0.25,
+        maxEnemies: 6,
         bossHealth: 1000,
         bossSpawnInterval: 45000, // 45초
         powerUpChance: 0.15,
         bombDropChance: 0.15,
         dynamiteDropChance: 0.1
     },
-    3: { // 고급
-        enemySpeed: 4,
-        enemySpawnRate: 0.04,
-        horizontalSpeedRange: 4,
-        patternChance: 0.6,
-        maxEnemies: 12,
+    3: { // 고급 - 적당한 난이도
+        enemySpeed: 2.4,
+        enemySpawnRate: 0.035,
+        horizontalSpeedRange: 3,
+        patternChance: 0.4,
+        maxEnemies: 8,
         bossHealth: 1200,
         bossSpawnInterval: 30000, // 30초
         powerUpChance: 0.2,
         bombDropChance: 0.2,
         dynamiteDropChance: 0.15
     },
-    4: { // 전문가
-        enemySpeed: 5,
-        enemySpawnRate: 0.05,
-        horizontalSpeedRange: 5,
-        patternChance: 0.8,
-        maxEnemies: 15,
+    4: { // 전문가 - 도전적이지만 공정한 난이도
+        enemySpeed: 3.2,
+        enemySpawnRate: 0.045,
+        horizontalSpeedRange: 4,
+        patternChance: 0.6,
+        maxEnemies: 12,
         bossHealth: 1500,
         bossSpawnInterval: 25000, // 25초
         powerUpChance: 0.25,
         bombDropChance: 0.25,
         dynamiteDropChance: 0.2
     },
-    5: { // 마스터
-        enemySpeed: 6,
-        enemySpawnRate: 0.06,
-        horizontalSpeedRange: 6,
-        patternChance: 1.0,
-        maxEnemies: 20,
+    5: { // 마스터 - 최고 난이도
+        enemySpeed: 4.2,
+        enemySpawnRate: 0.055,
+        horizontalSpeedRange: 5,
+        patternChance: 0.8,
+        maxEnemies: 16,
         bossHealth: 2000,
         bossSpawnInterval: 20000, // 20초
         powerUpChance: 0.3,
@@ -1259,13 +1259,13 @@ function restartGame() {
 // 적 생성 함수 수정
 function createEnemy() {
     const currentDifficulty = difficultySettings[Math.min(gameLevel, 5)] || {
-        enemySpeed: 6 + (gameLevel - 5) * 0.5,
-        enemySpawnRate: 0.06 + (gameLevel - 5) * 0.01,
-        horizontalSpeedRange: 6 + (gameLevel - 5) * 0.5,
-        patternChance: 1.0,
-        maxEnemies: 20 + (gameLevel - 5) * 2,
-        bossHealth: 2000 + (gameLevel - 5) * 500,
-        bossSpawnInterval: Math.max(10000, 20000 - (gameLevel - 5) * 1000),
+        enemySpeed: 4.2 + (gameLevel - 5) * 0.3,  // 더 부드러운 증가
+        enemySpawnRate: 0.055 + (gameLevel - 5) * 0.005,  // 더 부드러운 증가
+        horizontalSpeedRange: 5 + (gameLevel - 5) * 0.3,  // 더 부드러운 증가
+        patternChance: 0.8 + (gameLevel - 5) * 0.05,  // 점진적 증가
+        maxEnemies: 16 + (gameLevel - 5) * 1,  // 더 부드러운 증가
+        bossHealth: 2000 + (gameLevel - 5) * 300,  // 더 부드러운 증가
+        bossSpawnInterval: Math.max(15000, 20000 - (gameLevel - 5) * 800),  // 더 부드러운 감소
         powerUpChance: 0.3,
         bombDropChance: 0.3,
         dynamiteDropChance: 0.25
@@ -1358,20 +1358,20 @@ function updateEnemyPosition(enemy) {
     enemy.lastUpdateTime = currentTime;
     
     // 적군이 화면 상단에 머무르지 않도록 기본 하강 속도 추가
-    const baseSpeed = enemy.speed || 2;
+    const baseSpeed = enemy.speed || 1.5;  // 2에서 1.5로 조정
     
     switch(enemy.type) {
         case ENEMY_PATTERNS.ZIGZAG:
-            // 지그재그 패턴 - 더 역동적으로 개선
-            enemy.x += Math.sin(enemy.y * 0.08) * enemy.speed * 3;
-            enemy.y += baseSpeed * 1.2;
+            // 지그재그 패턴 - 더 자연스럽게 조정
+            enemy.x += Math.sin(enemy.y * 0.05) * enemy.speed * 2;  // 0.08에서 0.05로, 3에서 2로
+            enemy.y += baseSpeed * 1.1;  // 1.2에서 1.1로
             break;
             
         case ENEMY_PATTERNS.CIRCLE:
-            // 원형 회전 패턴 - 더 빠르고 역동적으로
-            enemy.circleAngle += 0.08;
+            // 원형 회전 패턴 - 더 자연스럽게 조정
+            enemy.circleAngle += 0.06;  // 0.08에서 0.06으로
             enemy.x = enemy.circleCenterX + Math.cos(enemy.circleAngle) * enemy.circleRadius;
-            enemy.y = enemy.circleCenterY + Math.sin(enemy.circleAngle) * enemy.circleRadius + baseSpeed * 1.5;
+            enemy.y = enemy.circleCenterY + Math.sin(enemy.circleAngle) * enemy.circleRadius + baseSpeed * 1.3;  // 1.5에서 1.3으로
             break;
             
         case ENEMY_PATTERNS.DIAGONAL:
@@ -2246,13 +2246,13 @@ function handlePlayerMovement() {
 function handleEnemies() {
     const currentTime = Date.now();
     const currentDifficulty = difficultySettings[Math.min(gameLevel, 5)] || {
-        enemySpeed: 6 + (gameLevel - 5) * 0.5,
-        enemySpawnRate: 0.06 + (gameLevel - 5) * 0.01,
-        horizontalSpeedRange: 6 + (gameLevel - 5) * 0.5,
-        patternChance: 1.0,
-        maxEnemies: 20 + (gameLevel - 5) * 2,
-        bossHealth: 2000 + (gameLevel - 5) * 500,
-        bossSpawnInterval: Math.max(10000, 20000 - (gameLevel - 5) * 1000),
+        enemySpeed: 4.2 + (gameLevel - 5) * 0.3,  // 더 부드러운 증가
+        enemySpawnRate: 0.055 + (gameLevel - 5) * 0.005,  // 더 부드러운 증가
+        horizontalSpeedRange: 5 + (gameLevel - 5) * 0.3,  // 더 부드러운 증가
+        patternChance: 0.8 + (gameLevel - 5) * 0.05,  // 점진적 증가
+        maxEnemies: 16 + (gameLevel - 5) * 1,  // 더 부드러운 증가
+        bossHealth: 2000 + (gameLevel - 5) * 300,  // 더 부드러운 증가
+        bossSpawnInterval: Math.max(15000, 20000 - (gameLevel - 5) * 800),  // 더 부드러운 감소
         powerUpChance: 0.3,
         bombDropChance: 0.3,
         dynamiteDropChance: 0.25
@@ -2265,9 +2265,9 @@ function handleEnemies() {
 
     // 일반 적 생성 - 시간 기반 생성 로직으로 변경 (성능 모드에서 빈도 조절)
     const spawnRate = adaptiveFrameRate.performanceMode ? 
-        currentDifficulty.enemySpawnRate * 0.7 : currentDifficulty.enemySpawnRate;
+        currentDifficulty.enemySpawnRate * 0.85 : currentDifficulty.enemySpawnRate;  // 0.7에서 0.85로 완화
     const maxEnemies = adaptiveFrameRate.performanceMode ? 
-        Math.min(currentDifficulty.maxEnemies, 15) : currentDifficulty.maxEnemies;
+        Math.min(currentDifficulty.maxEnemies, 18) : currentDifficulty.maxEnemies;  // 15에서 18로 완화
     
     if (currentTime - lastEnemySpawnTime >= MIN_ENEMY_SPAWN_INTERVAL &&
         Math.random() < spawnRate && 
@@ -2326,7 +2326,7 @@ function handleSnakePattern() {
         
         // 초기 비행기 생성 (그룹이 시작될 때 한 번만)
         if (!group.initialEnemiesCreated) {
-            if (Date.now() - group.patternInterval >= 300 && group.enemies.length < 10) {
+            if (Date.now() - group.patternInterval >= 400 && group.enemies.length < 8) {  // 300에서 400으로, 10에서 8로
                 group.patternInterval = Date.now();
                 
                 // 파괴되지 않은 마지막 적을 찾기
@@ -2360,7 +2360,7 @@ function handleSnakePattern() {
                 snakeEnemies.push(newEnemy); // snakeEnemies 배열에도 추가
             }
             
-            if (group.enemies.length >= 10) {
+            if (group.enemies.length >= 8) {  // 10에서 8로
                 group.initialEnemiesCreated = true;
             }
         }
@@ -2378,12 +2378,12 @@ function handleSnakePattern() {
                 // 첫 번째 적의 이동 패턴
                 switch(group.patternType) {
                     case PATTERN_TYPES.SNAKE:
-                        // S자 움직임 - 더 역동적으로 개선
-                        enemy.angle += 0.05;
+                        // S자 움직임 - 더 자연스럽게 조정
+                        enemy.angle += 0.04;  // 0.05에서 0.04로
                         const baseX = group.startX;
                         const waveX = Math.sin(enemy.angle * group.frequency) * group.amplitude;
                         enemy.x = baseX + waveX;
-                        enemy.y += enemy.speed * 1.3;
+                        enemy.y += enemy.speed * 1.1;  // 1.3에서 1.1로
                         break;
                         
                     case PATTERN_TYPES.VERTICAL:
@@ -4177,13 +4177,13 @@ function checkLevelUp() {
         
         // 현재 난이도 설정 가져오기
         const currentDifficulty = difficultySettings[Math.min(gameLevel, 5)] || {
-            enemySpeed: 6 + (gameLevel - 5) * 0.5,
-            enemySpawnRate: 0.06 + (gameLevel - 5) * 0.01,
-            horizontalSpeedRange: 6 + (gameLevel - 5) * 0.5,
-            patternChance: 1.0,
-            maxEnemies: 20 + (gameLevel - 5) * 2,
-            bossHealth: 2000 + (gameLevel - 5) * 500,
-            bossSpawnInterval: Math.max(10000, 20000 - (gameLevel - 5) * 1000),
+            enemySpeed: 4.2 + (gameLevel - 5) * 0.3,  // 더 부드러운 증가
+            enemySpawnRate: 0.055 + (gameLevel - 5) * 0.005,  // 더 부드러운 증가
+            horizontalSpeedRange: 5 + (gameLevel - 5) * 0.3,  // 더 부드러운 증가
+            patternChance: 0.8 + (gameLevel - 5) * 0.05,  // 점진적 증가
+            maxEnemies: 16 + (gameLevel - 5) * 1,  // 더 부드러운 증가
+            bossHealth: 2000 + (gameLevel - 5) * 300,  // 더 부드러운 증가
+            bossSpawnInterval: Math.max(15000, 20000 - (gameLevel - 5) * 800),  // 더 부드러운 감소
             powerUpChance: 0.3,
             bombDropChance: 0.3,
             dynamiteDropChance: 0.25
