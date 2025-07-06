@@ -48,7 +48,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    height: calc(100vh - 80px); /* 모바일 컨트롤 높이만큼 제외 */
+    height: calc(100vh - 70px); /* 썬더볼트와 동일한 높이 */
     width: 100vw;
     padding: 0;
     margin: 0;
@@ -73,12 +73,12 @@ body {
     bottom: 0;
     left: 0;
     right: 0;
-    height: 80px; /* 높이를 80px로 줄임 */
+    height: 70px; /* 썬더볼트와 동일한 높이 */
     background: rgba(0, 0, 0, 0.3);
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 10px;
+    padding: 8px;
     box-sizing: border-box;
     z-index: 1000;
 }
@@ -87,7 +87,7 @@ body {
 #action-buttons {
     display: flex;
     flex-direction: row;
-    gap: 15px;
+    gap: 12px;
     justify-content: center;
     align-items: center;
 }
@@ -120,13 +120,13 @@ body {
 }
 
 .action-btn {
-    width: 80px;
-    height: 35px;
+    width: 70px;
+    height: 40px;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     background: rgba(255, 255, 255, 0.9);
     color: #000;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: bold;
     cursor: pointer;
     user-select: none;
@@ -224,7 +224,7 @@ body {
         padding: 0;
         margin: 0;
         width: 100vw;
-        height: calc(100vh - 80px);
+        height: calc(100vh - 70px);
         position: fixed;
         top: 0;
         left: 0;
@@ -252,7 +252,7 @@ body {
     #mobile-controls {
         position: fixed;
         bottom: 0;
-        height: 80px;
+        height: 70px;
         left: 0;
         right: 0;
         z-index: 1000;
@@ -265,13 +265,13 @@ body {
 /* 모바일 최적화 */
 @media (max-width: 480px) {
     #mobile-controls {
-        padding: 15px;
+        padding: 12px;
     }
     
     .action-btn {
-        width: 45px;
-        height: 45px;
-        font-size: 9px;
+        width: 60px;
+        height: 35px;
+        font-size: 10px;
     }
     
     .control-btn {
