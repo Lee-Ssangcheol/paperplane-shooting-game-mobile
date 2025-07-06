@@ -954,6 +954,14 @@ async function initializeGame() {
         minPressDuration = 200;
         minReleaseDuration = 100;
         
+        // 총알 크기 캐시 초기화
+        cachedBulletSize = null;
+        lastBulletSizeCalculation = { score: -1, level: -1 };
+        
+        // 총알 크기 캐시 초기화
+        cachedBulletSize = null;
+        lastBulletSizeCalculation = { score: -1, level: -1 };
+        
         // 10. 특수무기 관련 상태 초기화
         specialWeaponCharged = false;
         specialWeaponCharge = 0;
@@ -2672,11 +2680,11 @@ function handleBulletFiring() {
         
         lastFireTime = currentTime;
         
-        // 총알 발사
+        // 총알 발사 (최적화: 총알 개수 제한)
         if (hasSpreadShot) {
-            // 확산탄 발사
-            for (let i = -3; i <= 3; i++) {
-                const angle = (i * 12) * (Math.PI / 180);
+            // 확산탄 발사 (최적화: 개수 감소)
+            for (let i = -2; i <= 2; i++) { // 7개에서 5개로 감소
+                const angle = (i * 15) * (Math.PI / 180); // 각도 간격 증가
                 const bullet = {
                     x: player.x + player.width/2,
                     y: player.y,
@@ -2701,11 +2709,16 @@ function handleBulletFiring() {
             bullets.push(bullet);
         }
         
-        // 두 번째 비행기 발사
+        // 총알 개수 제한 (성능 최적화)
+        if (bullets.length > 100) {
+            bullets = bullets.slice(-80); // 최신 80개만 유지
+        }
+        
+        // 두 번째 비행기 발사 (최적화: 총알 개수 제한)
         if (hasSecondPlane) {
             if (hasSpreadShot) {
-                for (let i = -3; i <= 3; i++) {
-                    const angle = (i * 12) * (Math.PI / 180);
+                for (let i = -2; i <= 2; i++) { // 7개에서 5개로 감소
+                    const angle = (i * 15) * (Math.PI / 180); // 각도 간격 증가
                     const bullet = {
                         x: secondPlane.x + secondPlane.width/2,
                         y: secondPlane.y,
@@ -2735,36 +2748,36 @@ function handleBulletFiring() {
 // 특수 무기 처리 함수 수정
 function handleSpecialWeapon() {
     if (specialWeaponCharged && keys.KeyB) {  // KeyV를 KeyB로 변경
-        // 특수 무기 발사 - 더 많은 총알과 강력한 효과
-        for (let i = 0; i < 360; i += 5) { // 각도 간격을 10도에서 5도로 감소
+        // 특수 무기 발사 (최적화: 총알 개수 감소)
+        for (let i = 0; i < 360; i += 10) { // 각도 간격을 5도에서 10도로 증가 (총알 개수 절반 감소)
             const angle = (i * Math.PI) / 180;
             const bullet = {
                 x: player.x + player.width/2,
                 y: player.y,
-                width: 12,  // 총알 크기 증가
-                height: 12, // 총알 크기 증가
+                width: 10,  // 총알 크기 감소
+                height: 10, // 총알 크기 감소
                 speed: 12,  // 속도 증가
                 angle: angle,
                 isSpecial: true,
-                life: 100,  // 총알 지속 시간 추가
+                life: 80,   // 총알 지속 시간 감소
                 trail: []   // 꼬리 효과를 위한 배열
             };
             bullets.push(bullet);
         }
         
-        // 두 번째 비행기가 있을 경우 추가 발사
+        // 두 번째 비행기가 있을 경우 추가 발사 (최적화: 총알 개수 감소)
         if (hasSecondPlane) {
-            for (let i = 0; i < 360; i += 5) {
+            for (let i = 0; i < 360; i += 10) { // 각도 간격 증가
                 const angle = (i * Math.PI) / 180;
                 const bullet = {
                     x: secondPlane.x + secondPlane.width/2,
                     y: secondPlane.y,
-                    width: 12,
-                    height: 12,
+                    width: 10,  // 총알 크기 감소
+                    height: 10, // 총알 크기 감소
                     speed: 12,
                     angle: angle,
                     isSpecial: true,
-                    life: 100,
+                    life: 80,   // 총알 지속 시간 감소
                     trail: []
                 };
                 bullets.push(bullet);
@@ -3356,16 +3369,26 @@ function handleBullets() {
             bullet.life--;
             if (bullet.life <= 0) return false;
         } else if (bullet.isSpread) {
-            // 확산탄 이동
+            // 확산탄 이동 (최적화: 단순한 그리기)
             bullet.x += Math.sin(bullet.angle) * bullet.speed;
             bullet.y -= Math.cos(bullet.angle) * bullet.speed;
             ctx.fillStyle = '#ff4444';
             ctx.fillRect(bullet.x - bullet.width/2, bullet.y - bullet.height/2, bullet.width, bullet.height);
         } else {
-            // 일반 총알 이동
+            // 일반 총알 이동 (최적화: 크기에 따른 그리기 방식 변경)
             bullet.y -= bullet.speed;
-            ctx.fillStyle = 'yellow';
-            ctx.fillRect(bullet.x - bullet.width/2, bullet.y - bullet.height/2, bullet.width, bullet.height);
+            
+            // 큰 총알일 때는 단순한 원형으로 그리기 (성능 향상)
+            if (bullet.width > 6) {
+                ctx.fillStyle = 'yellow';
+                ctx.beginPath();
+                ctx.arc(bullet.x, bullet.y, bullet.width/2, 0, Math.PI * 2);
+                ctx.fill();
+            } else {
+                // 작은 총알은 기존 방식 유지
+                ctx.fillStyle = 'yellow';
+                ctx.fillRect(bullet.x - bullet.width/2, bullet.y - bullet.height/2, bullet.width, bullet.height);
+            }
         }
         
         // 보스 총알과 플레이어 충돌 체크
@@ -4204,23 +4227,37 @@ let singleShotCooldown = 500;  // 단발 발사 쿨다운 시간 (더 길게)
 let minPressDuration = 200;  // 연속 발사로 전환되는 최소 누름 시간
 let minReleaseDuration = 100;  // 단발 발사를 위한 최소 해제 시간
 
-// 총알 크기 계산 함수 수정
+// 총알 크기 계산 함수 최적화 (캐싱 추가)
+let cachedBulletSize = null;
+let lastBulletSizeCalculation = { score: -1, level: -1 };
+
 function calculateBulletSize() {
+    // 캐싱: 점수와 레벨이 변경되지 않았으면 캐시된 값 반환
+    if (lastBulletSizeCalculation.score === score && 
+        lastBulletSizeCalculation.level === gameLevel) {
+        return cachedBulletSize;
+    }
+    
     let size = baseBulletSize;
     
-    // 현재 게임 점수에 따른 크기 증가
+    // 현재 게임 점수에 따른 크기 증가 (최적화: 단순화)
     if (score >= 10000) {
-        size = 7.5;  // 1.5배 증가
+        size = 7.0;  // 크기 감소로 성능 향상
     } else if (score >= 5000) {
-        size = 6.75;  // 1.5배 증가
+        size = 6.0;  // 크기 감소로 성능 향상
     }
     
-    // 난이도에 따른 크기 증가
+    // 난이도에 따른 크기 증가 (최적화: 단순화)
     if (gameLevel >= 4) {
-        size = Math.max(size, 7.5);  // 1.5배 증가
+        size = Math.max(size, 6.5);  // 크기 감소로 성능 향상
     } else if (gameLevel >= 3) {
-        size = Math.max(size, 6.75);  // 1.5배 증가
+        size = Math.max(size, 5.5);  // 크기 감소로 성능 향상
     }
+    
+    // 캐시 업데이트
+    cachedBulletSize = size;
+    lastBulletSizeCalculation.score = score;
+    lastBulletSizeCalculation.level = gameLevel;
     
     return size;
 }
