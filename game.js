@@ -59,10 +59,40 @@ let mobileContinuousFireInterval = null;
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
+// 캔버스 크기 설정
+function resizeCanvas() {
+    const container = document.getElementById('canvas-container');
+    if (container) {
+        // 컨테이너 스타일 조정
+        container.style.height = 'calc(100vh - 80px)';  // 모바일 컨트롤 높이만큼 제외
+        container.style.position = 'relative';
+        container.style.overflow = 'hidden';
+        
+        // 캔버스 스타일 조정
+        canvas.style.borderRadius = '0';  // 모서리를 각지게
+        
+        // 캔버스 크기를 모바일 비율에 맞게 설정 (일관성 유지)
+        canvas.width = 392;  // 모바일 비율에 맞춘 가로 크기
+        canvas.height = 700;  // 모바일 비율에 맞춘 세로 크기
+        
+        // CSS에서 설정한 크기와 일치하도록 스타일 설정
+        canvas.style.width = '392px';
+        canvas.style.height = '700px';
+    }
+}
 
+// 창 크기 변경 시 캔버스 크기 조정
+window.addEventListener('resize', resizeCanvas);
+
+// 초기 캔버스 크기 설정
+resizeCanvas();
 
 // 모바일 터치 컨트롤 요소들
 const mobileControls = {
+    btnUp: document.getElementById('btn-up'),
+    btnDown: document.getElementById('btn-down'),
+    btnLeft: document.getElementById('btn-left'),
+    btnRight: document.getElementById('btn-right'),
     btnFire: document.getElementById('btn-fire'),
     btnSpecial: document.getElementById('btn-special'),
     btnPause: document.getElementById('btn-pause'),
@@ -82,7 +112,42 @@ function setupMobileControls() {
         return;
     }
     
-
+    // 방향키 터치 이벤트
+    mobileControls.btnUp.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        keys.ArrowUp = true;
+    }, { passive: false });
+    mobileControls.btnUp.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        keys.ArrowUp = false;
+    }, { passive: false });
+    
+    mobileControls.btnDown.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        keys.ArrowDown = true;
+    }, { passive: false });
+    mobileControls.btnDown.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        keys.ArrowDown = false;
+    }, { passive: false });
+    
+    mobileControls.btnLeft.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        keys.ArrowLeft = true;
+    }, { passive: false });
+    mobileControls.btnLeft.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        keys.ArrowLeft = false;
+    }, { passive: false });
+    
+    mobileControls.btnRight.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        keys.ArrowRight = true;
+    }, { passive: false });
+    mobileControls.btnRight.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        keys.ArrowRight = false;
+    }, { passive: false });
     
     // 시작/재시작 버튼 터치 이벤트
     mobileControls.btnFire.addEventListener('touchstart', (e) => {
