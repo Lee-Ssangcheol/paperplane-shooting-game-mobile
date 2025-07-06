@@ -4984,6 +4984,11 @@ function restartGame() {
         document.getElementById('gameCanvas').focus();
     }, 100);
     
+    // 16. 게임 루프 재시작
+    setTimeout(() => {
+        startGameLoop();
+    }, 200);
+    
     console.log('게임 재시작 완료 - 모든 요소 초기화됨');
     console.log('현재 최고 점수:', highScore);
     console.log('초기화된 상태:', {
