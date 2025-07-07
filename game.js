@@ -6039,9 +6039,9 @@ function setupTouchDragControls() {
             return;
         }
         
-        // 터치한 위치로 플레이어 즉시 이동 (비행기 기체 중앙 기준)
+        // 터치한 위치로 플레이어 즉시 이동 (비행기 꼬리 기준)
         let newX = touchX - player.width / 2; // 터치 위치를 플레이어 중심으로 조정
-        let newY = touchY - player.height * 0.4; // 비행기 기체 중앙 부분으로 조정 (기체 중앙이 터치 지점에 오도록)
+        let newY = touchY - player.height * 0.8; // 비행기 꼬리 부분으로 조정 (꼬리가 터치 지점에 오도록)
         
         // 경계 제한
         const margin = 10;
@@ -6081,9 +6081,9 @@ function setupTouchDragControls() {
         const touchX = touch.clientX - rect.left;
         const touchY = touch.clientY - rect.top;
         
-        // 터치한 위치로 플레이어 즉시 이동 (비행기 기체 중앙 기준)
+        // 터치한 위치로 플레이어 즉시 이동 (비행기 꼬리 기준)
         let newX = touchX - player.width / 2; // 터치 위치를 플레이어 중심으로 조정
-        let newY = touchY - player.height * 0.4; // 비행기 기체 중앙 부분으로 조정 (기체 중앙이 터치 지점에 오도록)
+        let newY = touchY - player.height * 0.8; // 비행기 꼬리 부분으로 조정 (꼬리가 터치 지점에 오도록)
         
         // 경계 제한
         const margin = 10;
