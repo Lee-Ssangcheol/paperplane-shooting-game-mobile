@@ -2062,13 +2062,15 @@ function gameLoop() {
                 ctx.fillStyle = gradient;
                 ctx.font = 'bold 48px Arial';
                 ctx.textAlign = 'center';
-                ctx.fillText('GAME OVER', canvas.width/2, canvas.height/2);
+                ctx.fillText('GAME OVER', canvas.width/2, canvas.height/2 - 80);
                 
                 ctx.font = 'bold 24px Arial';
                 ctx.fillStyle = '#ffffff';
-                ctx.fillText(`최종 점수: ${score}`, canvas.width/2, canvas.height/2 + 60);
-                ctx.fillText(`충돌 횟수: ${collisionCount}`, canvas.width/2, canvas.height/2 + 100);
-                ctx.fillText('시작/재시작 버튼을 눌러 재시작', canvas.width/2, canvas.height/2 + 160);
+                ctx.fillText(`최종 점수: ${score}`, canvas.width/2, canvas.height/2 - 20);
+                ctx.fillText(`충돌 횟수: ${collisionCount}`, canvas.width/2, canvas.height/2 + 20);
+                ctx.font = 'bold 20px Arial';
+                ctx.fillText('화면을 터치하거나', canvas.width/2, canvas.height/2 + 80);
+                ctx.fillText('시작/재시작 버튼을 눌러 재시작', canvas.width/2, canvas.height/2 + 105);
             }
         }
         if (gameLoopRunning) {
@@ -4574,9 +4576,11 @@ function drawStartScreen() {
     const isVisible = Math.floor(currentTime / blinkSpeed) % 2 === 0;
     
     if (isVisible) {
-        ctx.font = 'bold 20px Arial';
+        ctx.font = 'bold 18px Arial';
         ctx.fillStyle = '#ffff00';
-        ctx.fillText('시작/재시작 버튼을 눌러 게임 시작', canvas.width/2, subtitleY);
+        ctx.textAlign = 'center';
+        ctx.fillText('화면을 터치하거나', canvas.width/2, subtitleY);
+        ctx.fillText('시작/재시작 버튼을 눌러 게임 시작', canvas.width/2, subtitleY + 25);
     }
 
     // 조작법 안내
@@ -6020,6 +6024,20 @@ function setupTouchDragControls() {
         const rect = canvas.getBoundingClientRect();
         const touchX = touch.clientX - rect.left;
         const touchY = touch.clientY - rect.top;
+        
+        // 시작 화면에서 터치하면 게임 시작
+        if (isStartScreen) {
+            isStartScreen = false;
+            console.log('시작 화면에서 터치 - 게임 시작');
+            return;
+        }
+        
+        // 게임 오버 상태에서 터치하면 재시작
+        if (isGameOver) {
+            restartGame();
+            console.log('게임 오버 화면에서 터치 - 게임 재시작');
+            return;
+        }
         
         // 터치한 위치로 플레이어 즉시 이동 (비행기 기체 중앙 기준)
         let newX = touchX - player.width / 2; // 터치 위치를 플레이어 중심으로 조정
