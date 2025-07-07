@@ -100,7 +100,7 @@ const mobileControls = {
 console.log('모바일 컨트롤 요소들:', mobileControls);
 
 // 모바일 터치 컨트롤 이벤트 설정
-function setupTouchControls() {
+function setupMobileControls() {
     console.log('모바일 컨트롤 설정 시작');
     console.log('isMobile:', isMobile);
     
@@ -1028,7 +1028,7 @@ async function initializeGame() {
         await loadGameImages();
         
         // 모바일 컨트롤 설정
-        setupTouchControls();
+        setupMobileControls();
         
         // 종료 이벤트 핸들러 설정
         setupExitHandlers();
@@ -4209,7 +4209,7 @@ async function initializeGame() {
         await loadGameImages();
         
         // 모바일 컨트롤 설정
-        setupTouchControls();
+        setupMobileControls();
         
         // 종료 이벤트 핸들러 설정
         setupExitHandlers();
