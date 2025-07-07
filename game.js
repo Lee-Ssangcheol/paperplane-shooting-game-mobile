@@ -2292,6 +2292,187 @@ function gameLoop() {
     }
 }
 
+// 총알 이동 및 충돌 체크 함수
+function handleBullets() {
+    bullets = bullets.filter(bullet => {
+        if (bullet.isSpecial) {
+            // 특수 무기 총알 이동 및 효과
+            bullet.x += Math.cos(bullet.angle) * bullet.speed;
+            bullet.y += Math.sin(bullet.angle) * bullet.speed;
+            
+            // 총알 그리기
+            ctx.fillStyle = '#00ffff';
+            ctx.fillRect(bullet.x - bullet.width/2, bullet.y - bullet.height/2, bullet.width, bullet.height);
+            
+            // 총알 지속 시간 감소
+            bullet.life--;
+            if (bullet.life <= 0) return false;
+        } else if (bullet.isSpread) {
+            // 확산탄 이동
+            bullet.x += Math.sin(bullet.angle) * bullet.speed;
+            bullet.y -= Math.cos(bullet.angle) * bullet.speed;
+            ctx.fillStyle = '#ff4444';
+            ctx.fillRect(bullet.x - bullet.width/2, bullet.y - bullet.height/2, bullet.width, bullet.height);
+        } else {
+            // 일반 총알 이동
+            bullet.y -= bullet.speed;
+            
+            // 큰 총알일 때는 단순한 원형으로 그리기
+            if (bullet.width > 6) {
+                ctx.fillStyle = 'yellow';
+                ctx.beginPath();
+                ctx.arc(bullet.x, bullet.y, bullet.width/2, 0, Math.PI * 2);
+                ctx.fill();
+            } else {
+                // 작은 총알은 기존 방식 유지
+                ctx.fillStyle = 'yellow';
+                ctx.fillRect(bullet.x - bullet.width/2, bullet.y - bullet.height/2, bullet.width, bullet.height);
+            }
+        }
+        
+        // 폭탄과 총알 충돌 체크
+        bombs = bombs.filter(bomb => {
+            if (checkCollision(bullet, bomb)) {
+                explosions.push(new Explosion(bomb.x, bomb.y, true));
+                return false;
+            }
+            return true;
+        });
+
+        // 다이나마이트와 총알 충돌 체크
+        dynamites = dynamites.filter(dynamite => {
+            if (checkCollision(bullet, dynamite)) {
+                explosions.push(new Explosion(dynamite.x, dynamite.y, true));
+                return false;
+            }
+            return true;
+        });
+        
+        // 적 미사일과 총알 충돌 체크
+        for (let i = enemyMissiles.length - 1; i >= 0; i--) {
+            const missile = enemyMissiles[i];
+            if (checkCollision(bullet, missile)) {
+                enemyMissiles.splice(i, 1);
+                explosions.push(new Explosion(missile.x + missile.width/2, missile.y + missile.height/2, false));
+                updateScore(10);
+                return false;
+            }
+        }
+        
+        // 방어막 적과 총알 충돌 체크
+        for (let i = shieldedEnemies.length - 1; i >= 0; i--) {
+            const enemy = shieldedEnemies[i];
+            if (checkCollision(bullet, enemy)) {
+                enemy.health--;
+                explosions.push(new Explosion(bullet.x, bullet.y, false));
+                
+                if (enemy.health <= 0) {
+                    shieldedEnemies.splice(i, 1);
+                    explosions.push(new Explosion(enemy.x + enemy.width/2, enemy.y + enemy.height/2, false));
+                    updateScore(100);
+                }
+                
+                return false;
+            }
+        }
+        
+        // 화면 밖으로 나간 총알 제거
+        return bullet.y > 0 && bullet.y < canvas.height && 
+               bullet.x > 0 && bullet.x < canvas.width;
+    });
+}
+
+// 확산탄 처리 함수
+function handleSpreadShot() {
+    if (scoreForSpread >= 2000) {
+        // 8발의 확산탄을 원형으로 발사
+        for (let i = 0; i < 8; i++) {
+            const angle = (i * 45) * (Math.PI / 180);
+            const missile = {
+                x: player.x + player.width/2,
+                y: player.y,
+                width: 10,
+                height: 25,
+                speed: 12,
+                angle: angle,
+                isSpread: true
+            };
+            bullets.push(missile);
+
+            // 두 번째 비행기가 있으면 확산탄 발사
+            if (hasSecondPlane) {
+                const secondMissile = {
+                    x: secondPlane.x + secondPlane.width/2,
+                    y: secondPlane.y,
+                    width: 10,
+                    height: 25,
+                    speed: 12,
+                    angle: angle,
+                    isSpread: true
+                };
+                bullets.push(secondMissile);
+            }
+        }
+        scoreForSpread = 0;
+    }
+}
+
+// 점수 업데이트 함수
+function updateScore(points) {
+    score += points;
+    scoreForSpread += points;
+    
+    // 레벨업 체크
+    const newLevel = Math.floor(score / 1000) + 1;
+    if (newLevel > gameLevel) {
+        gameLevel = newLevel;
+        console.log(`레벨업! 현재 레벨: ${gameLevel}`);
+    }
+}
+
+// 두 번째 비행기 처리 함수
+function handleSecondPlane() {
+    // 주기적으로 상태 출력 (너무 자주 출력되지 않도록 조건 추가)
+    if (Math.random() < 0.001) {
+        console.log('추가 비행기 상태 체크:', {
+            score: score,
+            scoreMod4000: score % 4000,
+            hasSecondPlane: hasSecondPlane,
+            nextPlaneScore: Math.ceil(score / 4000) * 4000,
+            remainingPoints: Math.ceil(score / 4000) * 4000 - score
+        });
+    }
+    
+    // 디버깅을 위한 로그 추가
+    if (score >= 4000 && score % 4000 === 0 && !hasSecondPlane) {
+        console.log('추가 비행기 획득 조건 만족:', {
+            score: score,
+            scoreMod4000: score % 4000,
+            hasSecondPlane: hasSecondPlane
+        });
+        hasSecondPlane = true;
+        secondPlane.x = player.x - 60;
+        secondPlane.y = player.y;
+        secondPlaneTimer = Date.now();
+        console.log('추가 비행기 활성화:', {
+            x: secondPlane.x,
+            y: secondPlane.y,
+            timer: secondPlaneTimer
+        });
+    }
+
+    if (hasSecondPlane) {
+        const elapsedTime = Date.now() - secondPlaneTimer;
+        if (elapsedTime >= 10000) {
+            console.log('추가 비행기 시간 만료:', {
+                elapsedTime: elapsedTime,
+                maxTime: 10000
+            });
+            hasSecondPlane = false;
+        }
+    }
+}
+
 // 플레이어 이동 처리 함수
 function handlePlayerMovement() {
     if (keys.ArrowLeft && player.x > 0) {
