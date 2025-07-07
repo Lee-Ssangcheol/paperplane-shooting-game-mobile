@@ -4058,6 +4058,14 @@ function drawEnemy(enemy) {
         drawAirplane(enemy.x, enemy.y, enemy.width, enemy.height, 'red', true);
     } else if (enemy.type === 'dynamite') {
         drawDrone(enemy.x, enemy.y, enemy.width, enemy.height);
+    } else if (enemy.isBoss) {
+        // 보스: 이미지가 있으면 사용, 없으면 도형으로 그리기
+        if (gameImages.boss) {
+            ctx.drawImage(gameImages.boss, enemy.x, enemy.y, enemy.width, enemy.height);
+        } else {
+            ctx.fillStyle = '#ff0000';
+            ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+        }
     }
 }
 
@@ -4533,7 +4541,7 @@ function handleCollisionEffects() {
 const gameImages = {
     player: null,
     enemyPlane: null,
-    enemyPlane2: null
+    boss: null
 };
 
 // 이미지 로딩 함수
@@ -4558,8 +4566,8 @@ async function loadAllImages() {
     try {
         await Promise.all([
             loadImage('images/player.png', 'player'),
-            loadImage('images/enemyplane.png', 'enemyPlane'),
-            loadImage('images/enemyplane2.png', 'enemyPlane2')
+            loadImage('images/enemy.png', 'enemyPlane'),
+            loadImage('images/BOSS.png', 'boss')
         ]);
         console.log('이미지 로딩 완료');
     } catch (error) {
