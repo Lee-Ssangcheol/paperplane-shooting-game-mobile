@@ -1997,6 +1997,22 @@ function drawAirplane(x, y, width, height, color, isEnemy = false) {
     ctx.restore();
 }
 
+// 보스 관련 상수 정의
+const BOSS_SETTINGS = {
+    HEALTH: 1000,        // 기본 체력
+    DAMAGE: 50,          // 보스 총알 데미지
+    SPEED: 2,           // 보스 이동 속도
+    BULLET_SPEED: 5,    // 보스 총알 속도
+    PATTERN_INTERVAL: 2000, // 패턴 변경 간격
+    SPAWN_INTERVAL: 30000,  // 보스 출현 간격 (30초)
+    BONUS_SCORE: 500,    // 보스 처치 보너스 점수
+    PHASE_THRESHOLDS: [  // 페이즈 전환 체력 임계값
+        { health: 750, speed: 2.5, bulletSpeed: 6 },
+        { health: 500, speed: 3, bulletSpeed: 7 },
+        { health: 250, speed: 3.5, bulletSpeed: 8 }
+    ]
+};
+
 // 게임 루프 수정
 function gameLoop() {
     // 적응형 프레임 레이트 업데이트
