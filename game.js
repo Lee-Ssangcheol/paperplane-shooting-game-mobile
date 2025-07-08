@@ -2069,6 +2069,7 @@ function gameLoop() {
                 ctx.fillText(`최종 점수: ${score}`, canvas.width/2, canvas.height/2 - 20);
                 ctx.fillText(`충돌 횟수: ${collisionCount}`, canvas.width/2, canvas.height/2 + 20);
                 ctx.font = 'bold 24px Arial';
+                ctx.fillStyle = '#ffff00';                
                 ctx.fillText('시작/재시작 버튼을 눌러 재시작', canvas.width/2, canvas.height/2 + 80);
             }
         }
@@ -4575,7 +4576,7 @@ function drawStartScreen() {
     const isVisible = Math.floor(currentTime / blinkSpeed) % 2 === 0;
     
     if (isVisible) {
-        ctx.font = 'bold 20px Arial';
+        ctx.font = 'bold 24px Arial';
         ctx.fillStyle = '#ffff00';
         ctx.textAlign = 'center';
         ctx.fillText('시작/재시작 버튼을 눌러 시작', canvas.width/2, subtitleY);
