@@ -2064,13 +2064,12 @@ function gameLoop() {
                 ctx.textAlign = 'center';
                 ctx.fillText('GAME OVER', canvas.width/2, canvas.height/2 - 80);
                 
-                ctx.font = 'bold 24px Arial';
+                ctx.font = 'bold 20px Arial';
                 ctx.fillStyle = '#ffffff';
                 ctx.fillText(`최종 점수: ${score}`, canvas.width/2, canvas.height/2 - 20);
                 ctx.fillText(`충돌 횟수: ${collisionCount}`, canvas.width/2, canvas.height/2 + 20);
-                ctx.font = 'bold 20px Arial';
-                ctx.fillText('화면을 터치하거나', canvas.width/2, canvas.height/2 + 80);
-                ctx.fillText('시작/재시작 버튼을 눌러 재시작', canvas.width/2, canvas.height/2 + 105);
+                ctx.font = 'bold 24px Arial';
+                ctx.fillText('시작/재시작 버튼을 눌러 재시작', canvas.width/2, canvas.height/2 + 80);
             }
         }
         if (gameLoopRunning) {
@@ -4576,11 +4575,10 @@ function drawStartScreen() {
     const isVisible = Math.floor(currentTime / blinkSpeed) % 2 === 0;
     
     if (isVisible) {
-        ctx.font = 'bold 18px Arial';
+        ctx.font = 'bold 20px Arial';
         ctx.fillStyle = '#ffff00';
         ctx.textAlign = 'center';
-        ctx.fillText('화면을 터치하거나', canvas.width/2, subtitleY);
-        ctx.fillText('시작/재시작 버튼을 눌러 게임 시작', canvas.width/2, subtitleY + 25);
+        ctx.fillText('시작/재시작 버튼을 눌러 시작', canvas.width/2, subtitleY);
     }
 
     // 조작법 안내
@@ -6025,29 +6023,13 @@ function setupTouchDragControls() {
         const touchX = touch.clientX - rect.left;
         const touchY = touch.clientY - rect.top;
         
-        // 시작 화면에서 터치하면 게임 시작
-        if (isStartScreen) {
-            isStartScreen = false;
-            console.log('시작 화면에서 터치 - 게임 시작');
-            // 게임 시작과 동시에 총알 발사 시작
-            keys.Space = true;
-            isSpacePressed = true;
-            spacePressTime = Date.now();
-            isContinuousFire = true;
-            console.log('게임 시작과 동시에 총알 발사 시작');
+        // 시작 화면과 게임 오버 화면에서는 터치로 시작/재시작 불가
+        if (isStartScreen || isGameOver) {
             return;
         }
         
-        // 게임 오버 상태에서 터치하면 재시작
-        if (isGameOver) {
-            restartGame();
-            console.log('게임 오버 화면에서 터치 - 게임 재시작');
-            // 게임 재시작과 동시에 총알 발사 시작
-            keys.Space = true;
-            isSpacePressed = true;
-            spacePressTime = Date.now();
-            isContinuousFire = true;
-            console.log('게임 재시작과 동시에 총알 발사 시작');
+        // 게임 중에만 플레이어 이동 가능
+        if (!isGameActive) {
             return;
         }
         
@@ -6088,6 +6070,11 @@ function setupTouchDragControls() {
     canvas.addEventListener('touchmove', (e) => {
         e.preventDefault();
         
+        // 시작 화면, 게임 오버, 게임 비활성 상태에서는 터치 이동 불가
+        if (isStartScreen || isGameOver || !isGameActive) {
+            return;
+        }
+        
         const touch = e.touches[0];
         const rect = canvas.getBoundingClientRect();
         const touchX = touch.clientX - rect.left;
@@ -6120,8 +6107,8 @@ function setupTouchDragControls() {
     canvas.addEventListener('touchend', (e) => {
         e.preventDefault();
         
-        // 터치 종료 시 연속발사 중지
-        if (!isGameOver && !isStartScreen) {
+        // 게임 중에만 연속발사 중지 처리
+        if (isGameActive && !isGameOver && !isStartScreen) {
             keys.Space = false;
             isSpacePressed = false;
             lastReleaseTime = Date.now();
