@@ -6029,6 +6029,12 @@ function setupTouchDragControls() {
         if (isStartScreen) {
             isStartScreen = false;
             console.log('시작 화면에서 터치 - 게임 시작');
+            // 게임 시작과 동시에 총알 발사 시작
+            keys.Space = true;
+            isSpacePressed = true;
+            spacePressTime = Date.now();
+            isContinuousFire = true;
+            console.log('게임 시작과 동시에 총알 발사 시작');
             return;
         }
         
@@ -6036,6 +6042,12 @@ function setupTouchDragControls() {
         if (isGameOver) {
             restartGame();
             console.log('게임 오버 화면에서 터치 - 게임 재시작');
+            // 게임 재시작과 동시에 총알 발사 시작
+            keys.Space = true;
+            isSpacePressed = true;
+            spacePressTime = Date.now();
+            isContinuousFire = true;
+            console.log('게임 재시작과 동시에 총알 발사 시작');
             return;
         }
         
