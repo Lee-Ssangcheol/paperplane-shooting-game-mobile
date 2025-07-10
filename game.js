@@ -6,6 +6,9 @@ const TOP_EFFECT_ZONE = 20;  // 상단 효과 무시 영역 (픽셀)
 // 모바일 디바이스 감지
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
+// 모바일 속도 조절 (60% 속도)
+const mobileSpeedMultiplier = isMobile ? 0.6 : 1.0;
+
 // 모바일 전체화면 모드 활성화
 function enableFullscreen() {
     if (isMobile) {
@@ -443,9 +446,9 @@ const keys = {
 // 난이도 설정
 const difficultySettings = {
     1: { // 초급 - 더 느리고 부드럽게 시작
-        enemySpeed: 1.2,
+        enemySpeed: 1.2 * mobileSpeedMultiplier,
         enemySpawnRate: 0.015,
-        horizontalSpeedRange: 1.5,
+        horizontalSpeedRange: 1.5 * mobileSpeedMultiplier,
         patternChance: 0.1,
         maxEnemies: 4,
         bossHealth: 800,
@@ -455,9 +458,9 @@ const difficultySettings = {
         dynamiteDropChance: 0.05
     },
     2: { // 중급 - 점진적 증가
-        enemySpeed: 1.8,
+        enemySpeed: 1.8 * mobileSpeedMultiplier,
         enemySpawnRate: 0.025,
-        horizontalSpeedRange: 2.2,
+        horizontalSpeedRange: 2.2 * mobileSpeedMultiplier,
         patternChance: 0.25,
         maxEnemies: 6,
         bossHealth: 1000,
@@ -467,9 +470,9 @@ const difficultySettings = {
         dynamiteDropChance: 0.1
     },
     3: { // 고급 - 적당한 난이도
-        enemySpeed: 2.4,
+        enemySpeed: 2.4 * mobileSpeedMultiplier,
         enemySpawnRate: 0.035,
-        horizontalSpeedRange: 3,
+        horizontalSpeedRange: 3 * mobileSpeedMultiplier,
         patternChance: 0.4,
         maxEnemies: 8,
         bossHealth: 1200,
@@ -479,9 +482,9 @@ const difficultySettings = {
         dynamiteDropChance: 0.15
     },
     4: { // 전문가 - 도전적이지만 공정한 난이도
-        enemySpeed: 3.2,
+        enemySpeed: 3.2 * mobileSpeedMultiplier,
         enemySpawnRate: 0.045,
-        horizontalSpeedRange: 4,
+        horizontalSpeedRange: 4 * mobileSpeedMultiplier,
         patternChance: 0.6,
         maxEnemies: 12,
         bossHealth: 1500,
@@ -491,9 +494,9 @@ const difficultySettings = {
         dynamiteDropChance: 0.2
     },
     5: { // 마스터 - 최고 난이도
-        enemySpeed: 4.2,
+        enemySpeed: 4.2 * mobileSpeedMultiplier,
         enemySpawnRate: 0.055,
-        horizontalSpeedRange: 5,
+        horizontalSpeedRange: 5 * mobileSpeedMultiplier,
         patternChance: 0.8,
         maxEnemies: 16,
         bossHealth: 2000,
@@ -1106,7 +1109,7 @@ async function initializeGame() {
         spacePressTime = 0;
         fireDelay = 400;
         continuousFireDelay = 30;
-        bulletSpeed = 7;
+        bulletSpeed = 7 * mobileSpeedMultiplier;
         baseBulletSize = 4.5;
         isContinuousFire = false;
         canFire = true;
@@ -1321,9 +1324,9 @@ function restartGame() {
 // 적 생성 함수 수정
 function createEnemy() {
     const currentDifficulty = difficultySettings[Math.min(gameLevel, 5)] || {
-        enemySpeed: 4.2 + (gameLevel - 5) * 0.3,  // 더 부드러운 증가
+        enemySpeed: (4.2 + (gameLevel - 5) * 0.3) * mobileSpeedMultiplier,  // 더 부드러운 증가
         enemySpawnRate: 0.055 + (gameLevel - 5) * 0.005,  // 더 부드러운 증가
-        horizontalSpeedRange: 5 + (gameLevel - 5) * 0.3,  // 더 부드러운 증가
+        horizontalSpeedRange: (5 + (gameLevel - 5) * 0.3) * mobileSpeedMultiplier,  // 더 부드러운 증가
         patternChance: 0.8 + (gameLevel - 5) * 0.05,  // 점진적 증가
         maxEnemies: 16 + (gameLevel - 5) * 1,  // 더 부드러운 증가
         bossHealth: 2000 + (gameLevel - 5) * 300,  // 더 부드러운 증가
@@ -2310,9 +2313,9 @@ function handlePlayerMovement() {
 function handleEnemies() {
     const currentTime = Date.now();
     const currentDifficulty = difficultySettings[Math.min(gameLevel, 5)] || {
-        enemySpeed: 4.2 + (gameLevel - 5) * 0.3,  // 더 부드러운 증가
+        enemySpeed: (4.2 + (gameLevel - 5) * 0.3) * mobileSpeedMultiplier,  // 더 부드러운 증가
         enemySpawnRate: 0.055 + (gameLevel - 5) * 0.005,  // 더 부드러운 증가
-        horizontalSpeedRange: 5 + (gameLevel - 5) * 0.3,  // 더 부드러운 증가
+        horizontalSpeedRange: (5 + (gameLevel - 5) * 0.3) * mobileSpeedMultiplier,  // 더 부드러운 증가
         patternChance: 0.8 + (gameLevel - 5) * 0.05,  // 점진적 증가
         maxEnemies: 16 + (gameLevel - 5) * 1,  // 더 부드러운 증가
         bossHealth: 2000 + (gameLevel - 5) * 300,  // 더 부드러운 증가
@@ -3775,15 +3778,15 @@ function handleBullets() {
 const BOSS_SETTINGS = {
     HEALTH: 1000,        // 기본 체력
     DAMAGE: 50,          // 보스 총알 데미지
-    SPEED: 2,           // 보스 이동 속도
-    BULLET_SPEED: 5,    // 보스 총알 속도
+    SPEED: 2 * mobileSpeedMultiplier,           // 보스 이동 속도
+    BULLET_SPEED: 5 * mobileSpeedMultiplier,    // 보스 총알 속도
     PATTERN_INTERVAL: 2000, // 패턴 변경 간격
     SPAWN_INTERVAL: 30000,  // 보스 출현 간격 (30초)
     BONUS_SCORE: 500,    // 보스 처치 보너스 점수를 500으로 설정
     PHASE_THRESHOLDS: [  // 페이즈 전환 체력 임계값
-        { health: 750, speed: 2.5, bulletSpeed: 6 },
-        { health: 500, speed: 3, bulletSpeed: 7 },
-        { health: 250, speed: 3.5, bulletSpeed: 8 }
+        { health: 750, speed: 2.5 * mobileSpeedMultiplier, bulletSpeed: 6 * mobileSpeedMultiplier },
+        { health: 500, speed: 3 * mobileSpeedMultiplier, bulletSpeed: 7 * mobileSpeedMultiplier },
+        { health: 250, speed: 3.5 * mobileSpeedMultiplier, bulletSpeed: 8 * mobileSpeedMultiplier }
     ]
 };
 
@@ -4241,9 +4244,9 @@ function checkLevelUp() {
         
         // 현재 난이도 설정 가져오기
         const currentDifficulty = difficultySettings[Math.min(gameLevel, 5)] || {
-            enemySpeed: 4.2 + (gameLevel - 5) * 0.3,  // 더 부드러운 증가
+            enemySpeed: (4.2 + (gameLevel - 5) * 0.3) * mobileSpeedMultiplier,  // 더 부드러운 증가
             enemySpawnRate: 0.055 + (gameLevel - 5) * 0.005,  // 더 부드러운 증가
-            horizontalSpeedRange: 5 + (gameLevel - 5) * 0.3,  // 더 부드러운 증가
+            horizontalSpeedRange: (5 + (gameLevel - 5) * 0.3) * mobileSpeedMultiplier,  // 더 부드러운 증가
             patternChance: 0.8 + (gameLevel - 5) * 0.05,  // 점진적 증가
             maxEnemies: 16 + (gameLevel - 5) * 1,  // 더 부드러운 증가
             bossHealth: 2000 + (gameLevel - 5) * 300,  // 더 부드러운 증가
@@ -4360,7 +4363,7 @@ function createPowerUp() {
         y: -30,
         width: 30,
         height: 30,
-        speed: 3,
+        speed: 3 * mobileSpeedMultiplier,
         type: type,
         active: true,
         duration: 10000, // 10초 지속
@@ -4598,7 +4601,7 @@ function createBomb(enemy) {
         y: enemy.y + enemy.height,
         width: 15,
         height: 15,
-        speed: 5,
+        speed: 5 * mobileSpeedMultiplier,
         rotation: 0,
         rotationSpeed: 0.1,
         trail: []  // 폭탄 꼬리 효과를 위한 배열
@@ -4658,7 +4661,7 @@ function createDynamite(enemy) {
         y: enemy.y + enemy.height,
         width: 20,
         height: 30,
-        speed: 4,
+        speed: 4 * mobileSpeedMultiplier,
         rotation: 0,
         rotationSpeed: 0.05,
         flameParticles: [],  // 불꽃 파티클 배열
@@ -5051,7 +5054,7 @@ async function initializeGame() {
         spacePressTime = 0;
         fireDelay = 600;
         continuousFireDelay = 50;
-        bulletSpeed = 12;
+        bulletSpeed = 12 * mobileSpeedMultiplier;
         baseBulletSize = 4.5;
         isContinuousFire = false;
         canFire = true;
@@ -5409,7 +5412,7 @@ function createEnemyMissile(enemy, missileType = 'missile1', angle = null) {
         y: enemy.y + enemy.height,
         width: missileSize,
         height: missileSize,
-        speed: 4,
+        speed: 4 * mobileSpeedMultiplier,
         type: missileType,
         parentEnemy: enemy, // 부모 적 참조 추가
         angle: angle, // 각도 정보 추가
@@ -5523,7 +5526,7 @@ function createShieldedEnemy() {
         y: -66,
         width: 66,
         height: 66,
-        speed: 1.5,
+        speed: 1.5 * mobileSpeedMultiplier,
         health: 30,
         maxHealth: 30,
         shieldActive: true,
@@ -5953,7 +5956,7 @@ function fireBullet() {
                 y: player.y,
                 width: 4,
                 height: 8,
-                speed: 8,
+                speed: 8 * mobileSpeedMultiplier,
                 angle: (angle * Math.PI) / 180
             };
             bullets.push(bullet);
@@ -5965,7 +5968,7 @@ function fireBullet() {
             y: player.y,
             width: 4,
             height: 8,
-            speed: 8
+            speed: 8 * mobileSpeedMultiplier
         };
         bullets.push(bullet);
     }
@@ -5977,7 +5980,7 @@ function fireBullet() {
             y: secondPlane.y,
             width: 4,
             height: 8,
-            speed: 8
+            speed: 8 * mobileSpeedMultiplier
         };
         bullets.push(bullet);
     }
