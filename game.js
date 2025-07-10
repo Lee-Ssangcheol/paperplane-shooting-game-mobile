@@ -2289,7 +2289,7 @@ function handlePlayerMovement() {
             secondPlane.x -= player.speed * 0.5;
         }
     }
-    if (keys.ArrowRight && player.x < canvas.width + player.width - player.width) {
+    if (keys.ArrowRight && player.x < canvas.width + player.width) {
         player.x += player.speed * 0.5;
         if (hasSecondPlane) {
             secondPlane.x += player.speed * 0.5;
@@ -6047,7 +6047,7 @@ function setupTouchDragControls() {
         const rightExpansion = player.width; // 오른쪽 확장 영역 (플레이어 몸체만큼)
         const leftExpansion = player.width; // 왼쪽 확장 영역 (플레이어 몸체만큼)
         
-        newX = Math.max(-leftExpansion, Math.min(canvas.width + rightExpansion - player.width / 1.5, newX));
+        newX = Math.max(-leftExpansion, Math.min(canvas.width + rightExpansion, newX));
         newY = Math.max(margin, Math.min(maxY, newY));
         
         // 플레이어 위치 업데이트
@@ -6096,7 +6096,7 @@ function setupTouchDragControls() {
         const rightExpansion = player.width; // 오른쪽 확장 영역 (플레이어 몸체만큼)
         const leftExpansion = player.width; // 왼쪽 확장 영역 (플레이어 몸체만큼)
         
-        newX = Math.max(-leftExpansion, Math.min(canvas.width + rightExpansion - player.width / 1.5, newX));
+        newX = Math.max(-leftExpansion, Math.min(canvas.width + rightExpansion, newX));
         newY = Math.max(margin, Math.min(maxY, newY));
         
         // 플레이어 위치 업데이트
