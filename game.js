@@ -12,6 +12,8 @@ const mobileSpeedMultiplier = isMobile ? 0.6 : 1.0;
 // 모바일 전체화면 모드 활성화
 function enableFullscreen() {
     if (isMobile) {
+        console.log('모바일 전체화면 모드 활성화 시작');
+        
         // iOS Safari 전체화면 모드
         if (document.documentElement.requestFullscreen) {
             document.documentElement.requestFullscreen().catch(err => {
@@ -19,13 +21,14 @@ function enableFullscreen() {
             });
         }
         
-        // iOS Safari에서 주소창 숨김
+        // iOS Safari에서 주소창 숨김 및 전체화면 모드
         if (window.navigator.standalone) {
             document.body.style.position = 'fixed';
             document.body.style.top = '0';
             document.body.style.left = '0';
             document.body.style.width = '100vw';
             document.body.style.height = '100vh';
+            document.body.style.overflow = 'hidden';
         }
         
         // Android Chrome 전체화면 모드
@@ -42,7 +45,13 @@ function enableFullscreen() {
             });
         }
         
-        console.log('모바일 전체화면 모드 활성화 시도');
+        // 추가적인 모바일 최적화
+        document.body.style.webkitUserSelect = 'none';
+        document.body.style.userSelect = 'none';
+        document.body.style.webkitTouchCallout = 'none';
+        document.body.style.webkitTapHighlightColor = 'transparent';
+        
+        console.log('모바일 전체화면 모드 활성화 완료');
     }
 }
 
@@ -159,11 +168,15 @@ function setupMobileControls() {
         if (isStartScreen) {
             isStartScreen = false;
             console.log('모바일에서 게임 시작');
+            // 게임 시작 시 전체화면 전환
+            enableFullscreen();
         }
         
         // 게임 오버 상태에서 재시작
         if (isGameOver) {
             restartGame();
+            // 게임 재시작 시 전체화면 전환
+            enableFullscreen();
             return;
         }
     }, { passive: false });
@@ -183,11 +196,15 @@ function setupMobileControls() {
         if (isStartScreen) {
             isStartScreen = false;
             console.log('모바일에서 게임 시작');
+            // 게임 시작 시 전체화면 전환
+            enableFullscreen();
         }
         
         // 게임 오버 상태에서 재시작
         if (isGameOver) {
             restartGame();
+            // 게임 재시작 시 전체화면 전환
+            enableFullscreen();
             return;
         }
     });
@@ -292,6 +309,15 @@ function setupMobileControls() {
         if (isStartScreen) {
             isStartScreen = false;
             console.log('모바일에서 게임 시작');
+            // 게임 시작 시 전체화면 전환
+            enableFullscreen();
+        }
+        
+        // 게임 오버 상태에서 재시작
+        if (isGameOver) {
+            restartGame();
+            // 게임 재시작 시 전체화면 전환
+            enableFullscreen();
         }
     });
     
@@ -5097,6 +5123,13 @@ async function initializeGame() {
         startGameLoop();
         console.log('게임 루프 시작됨');
         
+        // 모바일에서 게임 시작 시 전체화면 전환
+        if (isMobile) {
+            setTimeout(() => {
+                enableFullscreen();
+            }, 500);
+        }
+        
     } catch (error) {
         console.error('게임 초기화 중 오류:', error);
     }
@@ -5250,6 +5283,13 @@ function restartGame() {
     setTimeout(() => {
         startGameLoop();
     }, 200);
+    
+    // 18. 모바일에서 재시작 시 전체화면 전환
+    if (isMobile) {
+        setTimeout(() => {
+            enableFullscreen();
+        }, 300);
+    }
     
     console.log('게임 재시작 완료 - 모든 요소 초기화됨');
     console.log('현재 최고 점수:', highScore);
