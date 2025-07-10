@@ -1088,10 +1088,10 @@ async function initializeGame() {
         lastBossSpawnTime = Date.now();
                
         // 6. 플레이어 초기 위치 설정
-        player.x = canvas.width / 2;
-        player.y = canvas.height - player.height - 10;  // 10에서 player.height + 10으로 변경하여 캔버스 하단에서 10픽셀 위에 위치
-        secondPlane.x = canvas.width / 2 - 60;
-        secondPlane.y = canvas.height - secondPlane.height - 10;  // 10에서 secondPlane.height + 10으로 변경하여 캔버스 하단에서 10픽셀 위에 위치
+        player.x = canvas.width / 2 - player.width / 2;
+        player.y = canvas.height - player.height - 10;
+        secondPlane.x = canvas.width / 2 - 60 - player.width / 2;
+        secondPlane.y = canvas.height - secondPlane.height - 10;
         
         // 7. 게임 타이머 초기화
         lastEnemySpawnTime = 0;
@@ -5033,10 +5033,10 @@ async function initializeGame() {
         lastBossSpawnTime = Date.now();
                
         // 6. 플레이어 초기 위치 설정
-        player.x = canvas.width / 2;
-        player.y = canvas.height - player.height - 10;  // 10에서 player.height + 10으로 변경하여 캔버스 하단에서 10픽셀 위에 위치
-        secondPlane.x = canvas.width / 2 - 60;
-        secondPlane.y = canvas.height - secondPlane.height - 10;  // 10에서 secondPlane.height + 10으로 변경하여 캔버스 하단에서 10픽셀 위에 위치
+        player.x = canvas.width / 2 - player.width / 2;
+        player.y = canvas.height - player.height - 10;
+        secondPlane.x = canvas.width / 2 - 60 - player.width / 2;
+        secondPlane.y = canvas.height - secondPlane.height - 10;
         
         // 7. 게임 타이머 초기화
         lastEnemySpawnTime = 0;
