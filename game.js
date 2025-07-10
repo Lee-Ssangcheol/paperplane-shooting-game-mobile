@@ -2283,7 +2283,7 @@ function gameLoop() {
 
 // 플레이어 이동 처리 함수
 function handlePlayerMovement() {
-    if (keys.ArrowLeft && player.x > 0) {
+    if (keys.ArrowLeft && player.x > -player.width) {
         player.x -= player.speed * 0.5;
         if (hasSecondPlane) {
             secondPlane.x -= player.speed * 0.5;
@@ -6041,12 +6041,13 @@ function setupTouchDragControls() {
         let newX = touchX + player.width / 4; // 터치 지점의 세로줄을 기준으로 플레이어 중심을 가로폭의 1/4만큼 오른쪽으로 이동
         let newY = touchY - player.height * 0.8; // 비행기 꼬리 부분으로 조정 (꼬리가 터치 지점에 오도록)
         
-        // 경계 제한 - 오른쪽 확장 영역 추가
+        // 경계 제한 - 왼쪽/오른쪽 확장 영역 추가
         const margin = 10;
         const maxY = canvas.height - 100; // 모바일 컨트롤 영역 고려
         const rightExpansion = player.width; // 오른쪽 확장 영역 (플레이어 몸체만큼)
+        const leftExpansion = player.width; // 왼쪽 확장 영역 (플레이어 몸체만큼)
         
-        newX = Math.max(-player.width / 2.5, Math.min(canvas.width + rightExpansion - player.width / 1.5, newX));
+        newX = Math.max(-leftExpansion, Math.min(canvas.width + rightExpansion - player.width / 1.5, newX));
         newY = Math.max(margin, Math.min(maxY, newY));
         
         // 플레이어 위치 업데이트
@@ -6089,12 +6090,13 @@ function setupTouchDragControls() {
         let newX = touchX + player.width / 4; // 터치 지점의 세로줄을 기준으로 플레이어 중심을 가로폭의 1/4만큼 오른쪽으로 이동
         let newY = touchY - player.height * 0.8; // 비행기 꼬리 부분으로 조정 (꼬리가 터치 지점에 오도록)
         
-        // 경계 제한 - 오른쪽 확장 영역 추가
+        // 경계 제한 - 왼쪽/오른쪽 확장 영역 추가
         const margin = 10;
         const maxY = canvas.height - 100; // 모바일 컨트롤 영역 고려
         const rightExpansion = player.width; // 오른쪽 확장 영역 (플레이어 몸체만큼)
+        const leftExpansion = player.width; // 왼쪽 확장 영역 (플레이어 몸체만큼)
         
-        newX = Math.max(-player.width / 2.5, Math.min(canvas.width + rightExpansion - player.width / 1.5, newX));
+        newX = Math.max(-leftExpansion, Math.min(canvas.width + rightExpansion - player.width / 1.5, newX));
         newY = Math.max(margin, Math.min(maxY, newY));
         
         // 플레이어 위치 업데이트
