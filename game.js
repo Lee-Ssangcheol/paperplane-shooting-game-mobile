@@ -206,8 +206,15 @@ function setupMobileControls() {
         console.log('시작/재시작 버튼 터치 종료');
     }, { passive: false });
     
-    // 데스크탑용 클릭 이벤트 (모바일에서는 무시)
-    if (!isMobile) {
+    // 모바일에서 클릭 이벤트 완전 차단
+    if (isMobile) {
+        mobileControls.btnFire.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('모바일에서 시작/재시작 클릭 이벤트 차단됨');
+        });
+    } else {
+        // 데스크탑용 클릭 이벤트
         mobileControls.btnFire.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -259,8 +266,15 @@ function setupMobileControls() {
         e.stopPropagation();
     }, { passive: false });
     
-    // 데스크탑용 클릭 이벤트 (모바일에서는 무시)
-    if (!isMobile) {
+    // 모바일에서 클릭 이벤트 완전 차단
+    if (isMobile) {
+        mobileControls.btnPause.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('모바일에서 일시정지 클릭 이벤트 차단됨');
+        });
+    } else {
+        // 데스크탑용 클릭 이벤트
         mobileControls.btnPause.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -277,28 +291,32 @@ function setupMobileControls() {
         });
     }
     
-    // 최고 점수 리셋 - 간단한 중복 방지
+    // 최고 점수 리셋 - 강력한 중복 방지
     let isResettingScore = false;
+    let lastResetTime = 0;
+    const resetCooldown = 500; // 500ms 쿨다운
     
     const handleScoreReset = () => {
-        if (isResettingScore) {
+        const now = Date.now();
+        if (isResettingScore || (now - lastResetTime) < resetCooldown) {
             console.log('리셋 중복 실행 방지됨');
             return;
         }
         
         isResettingScore = true;
+        lastResetTime = now;
         console.log('최고 점수 리셋 시작');
         
         // 게임 오버 상태에서 재시작
         if (isGameOver) {
             restartGame();
-            setTimeout(() => { isResettingScore = false; }, 100);
+            setTimeout(() => { isResettingScore = false; }, 1000);
         } else {
             // 게임 중이면 최고점수 리셋 확인
             if (confirm('최고점수를 리셋하시겠습니까?')) {
                 ScoreManager.reset().then(() => {
                     console.log('ScoreManager를 통한 최고 점수 리셋 완료');
-                    setTimeout(() => { isResettingScore = false; }, 100);
+                    setTimeout(() => { isResettingScore = false; }, 1000);
                 }).catch(error => {
                     console.error('ScoreManager 리셋 실패:', error);
                     // 백업 리셋 방법
@@ -306,15 +324,15 @@ function setupMobileControls() {
                     localStorage.clear();
                     sessionStorage.clear();
                     console.log('백업 방법으로 최고 점수 리셋');
-                    setTimeout(() => { isResettingScore = false; }, 100);
+                    setTimeout(() => { isResettingScore = false; }, 1000);
                 });
             } else {
-                setTimeout(() => { isResettingScore = false; }, 100);
+                setTimeout(() => { isResettingScore = false; }, 1000);
             }
         }
     };
     
-    // 터치 이벤트만 사용 (모바일에서 클릭 이벤트 차단)
+    // 터치 이벤트만 사용
     mobileControls.btnReset.addEventListener('touchstart', (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -322,8 +340,15 @@ function setupMobileControls() {
         handleScoreReset();
     }, { passive: false });
     
-    // 데스크탑용 클릭 이벤트 (모바일에서는 무시)
-    if (!isMobile) {
+    // 모바일에서 클릭 이벤트 완전 차단
+    if (isMobile) {
+        mobileControls.btnReset.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('모바일에서 클릭 이벤트 차단됨');
+        });
+    } else {
+        // 데스크탑용 클릭 이벤트
         mobileControls.btnReset.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -332,8 +357,33 @@ function setupMobileControls() {
         });
     }
     
-    // 데스크탑용 마우스 이벤트 (모바일에서는 무시)
-    if (!isMobile) {
+    // 모바일에서 마우스 이벤트 완전 차단
+    if (isMobile) {
+        mobileControls.btnFire.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('모바일에서 시작/재시작 마우스 이벤트 차단됨');
+        });
+        
+        mobileControls.btnFire.addEventListener('mouseup', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('모바일에서 시작/재시작 마우스 이벤트 차단됨');
+        });
+        
+        mobileControls.btnPause.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('모바일에서 일시정지 마우스 이벤트 차단됨');
+        });
+        
+        mobileControls.btnPause.addEventListener('mouseup', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('모바일에서 일시정지 마우스 이벤트 차단됨');
+        });
+    } else {
+        // 데스크탑용 마우스 이벤트
         mobileControls.btnFire.addEventListener('mousedown', (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -2131,9 +2181,9 @@ function gameLoop() {
                 ctx.fillStyle = '#ffffff';
                 ctx.fillText(`최종 점수: ${score}`, canvas.width/2, canvas.height/2 - 20);
                 ctx.fillText(`충돌 횟수: ${collisionCount}`, canvas.width/2, canvas.height/2 + 20);
-                ctx.font = 'bold 24px Arial';
+                ctx.font = 'bold 20px Arial';
                 ctx.fillStyle = '#ffff00';                
-                ctx.fillText('재시작 버튼 누른 후 터치하여 재시작', canvas.width/2, canvas.height/2 + 80);
+                ctx.fillText('시작/재시작 버튼 누른 후 터치하여 재시작', canvas.width/2, canvas.height/2 + 80);
             }
         }
         if (gameLoopRunning) {
@@ -4639,10 +4689,10 @@ function drawStartScreen() {
     const isVisible = Math.floor(currentTime / blinkSpeed) % 2 === 0;
     
     if (isVisible) {
-        ctx.font = 'bold 24px Arial';
+        ctx.font = 'bold 20px Arial';
         ctx.fillStyle = '#ffff00';
         ctx.textAlign = 'center';
-        ctx.fillText('시작 버튼 누른 후 터치하여 시작', canvas.width/2, subtitleY);
+        ctx.fillText('시작/재시작작 버튼 누른 후 터치하여 시작', canvas.width/2, subtitleY);
     }
 
     // 조작법 안내
