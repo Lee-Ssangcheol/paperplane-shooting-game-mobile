@@ -316,24 +316,33 @@ function setupMobileControls() {
     mobileControls.btnReset.addEventListener('touchend', (e) => {
         e.preventDefault();
         e.stopPropagation();
-        
-        // 터치 종료 후 일정 시간 후에 플래그 리셋 (안전장치)
-        setTimeout(() => {
-            isResettingScore = false;
-        }, 1000);
     }, { passive: false });
     
-    // 모바일에서 click 이벤트 차단 (touchstart에서 처리하므로)
+    // 모바일에서는 click 이벤트를 완전히 차단
     if (isMobile) {
+        // 모바일에서 click 이벤트 리스너 제거
+        mobileControls.btnReset.onclick = null;
+        
+        // click 이벤트를 완전히 차단 (캡처 단계에서)
         mobileControls.btnReset.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            console.log('모바일에서 click 이벤트 차단됨');
+            e.stopImmediatePropagation();
+            console.log('모바일에서 click 이벤트 완전 차단됨');
             return false;
-        });
+        }, true); // 캡처 단계에서 차단
+        
+        // 추가로 mousedown 이벤트도 차단
+        mobileControls.btnReset.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            console.log('모바일에서 mousedown 이벤트 차단됨');
+            return false;
+        }, true);
     }
     
-    // 클릭 이벤트도 추가 (데스크탑용)
+    // 클릭 이벤트는 데스크탑에서만 추가
     if (!isMobile) {
         mobileControls.btnReset.addEventListener('click', (e) => {
             e.preventDefault();
