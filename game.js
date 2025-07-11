@@ -278,71 +278,73 @@ function setupMobileControls() {
     let lastResetTime = 0;
     const resetCooldown = 2000; // 2초 쿨다운
     
-    mobileControls.btnReset.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        console.log('재시작 버튼 터치');
-        
-        const currentTime = Date.now();
-        
-        // 중복 실행 방지 (시간 기반)
-        if (isResettingScore || (currentTime - lastResetTime) < resetCooldown) {
-            console.log('리셋 중복 실행 방지됨');
-            return;
-        }
-        
-        isResettingScore = true;
-        lastResetTime = currentTime;
-        
-        // 최고 점수 리셋 확인
-        if (confirm('최고 점수를 리셋하시겠습니까?')) {
-            ScoreManager.reset().then(() => {
-                console.log('ScoreManager를 통한 최고 점수 리셋 완료');
-                isResettingScore = false;
-            }).catch(error => {
-                console.error('ScoreManager 리셋 실패:', error);
-                // 백업 리셋 방법
-                highScore = 0;
-                localStorage.clear();
-                sessionStorage.clear();
-                console.log('백업 방법으로 최고 점수 리셋');
-                isResettingScore = false;
-            });
-        } else {
-            isResettingScore = false;
-        }
-    }, { passive: false });
-    
-    mobileControls.btnReset.addEventListener('touchend', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-    }, { passive: false });
-    
-    // 모바일에서는 click 이벤트를 완전히 차단
+    // 모바일에서만 touchstart 이벤트 사용
     if (isMobile) {
-        // 모바일에서 click 이벤트 리스너 제거
-        mobileControls.btnReset.onclick = null;
-        
-        // click 이벤트를 완전히 차단 (캡처 단계에서)
-        mobileControls.btnReset.addEventListener('click', (e) => {
+        mobileControls.btnReset.addEventListener('touchstart', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            e.stopImmediatePropagation();
-            console.log('모바일에서 click 이벤트 완전 차단됨');
-            return false;
-        }, true); // 캡처 단계에서 차단
-        
-        // 추가로 mousedown 이벤트도 차단
-        mobileControls.btnReset.addEventListener('mousedown', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            e.stopImmediatePropagation();
-            console.log('모바일에서 mousedown 이벤트 차단됨');
-            return false;
-        }, true);
+            console.log('재시작 버튼 터치 (모바일)');
+            
+            const currentTime = Date.now();
+            
+            // 중복 실행 방지 (시간 기반)
+            if (isResettingScore || (currentTime - lastResetTime) < resetCooldown) {
+                console.log('리셋 중복 실행 방지됨');
+                return;
+            }
+            
+            isResettingScore = true;
+            lastResetTime = currentTime;
+            
+            // 최고 점수 리셋 확인
+            if (confirm('최고 점수를 리셋하시겠습니까?')) {
+                ScoreManager.reset().then(() => {
+                    console.log('ScoreManager를 통한 최고 점수 리셋 완료');
+                    isResettingScore = false;
+                }).catch(error => {
+                    console.error('ScoreManager 리셋 실패:', error);
+                    // 백업 리셋 방법
+                    highScore = 0;
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    console.log('백업 방법으로 최고 점수 리셋');
+                    isResettingScore = false;
+                });
+            } else {
+                isResettingScore = false;
+            }
+        }, { passive: false });
     }
     
-    // 클릭 이벤트는 데스크탑에서만 추가
+    // 모바일에서만 touchend 이벤트 사용
+    if (isMobile) {
+        mobileControls.btnReset.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+        }, { passive: false });
+        
+        // 모바일에서 모든 마우스 이벤트 완전 차단
+        const blockMouseEvents = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            console.log('모바일에서 마우스 이벤트 차단됨:', e.type);
+            return false;
+        };
+        
+        // 모든 마우스 이벤트 차단
+        mobileControls.btnReset.addEventListener('mousedown', blockMouseEvents, true);
+        mobileControls.btnReset.addEventListener('mouseup', blockMouseEvents, true);
+        mobileControls.btnReset.addEventListener('click', blockMouseEvents, true);
+        mobileControls.btnReset.addEventListener('dblclick', blockMouseEvents, true);
+        
+        // onclick 속성도 제거
+        mobileControls.btnReset.onclick = null;
+        mobileControls.btnReset.onmousedown = null;
+        mobileControls.btnReset.onmouseup = null;
+    }
+    
+    // 클릭 이벤트는 데스크탑에서만 추가 (모바일에서는 완전히 차단됨)
     if (!isMobile) {
         mobileControls.btnReset.addEventListener('click', (e) => {
             e.preventDefault();
@@ -378,6 +380,19 @@ function setupMobileControls() {
                 isResettingScore = false;
             }
         });
+    }
+    
+    // 모바일에서 추가 안전장치: 전역 이벤트 리스너로 click 이벤트 차단
+    if (isMobile) {
+        document.addEventListener('click', (e) => {
+            if (e.target === mobileControls.btnReset) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                console.log('전역 이벤트 리스너에서 click 이벤트 차단됨');
+                return false;
+            }
+        }, true);
     }
     
     // 마우스 이벤트도 추가 (데스크탑용)
