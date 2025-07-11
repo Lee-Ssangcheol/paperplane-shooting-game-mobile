@@ -273,76 +273,57 @@ function setupMobileControls() {
         }
     });
     
-    // 최고 점수 리셋 - 간단하고 확실한 방법
-    let isResettingScore = false;
-    
-    // 리셋 함수 정의
-    const handleScoreReset = () => {
-        if (isResettingScore) {
-            console.log('리셋 중복 실행 방지됨');
-            return;
-        }
+    // 최고 점수 리셋 - 썬더볼트용 방식 적용
+    mobileControls.btnReset.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('재시작 버튼 터치');
         
-        isResettingScore = true;
-        console.log('최고 점수 리셋 시작');
-        
-        if (confirm('최고 점수를 리셋하시겠습니까?')) {
-            ScoreManager.reset().then(() => {
-                console.log('ScoreManager를 통한 최고 점수 리셋 완료');
-                isResettingScore = false;
-            }).catch(error => {
-                console.error('ScoreManager 리셋 실패:', error);
-                // 백업 리셋 방법
-                highScore = 0;
-                localStorage.clear();
-                sessionStorage.clear();
-                console.log('백업 방법으로 최고 점수 리셋');
-                isResettingScore = false;
-            });
+        // 게임 오버 상태에서 재시작
+        if (isGameOver) {
+            restartGame();
         } else {
-            isResettingScore = false;
-        }
-    };
-    
-    // 모바일: touchstart만 사용
-    if (isMobile) {
-        mobileControls.btnReset.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('모바일 터치 이벤트');
-            handleScoreReset();
-        }, { passive: false });
-        
-        // 모바일에서 모든 마우스 이벤트 차단
-        const blockAllMouseEvents = (e) => {
-            if (e.target === mobileControls.btnReset) {
-                e.preventDefault();
-                e.stopPropagation();
-                e.stopImmediatePropagation();
-                console.log('모바일에서 마우스 이벤트 차단됨:', e.type);
-                return false;
+            // 게임 중이면 최고점수 리셋 확인
+            if (confirm('최고점수를 리셋하시겠습니까?')) {
+                ScoreManager.reset().then(() => {
+                    console.log('ScoreManager를 통한 최고 점수 리셋 완료');
+                }).catch(error => {
+                    console.error('ScoreManager 리셋 실패:', error);
+                    // 백업 리셋 방법
+                    highScore = 0;
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    console.log('백업 방법으로 최고 점수 리셋');
+                });
             }
-        };
+        }
+    }, { passive: false });
+    
+    // 클릭 이벤트도 추가
+    mobileControls.btnReset.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('재시작 버튼 클릭');
         
-        // 전역에서 모든 마우스 이벤트 차단
-        document.addEventListener('mousedown', blockAllMouseEvents, true);
-        document.addEventListener('mouseup', blockAllMouseEvents, true);
-        document.addEventListener('click', blockAllMouseEvents, true);
-        document.addEventListener('dblclick', blockAllMouseEvents, true);
-        
-        // 버튼의 모든 이벤트 속성 제거
-        mobileControls.btnReset.onclick = null;
-        mobileControls.btnReset.onmousedown = null;
-        mobileControls.btnReset.onmouseup = null;
-    } else {
-        // 데스크탑: click만 사용
-        mobileControls.btnReset.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('데스크탑 클릭 이벤트');
-            handleScoreReset();
-        });
-    }
+        // 게임 오버 상태에서 재시작
+        if (isGameOver) {
+            restartGame();
+        } else {
+            // 게임 중이면 최고점수 리셋 확인
+            if (confirm('최고점수를 리셋하시겠습니까?')) {
+                ScoreManager.reset().then(() => {
+                    console.log('ScoreManager를 통한 최고 점수 리셋 완료');
+                }).catch(error => {
+                    console.error('ScoreManager 리셋 실패:', error);
+                    // 백업 리셋 방법
+                    highScore = 0;
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    console.log('백업 방법으로 최고 점수 리셋');
+                });
+            }
+        }
+    });
     
     // 마우스 이벤트도 추가 (데스크탑용)
     mobileControls.btnFire.addEventListener('mousedown', (e) => {
