@@ -119,11 +119,8 @@ body {
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
-  -webkit-tap-highlight-color: transparent;
   transition: all 0.2s;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-  /* 모바일에서 click 이벤트 방지 */
-  pointer-events: auto;
 }
 
 /* 특수무기키를 맨 앞으로 배치 */
@@ -252,3 +249,10 @@ body {
     transform: translateZ(0);
   }
 } 
+
+#resetModal button:active {
+  filter: brightness(0.8);
+}
+#resetModal button:focus {
+  outline: 2px solid #00ff00;
+}

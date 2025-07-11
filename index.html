@@ -46,5 +46,14 @@
     
     <script src="sounds.js"></script>
     <script src="game.js"></script>
+
+    <!-- 커스텀 최고 점수 리셋 모달 -->
+    <div id="resetModal" style="display:none; position:fixed; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
+      <div style="background:#111; border:3px solid #00ff00; border-radius:12px; padding:32px 24px; min-width:260px; text-align:center; box-shadow:0 0 20px #000;">
+        <div style="color:#fff; font-size:20px; margin-bottom:24px;">최고 점수를 리셋하시겠습니까?</div>
+        <button id="resetYes" style="background:#ff4444; color:#fff; border:none; border-radius:6px; padding:10px 28px; font-size:18px; margin-right:12px; cursor:pointer;">예</button>
+        <button id="resetNo" style="background:#444; color:#fff; border:none; border-radius:6px; padding:10px 28px; font-size:18px; cursor:pointer;">아니오</button>
+      </div>
+    </div>
 </body>
 </html> 
