@@ -273,46 +273,44 @@ function setupMobileControls() {
         }
     });
     
-    // 최고 점수 리셋 - 썬더볼트용 방식 적용
-    mobileControls.btnReset.addEventListener('touchstart', (e) => {
+    // 일시정지 버튼 터치 이벤트
+    mobileControls.btnPause.addEventListener('touchstart', (e) => {
         e.preventDefault();
         e.stopPropagation();
-        console.log('재시작 버튼 터치');
+        console.log('일시정지 버튼 터치');
         
-        // 게임 오버 상태에서 재시작
-        if (isGameOver) {
-            restartGame();
-        } else {
-            // 게임 중이면 최고점수 리셋 확인
-            if (confirm('최고점수를 리셋하시겠습니까?')) {
-                ScoreManager.reset().then(() => {
-                    console.log('ScoreManager를 통한 최고 점수 리셋 완료');
-                }).catch(error => {
-                    console.error('ScoreManager 리셋 실패:', error);
-                    // 백업 리셋 방법
-                    highScore = 0;
-                    localStorage.clear();
-                    sessionStorage.clear();
-                    console.log('백업 방법으로 최고 점수 리셋');
-                });
+        if (!isGameOver) {
+            isPaused = !isPaused;
+            if (isPaused) {
+                console.log('게임 일시정지됨');
+            } else {
+                console.log('게임 재개됨');
             }
         }
     }, { passive: false });
     
-    // 클릭 이벤트도 추가
-    mobileControls.btnReset.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        console.log('재시작 버튼 클릭');
+    // 최고 점수 리셋 - 중복 방지 로직 추가
+    let isResettingScore = false;
+    
+    const handleScoreReset = () => {
+        if (isResettingScore) {
+            console.log('리셋 중복 실행 방지됨');
+            return;
+        }
+        
+        isResettingScore = true;
+        console.log('최고 점수 리셋 시작');
         
         // 게임 오버 상태에서 재시작
         if (isGameOver) {
             restartGame();
+            isResettingScore = false;
         } else {
             // 게임 중이면 최고점수 리셋 확인
             if (confirm('최고점수를 리셋하시겠습니까?')) {
                 ScoreManager.reset().then(() => {
                     console.log('ScoreManager를 통한 최고 점수 리셋 완료');
+                    isResettingScore = false;
                 }).catch(error => {
                     console.error('ScoreManager 리셋 실패:', error);
                     // 백업 리셋 방법
@@ -320,9 +318,28 @@ function setupMobileControls() {
                     localStorage.clear();
                     sessionStorage.clear();
                     console.log('백업 방법으로 최고 점수 리셋');
+                    isResettingScore = false;
                 });
+            } else {
+                isResettingScore = false;
             }
         }
+    };
+    
+    // 터치 이벤트
+    mobileControls.btnReset.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('재시작 버튼 터치');
+        handleScoreReset();
+    }, { passive: false });
+    
+    // 클릭 이벤트
+    mobileControls.btnReset.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('재시작 버튼 클릭');
+        handleScoreReset();
     });
     
     // 마우스 이벤트도 추가 (데스크탑용)
