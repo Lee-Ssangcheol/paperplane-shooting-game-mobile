@@ -54,8 +54,16 @@ const EventThrottler = {
 
 // 모바일 전체화면 모드 활성화
 function enableFullscreen() {
+    // 이미 실행 중인지 확인
+    if (window.fullscreenActivating) {
+        console.log('전체화면 모드 활성화가 이미 진행 중입니다.');
+        return;
+    }
+    
     EventThrottler.throttle('fullscreen', () => {
         if (isMobile) {
+            // 실행 중 표시
+            window.fullscreenActivating = true;
             console.log('모바일 전체화면 모드 활성화 시작');
             
             // iOS Safari 전체화면 모드
@@ -115,6 +123,11 @@ function enableFullscreen() {
             }
             
             console.log('모바일 전체화면 모드 활성화 완료');
+            
+            // 1초 후 플래그 리셋
+            setTimeout(() => {
+                window.fullscreenActivating = false;
+            }, 1000);
         }
     }, 1000); // 1초 쿨다운
 }
@@ -177,6 +190,12 @@ console.log('모바일 컨트롤 요소들:', mobileControls);
 
 // 모바일 터치 컨트롤 이벤트 설정
 function setupMobileControls() {
+    // 이미 설정되었는지 확인
+    if (window.mobileControlsSetup) {
+        console.log('모바일 컨트롤이 이미 설정되어 있습니다.');
+        return;
+    }
+    
     console.log('모바일 컨트롤 설정 시작');
     console.log('isMobile:', isMobile);
     
@@ -184,6 +203,9 @@ function setupMobileControls() {
         console.log('데스크탑 환경이므로 모바일 컨트롤 설정 건너뜀');
         return;
     }
+    
+    // 설정 완료 표시
+    window.mobileControlsSetup = true;
     
     // 방향키 터치 이벤트
     mobileControls.btnUp.addEventListener('touchstart', (e) => {
@@ -5110,213 +5132,6 @@ function setSoundControlActive(active) {
 // 이벤트 리스너 등록
 document.addEventListener('keydown', handleGameInput);
 document.addEventListener('keyup', handleGameInputRelease);
-
-// 게임 초기화 함수 수정
-async function initializeGame() {
-    console.log('게임 초기화 시작');
-    isGameActive = true;
-    isSoundControlActive = false;
-    
-    try {
-        // 이미지 로딩
-        await loadGameImages();
-        
-        // 모바일 컨트롤 설정
-        setupMobileControls();
-        
-        // 모바일에서 터치 드래그 컨트롤 설정
-        if (isMobile) {
-            setupTouchDragControls();
-        }
-        
-        // 종료 이벤트 핸들러 설정
-        setupExitHandlers();
-        
-        // 최고 점수 로드
-        highScore = await loadHighScore();
-        console.log('초기화된 최고 점수:', highScore);
-        
-        // === 모든 게임 요소 완전 초기화 ===
-        
-        // 1. 충돌 및 게임 상태 초기화
-        collisionCount = 0;
-        maxLives = 5;  // 최대 목숨 초기화
-        hasSecondPlane = false;
-        secondPlaneTimer = 0;
-        
-        // 2. 모든 배열 완전 초기화
-        score = 0;
-        levelScore = 0;
-        scoreForSpread = 0;
-        bullets = [];           // 총알 배열 초기화
-        enemies = [];           // 적 비행기 배열 초기화
-        bossBullets = [];       // 보스 총알 배열 초기화
-        explosions = [];        // 폭발 효과 배열 초기화
-        bombs = [];             // 폭탄 배열 초기화
-        dynamites = [];         // 다이나마이트 배열 초기화
-        powerUps = [];          // 파워업 배열 초기화
-        snakeEnemies = [];      // 뱀 패턴 적 배열 초기화
-        snakeGroups = [];       // 뱀 패턴 그룹 배열 초기화
-        enemyMissiles = [];     // 적 미사일 배열 초기화
-        shieldedEnemies = [];   // 방어막 적 배열 초기화
-        
-        // 3. 게임 상태 초기화
-        isGameOver = false;
-        isPaused = false;
-        gameStarted = false;  // 게임 시작 상태 초기화
-        flashTimer = 0;
-        gameOverStartTime = null;
-        
-        // 4. 뱀 패턴 상태 초기화
-        isSnakePatternActive = false;
-        snakePatternTimer = 0;
-        snakePatternInterval = 0;
-        lastSnakeGroupTime = 0;
-        
-        // 5. 보스 관련 상태 완전 초기화
-        bossActive = false;
-        bossHealth = 0;
-        bossDestroyed = false;
-        bossPattern = 0;
-        lastBossSpawnTime = Date.now();
-               
-        // 6. 플레이어 초기 위치 설정
-        player.x = canvas.width / 2 - player.width / 2;
-        player.y = canvas.height - player.height - 10;
-        secondPlane.x = canvas.width / 2 - 60 - player.width / 2;
-        secondPlane.y = canvas.height - secondPlane.height - 10;
-        
-        // 7. 게임 타이머 초기화
-        lastEnemySpawnTime = 0;
-        lastShieldedEnemySpawnTime = 0;
-        
-        // 8. 파워업 상태 초기화
-        hasSpreadShot = false;
-        hasShield = false;
-        damageMultiplier = 1;
-        fireRateMultiplier = 1;
-        
-        // 9. 발사 관련 상태 초기화
-        lastFireTime = 0;
-        isSpacePressed = false;
-        spacePressTime = 0;
-        fireDelay = 600;
-        continuousFireDelay = 50;
-        bulletSpeed = 12 * mobileSpeedMultiplier;
-        baseBulletSize = 4.5;
-        isContinuousFire = false;
-        canFire = true;
-        lastReleaseTime = 0;
-        singleShotCooldown = 500;
-        minPressDuration = 200;
-        minReleaseDuration = 100;
-        
-        // 10. 특수무기 관련 상태 초기화
-        specialWeaponCharged = false;
-        specialWeaponCharge = 0;
-        
-        // 11. 키보드 입력 상태 초기화
-        Object.keys(keys).forEach(key => {
-            keys[key] = false;
-        });
-        
-        // 12. 사운드 관련 상태 초기화
-        lastCollisionTime = 0;
-        lastExplosionTime = 0;
-        
-        // 13. 패턴 추적 시스템 초기화
-        levelBossPatterns.usedPatterns = [];
-        levelBossPatterns.currentLevelPattern = null;
-        
-        console.log('게임 상태 초기화 완료');
-        console.log('초기화된 상태:', {
-            enemies: enemies.length,
-            bullets: bullets.length,
-            explosions: explosions.length,
-            bombs: bombs.length,
-            dynamites: dynamites.length,
-            powerUps: powerUps.length,
-            snakeGroups: snakeGroups.length,
-            bossActive: bossActive,
-            isSnakePatternActive: isSnakePatternActive
-        });
-        
-        // 게임 루프 시작
-        startGameLoop();
-        console.log('게임 루프 시작됨');
-        
-    } catch (error) {
-        console.error('게임 초기화 중 오류:', error);
-    }
-}
-
-// 게임 오버 처리 함수 수정
-function handleGameOver() {
-    if (!isGameOver) {
-        isGameOver = true;
-        gameOverStartTime = Date.now();
-        
-        // 최고 점수 저장
-        const finalScore = Math.max(score, highScore);
-        if (finalScore > 0) {
-            saveHighScoreDirectly(finalScore, 'handleGameOver');
-        }
-        
-        console.log('게임 오버 - 최종 점수:', score, '최고 점수:', highScore);
-        
-        // 게임 오버 시 사운드 컨트롤 상태 초기화
-        isSoundControlActive = false;
-        
-        // 게임 오버 시 캔버스에 포커스
-        document.getElementById('gameCanvas').focus();
-    }
-}
-
-// 게임 재시작 함수 수정
-function restartGame() {
-    // 게임 상태 초기화
-    isGameActive = true;
-    isSoundControlActive = false;
-    isGameOver = false;
-    gameLoopRunning = false; // 게임 루프 중복 실행 방지
-    
-    console.log('게임 재시작 - 재시작 전 최고 점수:', highScore);
-    
-    // 현재 최고 점수 저장
-    const currentHighScore = Math.max(score, highScore);
-    if (currentHighScore > 0) {
-        saveHighScoreDirectly(currentHighScore, 'restartGame');
-    }
-    
-    // === 모든 게임 요소 완전 초기화 ===
-    
-    // 1. 충돌 및 게임 상태 초기화
-    collisionCount = 0;
-    maxLives = 5;  // 최대 목숨 초기화
-    hasSecondPlane = false;
-    secondPlaneTimer = 0;
-    
-    // 2. 모든 배열 완전 초기화
-    enemies = [];           // 적 비행기 배열 초기화
-    bullets = [];           // 총알 배열 초기화
-    bossBullets = [];       // 보스 총알 배열 초기화
-    explosions = [];        // 폭발 효과 배열 초기화
-    bombs = [];             // 폭탄 배열 초기화
-    dynamites = [];         // 다이나마이트 배열 초기화
-    powerUps = [];          // 파워업 배열 초기화
-    snakeEnemies = [];      // 뱀 패턴 적 배열 초기화
-    snakeGroups = [];       // 뱀 패턴 그룹 배열 초기화
-    enemyMissiles = [];     // 적 미사일 배열 초기화
-    shieldedEnemies = [];   // 방어막 적 배열 초기화
-    
-    // 3. 플레이어 위치 초기화
-    player.x = canvas.width / 2;
-    player.y = canvas.height - player.height - 10;  // 10에서 player.height + 10으로 변경하여 캔버스 하단에서 10픽셀 위에 위치
-    secondPlane.x = canvas.width / 2 - 60;
-    secondPlane.y = canvas.height - secondPlane.height - 10;  // 10에서 secondPlane.height + 10으로 변경하여 캔버스 하단에서 10픽셀 위에 위치
-    
-    // 4. 게임 타이머 및 상태 초기화
-    gameOverStartTime = null;
     flashTimer = 0;
     lastEnemySpawnTime = 0;
     lastShieldedEnemySpawnTime = 0;
