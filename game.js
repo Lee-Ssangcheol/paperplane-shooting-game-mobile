@@ -9,6 +9,29 @@ const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/
 // 모바일 속도 조절 (60% 속도)
 const mobileSpeedMultiplier = isMobile ? 0.6 : 1.0;
 
+// 전역 중복 방지 시스템
+const EventThrottler = {
+    events: new Map(),
+    
+    throttle: function(eventName, callback, delay = 300) {
+        const now = Date.now();
+        const lastTime = this.events.get(eventName) || 0;
+        
+        if (now - lastTime < delay) {
+            console.log(`${eventName} 중복 실행 방지됨`);
+            return false;
+        }
+        
+        this.events.set(eventName, now);
+        callback();
+        return true;
+    },
+    
+    clear: function(eventName) {
+        this.events.delete(eventName);
+    }
+};
+
 // 모바일 전체화면 모드 활성화
 function enableFullscreen() {
     if (isMobile) {
@@ -177,38 +200,26 @@ function setupMobileControls() {
         keys.ArrowRight = false;
     }, { passive: false });
     
-    // 시작/재시작 버튼 - 중복 방지
-    let isFirePressed = false;
-    let lastFireTime = 0;
-    const fireCooldown = 300; // 300ms 쿨다운
-    
+    // 시작/재시작 버튼 - 전역 중복 방지 사용
     const handleFire = () => {
-        const now = Date.now();
-        if (isFirePressed || (now - lastFireTime) < fireCooldown) {
-            console.log('시작/재시작 중복 실행 방지됨');
-            return;
-        }
-        
-        isFirePressed = true;
-        lastFireTime = now;
-        console.log('시작/재시작 버튼 실행');
-        
-        // 시작 화면에서 버튼을 누르면 게임 시작
-        if (isStartScreen) {
-            isStartScreen = false;
-            console.log('모바일에서 게임 시작');
-            // 전체화면 전환
-            enableFullscreen();
-        }
-        
-        // 게임 오버 상태에서 재시작
-        if (isGameOver) {
-            restartGame();
-            // 전체화면 전환
-            enableFullscreen();
-        }
-        
-        setTimeout(() => { isFirePressed = false; }, 500);
+        EventThrottler.throttle('fire', () => {
+            console.log('시작/재시작 버튼 실행');
+            
+            // 시작 화면에서 버튼을 누르면 게임 시작
+            if (isStartScreen) {
+                isStartScreen = false;
+                console.log('모바일에서 게임 시작');
+                // 전체화면 전환
+                enableFullscreen();
+            }
+            
+            // 게임 오버 상태에서 재시작
+            if (isGameOver) {
+                restartGame();
+                // 전체화면 전환
+                enableFullscreen();
+            }
+        }, 500);
     };
     
     mobileControls.btnFire.addEventListener('touchstart', (e) => {
@@ -226,11 +237,31 @@ function setupMobileControls() {
     
     // 모바일에서 클릭 이벤트 완전 차단
     if (isMobile) {
+        // 모바일에서 모든 클릭 이벤트 차단
         mobileControls.btnFire.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
+            e.stopImmediatePropagation();
             console.log('모바일에서 시작/재시작 클릭 이벤트 차단됨');
-        });
+            return false;
+        }, true);
+        
+        // 모바일에서 모든 마우스 이벤트 차단
+        mobileControls.btnFire.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            console.log('모바일에서 시작/재시작 마우스 이벤트 차단됨');
+            return false;
+        }, true);
+        
+        mobileControls.btnFire.addEventListener('mouseup', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            console.log('모바일에서 시작/재시작 마우스 이벤트 차단됨');
+            return false;
+        }, true);
     } else {
         // 데스크탑용 클릭 이벤트
         mobileControls.btnFire.addEventListener('click', (e) => {
@@ -250,32 +281,20 @@ function setupMobileControls() {
         keys.KeyB = false;
     }, { passive: false });
     
-    // 일시정지 버튼 - 중복 방지
-    let isPausePressed = false;
-    let lastPauseTime = 0;
-    const pauseCooldown = 300; // 300ms 쿨다운
-    
+    // 일시정지 버튼 - 전역 중복 방지 사용
     const handlePause = () => {
-        const now = Date.now();
-        if (isPausePressed || (now - lastPauseTime) < pauseCooldown) {
-            console.log('일시정지 중복 실행 방지됨');
-            return;
-        }
-        
-        isPausePressed = true;
-        lastPauseTime = now;
-        console.log('일시정지 버튼 실행');
-        
-        if (!isGameOver) {
-            isPaused = !isPaused;
-            if (isPaused) {
-                console.log('게임 일시정지됨');
-            } else {
-                console.log('게임 재개됨');
+        EventThrottler.throttle('pause', () => {
+            console.log('일시정지 버튼 실행');
+            
+            if (!isGameOver) {
+                isPaused = !isPaused;
+                if (isPaused) {
+                    console.log('게임 일시정지됨');
+                } else {
+                    console.log('게임 재개됨');
+                }
             }
-        }
-        
-        setTimeout(() => { isPausePressed = false; }, 500);
+        }, 300);
     };
     
     mobileControls.btnPause.addEventListener('touchstart', (e) => {
@@ -292,11 +311,31 @@ function setupMobileControls() {
     
     // 모바일에서 클릭 이벤트 완전 차단
     if (isMobile) {
+        // 모바일에서 모든 클릭 이벤트 차단
         mobileControls.btnPause.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
+            e.stopImmediatePropagation();
             console.log('모바일에서 일시정지 클릭 이벤트 차단됨');
-        });
+            return false;
+        }, true);
+        
+        // 모바일에서 모든 마우스 이벤트 차단
+        mobileControls.btnPause.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            console.log('모바일에서 일시정지 마우스 이벤트 차단됨');
+            return false;
+        }, true);
+        
+        mobileControls.btnPause.addEventListener('mouseup', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            console.log('모바일에서 일시정지 마우스 이벤트 차단됨');
+            return false;
+        }, true);
     } else {
         // 데스크탑용 클릭 이벤트
         mobileControls.btnPause.addEventListener('click', (e) => {
@@ -307,45 +346,30 @@ function setupMobileControls() {
         });
     }
     
-    // 최고 점수 리셋 - 강력한 중복 방지
-    let isResettingScore = false;
-    let lastResetTime = 0;
-    const resetCooldown = 500; // 500ms 쿨다운
-    
+    // 최고 점수 리셋 - 전역 중복 방지 사용
     const handleScoreReset = () => {
-        const now = Date.now();
-        if (isResettingScore || (now - lastResetTime) < resetCooldown) {
-            console.log('리셋 중복 실행 방지됨');
-            return;
-        }
-        
-        isResettingScore = true;
-        lastResetTime = now;
-        console.log('최고 점수 리셋 시작');
-        
-        // 게임 오버 상태에서 재시작
-        if (isGameOver) {
-            restartGame();
-            setTimeout(() => { isResettingScore = false; }, 1000);
-        } else {
-            // 게임 중이면 최고점수 리셋 확인
-            if (confirm('최고점수를 리셋하시겠습니까?')) {
-                ScoreManager.reset().then(() => {
-                    console.log('ScoreManager를 통한 최고 점수 리셋 완료');
-                    setTimeout(() => { isResettingScore = false; }, 1000);
-                }).catch(error => {
-                    console.error('ScoreManager 리셋 실패:', error);
-                    // 백업 리셋 방법
-                    highScore = 0;
-                    localStorage.clear();
-                    sessionStorage.clear();
-                    console.log('백업 방법으로 최고 점수 리셋');
-                    setTimeout(() => { isResettingScore = false; }, 1000);
-                });
+        EventThrottler.throttle('reset', () => {
+            console.log('최고 점수 리셋 시작');
+            
+            // 게임 오버 상태에서 재시작
+            if (isGameOver) {
+                restartGame();
             } else {
-                setTimeout(() => { isResettingScore = false; }, 1000);
+                // 게임 중이면 최고점수 리셋 확인
+                if (confirm('최고점수를 리셋하시겠습니까?')) {
+                    ScoreManager.reset().then(() => {
+                        console.log('ScoreManager를 통한 최고 점수 리셋 완료');
+                    }).catch(error => {
+                        console.error('ScoreManager 리셋 실패:', error);
+                        // 백업 리셋 방법
+                        highScore = 0;
+                        localStorage.clear();
+                        sessionStorage.clear();
+                        console.log('백업 방법으로 최고 점수 리셋');
+                    });
+                }
             }
-        }
+        }, 800);
     };
     
     // 터치 이벤트만 사용
@@ -358,11 +382,31 @@ function setupMobileControls() {
     
     // 모바일에서 클릭 이벤트 완전 차단
     if (isMobile) {
+        // 모바일에서 모든 클릭 이벤트 차단
         mobileControls.btnReset.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            console.log('모바일에서 클릭 이벤트 차단됨');
-        });
+            e.stopImmediatePropagation();
+            console.log('모바일에서 리셋 클릭 이벤트 차단됨');
+            return false;
+        }, true);
+        
+        // 모바일에서 모든 마우스 이벤트 차단
+        mobileControls.btnReset.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            console.log('모바일에서 리셋 마우스 이벤트 차단됨');
+            return false;
+        }, true);
+        
+        mobileControls.btnReset.addEventListener('mouseup', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            console.log('모바일에서 리셋 마우스 이벤트 차단됨');
+            return false;
+        }, true);
     } else {
         // 데스크탑용 클릭 이벤트
         mobileControls.btnReset.addEventListener('click', (e) => {
@@ -373,33 +417,8 @@ function setupMobileControls() {
         });
     }
     
-    // 모바일에서 마우스 이벤트 완전 차단
-    if (isMobile) {
-        mobileControls.btnFire.addEventListener('mousedown', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('모바일에서 시작/재시작 마우스 이벤트 차단됨');
-        });
-        
-        mobileControls.btnFire.addEventListener('mouseup', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('모바일에서 시작/재시작 마우스 이벤트 차단됨');
-        });
-        
-        mobileControls.btnPause.addEventListener('mousedown', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('모바일에서 일시정지 마우스 이벤트 차단됨');
-        });
-        
-        mobileControls.btnPause.addEventListener('mouseup', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('모바일에서 일시정지 마우스 이벤트 차단됨');
-        });
-    } else {
-        // 데스크탑용 마우스 이벤트
+    // 데스크탑용 마우스 이벤트
+    if (!isMobile) {
         mobileControls.btnFire.addEventListener('mousedown', (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -4694,7 +4713,7 @@ function drawStartScreen() {
         ctx.font = 'bold 20px Arial';
         ctx.fillStyle = '#ffff00';
         ctx.textAlign = 'center';
-        ctx.fillText('시작/재시작작 버튼 누른 후 터치하여 시작', canvas.width/2, subtitleY);
+        ctx.fillText('시작/재시작 버튼 누른 후 터치하여 시작', canvas.width/2, subtitleY);
     }
 
     // 조작법 안내
