@@ -9,81 +9,11 @@ const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/
 // 모바일 속도 조절 (60% 속도)
 const mobileSpeedMultiplier = isMobile ? 0.6 : 1.0;
 
-// 전체화면 상태 추적 변수 추가
+// 전체화면 상태 추적 변수
 let isFullscreenActive = false;
 let fullscreenReactivationPending = false;
 let lastFullscreenAttempt = 0;
 const FULLSCREEN_COOLDOWN = 1000; // 전체화면 재시도 간격 (1초)
-
-// 모바일 전체화면 모드 활성화
-function enableFullscreen() {
-    if (!isMobile) {
-        console.log('데스크탑 환경이므로 전체화면 모드 건너뜀');
-        return;
-    }
-
-    // 쿨다운 체크
-    const currentTime = Date.now();
-    if (currentTime - lastFullscreenAttempt < FULLSCREEN_COOLDOWN) {
-        console.log('전체화면 재시도 쿨다운 중...');
-        return;
-    }
-    lastFullscreenAttempt = currentTime;
-
-    console.log('모바일 전체화면 모드 활성화 시도');
-    
-    // 이미 전체화면 상태인지 확인
-    if (isFullscreenActive) {
-        console.log('이미 전체화면 모드가 활성화되어 있습니다.');
-        return;
-    }
-
-    try {
-        // iOS Safari 전체화면 모드
-        if (document.documentElement.requestFullscreen) {
-            document.documentElement.requestFullscreen().then(() => {
-                isFullscreenActive = true;
-                fullscreenReactivationPending = false;
-                console.log('전체화면 모드 활성화 성공 (requestFullscreen)');
-            }).catch(err => {
-                console.log('전체화면 모드 실패 (requestFullscreen):', err);
-            });
-        }
-        
-        // iOS Safari에서 주소창 숨김
-        if (window.navigator.standalone) {
-            document.body.style.position = 'fixed';
-            document.body.style.top = '0';
-            document.body.style.left = '0';
-            document.body.style.width = '100vw';
-            document.body.style.height = '100vh';
-            isFullscreenActive = true;
-            console.log('iOS Safari 주소창 숨김 적용');
-        }
-        
-        // Android Chrome 전체화면 모드
-        if (document.documentElement.webkitRequestFullscreen) {
-            document.documentElement.webkitRequestFullscreen().then(() => {
-                isFullscreenActive = true;
-                fullscreenReactivationPending = false;
-                console.log('전체화면 모드 활성화 성공 (webkitRequestFullscreen)');
-            }).catch(err => {
-                console.log('webkit 전체화면 모드 실패:', err);
-            });
-        }
-        
-        // 화면 방향 고정 (세로 모드)
-        if (screen.orientation && screen.orientation.lock) {
-            screen.orientation.lock('portrait').catch(err => {
-                console.log('화면 방향 고정 실패:', err);
-            });
-        }
-        
-        console.log('모바일 전체화면 모드 활성화 시도 완료');
-    } catch (error) {
-        console.error('전체화면 모드 활성화 중 오류:', error);
-    }
-}
 
 // 전체화면 상태 확인 함수
 function checkFullscreenState() {
@@ -111,6 +41,14 @@ function reactivateFullscreen() {
         return;
     }
     
+    // 쿨다운 체크
+    const currentTime = Date.now();
+    if (currentTime - lastFullscreenAttempt < FULLSCREEN_COOLDOWN) {
+        console.log('전체화면 재시도 쿨다운 중...');
+        return;
+    }
+    lastFullscreenAttempt = currentTime;
+    
     console.log('전체화면 재활성화 시도');
     fullscreenReactivationPending = true;
     
@@ -120,6 +58,80 @@ function reactivateFullscreen() {
             enableFullscreen();
         }
     }, 500);
+}
+
+// 모바일 전체화면 모드 활성화
+function enableFullscreen() {
+    if (!isMobile) {
+        console.log('데스크탑 환경이므로 전체화면 모드 건너뜀');
+        return;
+    }
+
+    // 쿨다운 체크
+    const currentTime = Date.now();
+    if (currentTime - lastFullscreenAttempt < FULLSCREEN_COOLDOWN) {
+        console.log('전체화면 재시도 쿨다운 중...');
+        return;
+    }
+    lastFullscreenAttempt = currentTime;
+
+    console.log('모바일 전체화면 모드 활성화 시도');
+    
+    // 이미 전체화면 상태인지 확인
+    if (isFullscreenActive) {
+        console.log('이미 전체화면 모드가 활성화되어 있습니다.');
+        return;
+    }
+
+    try {
+        // iOS Safari, Android Chrome 등
+        if (document.documentElement.requestFullscreen) {
+            // Promise 반환 여부 체크
+            const result = document.documentElement.requestFullscreen();
+            if (result && typeof result.then === 'function') {
+                result.then(() => {
+                    isFullscreenActive = true;
+                    fullscreenReactivationPending = false;
+                    console.log('전체화면 모드 활성화 성공 (requestFullscreen)');
+                }).catch(err => {
+                    console.log('전체화면 모드 실패 (requestFullscreen):', err);
+                });
+            } else {
+                // 일부 브라우저는 Promise를 반환하지 않음
+                isFullscreenActive = true;
+                fullscreenReactivationPending = false;
+                console.log('전체화면 모드 활성화 성공 (requestFullscreen, non-promise)');
+            }
+        } else if (document.documentElement.webkitRequestFullscreen) {
+            // webkit 브라우저
+            document.documentElement.webkitRequestFullscreen();
+            isFullscreenActive = true;
+            fullscreenReactivationPending = false;
+            console.log('전체화면 모드 활성화 성공 (webkitRequestFullscreen)');
+        }
+
+        // iOS Safari에서 주소창 숨김
+        if (window.navigator.standalone) {
+            document.body.style.position = 'fixed';
+            document.body.style.top = '0';
+            document.body.style.left = '0';
+            document.body.style.width = '100vw';
+            document.body.style.height = '100vh';
+            isFullscreenActive = true;
+            console.log('iOS Safari 주소창 숨김 적용');
+        }
+
+        // 화면 방향 고정 (세로 모드)
+        if (screen.orientation && screen.orientation.lock) {
+            screen.orientation.lock('portrait').catch(err => {
+                console.log('화면 방향 고정 실패:', err);
+            });
+        }
+
+        console.log('모바일 전체화면 모드 활성화 시도 완료');
+    } catch (error) {
+        console.error('전체화면 모드 활성화 중 오류:', error);
+    }
 }
 
 // 전체화면 이벤트 리스너 설정
@@ -415,11 +427,6 @@ function setupMobileControls() {
         e.preventDefault();
         e.stopPropagation();
         console.log('시작/재시작 버튼 마우스 다운');
-        
-        // 전체화면 재활성화 시도
-        if (isMobile && !isFullscreenActive) {
-            reactivateFullscreen();
-        }
         
         if (isStartScreen) {
             isStartScreen = false;
@@ -1296,11 +1303,11 @@ async function initializeGame() {
         console.log('게임 루프 시작됨');
         
         // 모바일에서 전체화면 모드 활성화
-        if (isMobile) {
-            setTimeout(() => {
-                enableFullscreen();
-            }, 1000);
-        }
+        //if (isMobile) {
+        //    setTimeout(() => {
+        //        enableFullscreen();
+        //    }, 1000);
+        //}
         
     } catch (error) {
         console.error('게임 초기화 중 오류:', error);
@@ -1312,9 +1319,9 @@ window.addEventListener('DOMContentLoaded', () => {
     // 모바일에서 전체화면 모드 활성화
     if (isMobile) {
         // 페이지 로드 후 약간의 지연을 두고 전체화면 모드 활성화
-        setTimeout(() => {
-            enableFullscreen();
-        }, 1000);
+        //setTimeout(() => {
+        //    enableFullscreen();
+        //}, 1000);
         
         // 사용자 상호작용 후 전체화면 모드 활성화 (iOS Safari 요구사항)
         document.addEventListener('touchstart', () => {
@@ -3425,7 +3432,7 @@ window.addEventListener('load', async () => {
                 isMuted = (globalVolume === 0);
                 applyGlobalVolume();
                 volumeValue.textContent = Math.round(globalVolume * 100) + '%';
-                muteBtn.textContent = isMuted ? '🔇 전체 음소거 해제' : '🔊 전체 음소거';
+                muteBtn.textContent = isMuted ? '🔇 전체 음소거' : '🔊 전체 음소거';
             });
 
             // 마우스 조작이 끝난 직후(마우스가 어디에 있든) 항상 포커스 이동
@@ -3495,7 +3502,6 @@ document.addEventListener('keydown', (e) => {
         activeElement.id === 'muteBtn' ||
         activeElement.closest('#soundPanel')
     );
-    
 
     if (isSoundPanelFocused) {
         return;
@@ -3588,6 +3594,764 @@ document.addEventListener('keyup', (e) => {
     }
 });
 */
+
+// 게임 오버 시 점수 처리 수정
+function handleGameOver() {
+    if (!isGameOver) {
+        isGameOver = true;
+        gameOverStartTime = Date.now();
+        
+        // 최고 점수 저장
+        const finalScore = Math.max(score, highScore);
+        if (finalScore > 0) {
+            saveHighScoreDirectly(finalScore, 'handleGameOver');
+        }
+        
+        console.log('게임 오버 - 최종 점수:', score, '최고 점수:', highScore);
+        
+        // 게임 오버 시 사운드 컨트롤 상태 초기화
+        isSoundControlActive = false;
+        
+        // 게임 오버 시 캔버스에 포커스
+        document.getElementById('gameCanvas').focus();
+    }
+}
+
+// 점수 증가 함수 수정
+function updateScore(points) {
+    score += points;
+    scoreForSpread += points;
+    levelScore += points;
+    
+    // 특수 무기 게이지 증가
+    if (!specialWeaponCharged) {
+        specialWeaponCharge += points;
+        if (specialWeaponCharge >= SPECIAL_WEAPON_MAX_CHARGE) {
+            specialWeaponCharged = true;
+            specialWeaponCharge = SPECIAL_WEAPON_MAX_CHARGE;
+        }
+    }
+    
+    // 최고 점수 즉시 업데이트 및 저장
+    if (score > highScore) {
+        highScore = score;
+        saveHighScoreDirectly(highScore, 'updateScore');
+    }
+}
+
+// 두 번째 비행기 처리 함수 추가
+function handleSecondPlane() {
+    // 주기적으로 상태 출력 (너무 자주 출력되지 않도록 조건 추가)
+    if (Math.random() < 0.001) { // 0.1% 확률로만 로그 출력
+        console.log('추가 비행기 상태 체크:', {
+            score: score,
+            scoreMod4000: score % 4000,
+            hasSecondPlane: hasSecondPlane,
+            nextPlaneScore: Math.ceil(score / 4000) * 4000,
+            remainingPoints: Math.ceil(score / 4000) * 4000 - score
+        });
+    }
+    
+    // 디버깅을 위한 로그 추가
+    if (score >= 4000 && score % 4000 === 0 && !hasSecondPlane) {
+        console.log('추가 비행기 획득 조건 만족:', {
+            score: score,
+            scoreMod4000: score % 4000,
+            hasSecondPlane: hasSecondPlane
+        });
+        hasSecondPlane = true;
+        secondPlane.x = player.x - 60;
+        secondPlane.y = player.y;
+        secondPlaneTimer = Date.now(); // 타이머 시작
+        console.log('추가 비행기 활성화:', {
+            x: secondPlane.x,
+            y: secondPlane.y,
+            timer: secondPlaneTimer
+        });
+        // 두 번째 비행기 획득 메시지
+        ctx.fillStyle = 'yellow';
+        ctx.font = '40px Arial';
+        ctx.fillText('추가 비행기 획득!', canvas.width/2 - 150, canvas.height/2 + 100);  // +100 추가
+    }
+
+    if (hasSecondPlane) {
+        const elapsedTime = Date.now() - secondPlaneTimer;
+        if (elapsedTime >= 10000) { // 10초 체크
+            console.log('추가 비행기 시간 만료:', {
+                elapsedTime: elapsedTime,
+                maxTime: 10000
+            });
+            hasSecondPlane = false;
+            // 두 번째 비행기 소멸 메시지
+            ctx.fillStyle = 'red';
+            ctx.font = '40px Arial';
+            ctx.fillText('추가 비행기 소멸!', canvas.width/2 - 150, canvas.height/2 + 100);  // +100 추가
+        }
+    }
+}
+
+// 확산탄 처리 함수 추가
+function handleSpreadShot() {
+    if (scoreForSpread >= 2000) {
+        // 8발의 확산탄을 원형으로 발사
+        for (let i = 0; i < 8; i++) {
+            const angle = (i * 45) * (Math.PI / 180);
+            const missile = {
+                x: player.x + player.width/2,
+                y: player.y,
+                width: 10,
+                height: 25,
+                speed: 12,
+                angle: angle,
+                isSpread: true
+            };
+            bullets.push(missile);
+
+            // 두 번째 비행기가 있으면 확산탄 발사
+            if (hasSecondPlane) {
+                const secondMissile = {
+                    x: secondPlane.x + secondPlane.width/2,
+                    y: secondPlane.y,
+                    width: 10,
+                    height: 25,
+                    speed: 12,
+                    angle: angle,
+                    isSpread: true
+                };
+                bullets.push(secondMissile);
+            }
+        }
+        applyGlobalVolume();
+        shootSound.currentTime = 0;
+        shootSound.play().catch(error => {
+            console.log('오디오 재생 실패:', error);
+        });
+        scoreForSpread = 0;
+    }
+}
+
+// 총알 이동 및 충돌 체크 함수 수정
+function handleBullets() {
+    bullets = bullets.filter(bullet => {
+        if (bullet.isSpecial) {
+            // 특수 무기 총알 이동 및 효과 (최적화: 복잡한 효과 제거)
+            bullet.x += Math.cos(bullet.angle) * bullet.speed;
+            bullet.y += Math.sin(bullet.angle) * bullet.speed;
+            
+            // 총알 그리기 (최적화: 단순한 사각형)
+            ctx.fillStyle = '#00ffff';
+            ctx.fillRect(bullet.x - bullet.width/2, bullet.y - bullet.height/2, bullet.width, bullet.height);
+            
+            // 총알 지속 시간 감소
+            bullet.life--;
+            if (bullet.life <= 0) return false;
+        } else if (bullet.isSpread) {
+            // 확산탄 이동 (최적화: 단순한 그리기)
+            bullet.x += Math.sin(bullet.angle) * bullet.speed;
+            bullet.y -= Math.cos(bullet.angle) * bullet.speed;
+            ctx.fillStyle = '#ff4444';
+            ctx.fillRect(bullet.x - bullet.width/2, bullet.y - bullet.height/2, bullet.width, bullet.height);
+        } else {
+            // 일반 총알 이동 (최적화: 크기에 따른 그리기 방식 변경)
+            bullet.y -= bullet.speed;
+            
+            // 큰 총알일 때는 단순한 원형으로 그리기 (성능 향상)
+            if (bullet.width > 6) {
+                ctx.fillStyle = 'yellow';
+                ctx.beginPath();
+                ctx.arc(bullet.x, bullet.y, bullet.width/2, 0, Math.PI * 2);
+                ctx.fill();
+            } else {
+                // 작은 총알은 기존 방식 유지
+                ctx.fillStyle = 'yellow';
+                ctx.fillRect(bullet.x - bullet.width/2, bullet.y - bullet.height/2, bullet.width, bullet.height);
+            }
+        }
+        
+        // 보스 총알과 플레이어 충돌 체크는 별도 함수에서 처리
+        
+        // 폭탄과 총알 충돌 체크 (최적화: 중복 재생 방지)
+        bombs = bombs.filter(bomb => {
+            if (checkCollision(bullet, bomb)) {
+                // 폭탄 폭발
+                explosions.push(new Explosion(bomb.x, bomb.y, true));
+                // 폭발음 재생 (최적화: 중복 재생 방지)
+                const currentTime = Date.now();
+                if (currentTime - lastExplosionTime > 200) {
+                    applyGlobalVolume();
+                    explosionSound.currentTime = 0;
+                    explosionSound.play().catch(error => {
+                        console.log('오디오 재생 실패:', error);
+                    });
+                    lastExplosionTime = currentTime;
+                }
+                return false;
+            }
+            return true;
+        });
+
+        // 다이나마이트와 총알 충돌 체크 (최적화: 중복 재생 방지)
+        dynamites = dynamites.filter(dynamite => {
+            if (checkCollision(bullet, dynamite)) {
+                // 다이나마이트 폭발
+                explosions.push(new Explosion(dynamite.x, dynamite.y, true));
+                // 폭발음 재생 (최적화: 중복 재생 방지)
+                const currentTime = Date.now();
+                if (currentTime - lastExplosionTime > 200) {
+                    applyGlobalVolume();
+                    explosionSound.currentTime = 0;
+                    explosionSound.play().catch(error => {
+                        console.log('오디오 재생 실패:', error);
+                    });
+                    lastExplosionTime = currentTime;
+                }
+                return false;
+            }
+            return true;
+        });
+        
+        // 적 미사일과 총알 충돌 체크 (최적화: 폭발 효과 감소)
+        for (let i = enemyMissiles.length - 1; i >= 0; i--) {
+            const missile = enemyMissiles[i];
+            if (checkCollision(bullet, missile)) {
+                // 미사일 파괴
+                enemyMissiles.splice(i, 1);
+                
+                // 폭발 효과 (최적화: 개수 감소)
+                explosions.push(new Explosion(missile.x + missile.width/2, missile.y + missile.height/2, false));
+                
+                // 미사일 파괴 효과음 재생 (최적화: 중복 재생 방지)
+                const currentTime = Date.now();
+                if (currentTime - lastCollisionTime > 50) {
+                    applyGlobalVolume();
+                    collisionSound.currentTime = 0;
+                    collisionSound.play().catch(error => {
+                        console.log('미사일 파괴 효과음 재생 실패:', error);
+                    });
+                    lastCollisionTime = currentTime;
+                }
+                
+                // 미사일 파괴 보너스 점수
+                updateScore(10);
+                
+                // 총알도 제거
+                return false;
+            }
+        }
+        
+        // 방어막 적과 총알 충돌 체크 (최적화: 중복 재생 방지)
+        for (let i = shieldedEnemies.length - 1; i >= 0; i--) {
+            const enemy = shieldedEnemies[i];
+            if (checkCollision(bullet, enemy)) {
+                // 체력 감소
+                enemy.health--;
+                
+                // 피격 효과음 재생 (최적화: 중복 재생 방지)
+                const currentTime = Date.now();
+                if (currentTime - lastCollisionTime > 50) {
+                    applyGlobalVolume();
+                    collisionSound.currentTime = 0;
+                    collisionSound.play().catch(error => {
+                        console.log('방어막 적 피격 효과음 재생 실패:', error);
+                    });
+                    lastCollisionTime = currentTime;
+                }
+                
+                // 피격 효과
+                explosions.push(new Explosion(bullet.x, bullet.y, false));
+                
+                // 방어막이 비활성화된 경우 또는 체력이 0인 경우
+                if (enemy.health <= 0) {
+                    // 적 파괴
+                    shieldedEnemies.splice(i, 1);
+                    
+                    // 큰 폭발 효과
+                    explosions.push(new Explosion(enemy.x + enemy.width/2, enemy.y + enemy.height/2, false));
+                    
+                    // 추가 폭발 효과
+                    for (let j = 0; j < 6; j++) {
+                        const angle = (Math.PI * 2 / 6) * j;
+                        const distance = 25;
+                        const offsetX = Math.cos(angle) * distance;
+                        const offsetY = Math.sin(angle) * distance;
+                        explosions.push(new Explosion(
+                            enemy.x + enemy.width/2 + offsetX,
+                            enemy.y + enemy.height/2 + offsetY,
+                            false
+                        ));
+                    }
+                    
+                    // 폭발음 재생
+                    applyGlobalVolume();
+                    explosionSound.currentTime = 0;
+                    explosionSound.play().catch(error => {
+                        console.log('방어막 적 파괴 효과음 재생 실패:', error);
+                    });
+                    
+                    // 점수 보상 (방어막 적은 더 높은 점수)
+                    updateScore(100);
+                    
+                    // 해당 적이 발사한 미사일들 제거
+                    // removeEnemyMissiles(enemy);
+                } else {
+                    // 방어막이 활성화된 경우 방어막 효과음
+                    if (enemy.shieldActive) {
+                        // 방어막 피격 효과음 (다른 톤)
+                        applyGlobalVolume();
+                        collisionSound.currentTime = 0;
+                        collisionSound.play().catch(error => {
+                            console.log('방어막 피격 효과음 재생 실패:', error);
+                        });
+                    }
+                }
+                
+                // 총알 제거
+                return false;
+            }
+        }
+        
+        // 화면 밖으로 나간 총알 제거
+        return bullet.y > 0 && bullet.y < canvas.height && 
+               bullet.x > 0 && bullet.x < canvas.width;
+    });
+}
+
+// 보스 관련 상수 추가
+const BOSS_SETTINGS = {
+    HEALTH: 1000,        // 기본 체력
+    DAMAGE: 50,          // 보스 총알 데미지
+    SPEED: 2 * mobileSpeedMultiplier,           // 보스 이동 속도
+    BULLET_SPEED: 5 * mobileSpeedMultiplier,    // 보스 총알 속도
+    PATTERN_INTERVAL: 2000, // 패턴 변경 간격
+    SPAWN_INTERVAL: 30000,  // 보스 출현 간격 (30초)
+    BONUS_SCORE: 500,    // 보스 처치 보너스 점수를 500으로 설정
+    PHASE_THRESHOLDS: [  // 페이즈 전환 체력 임계값
+        { health: 750, speed: 2.5 * mobileSpeedMultiplier, bulletSpeed: 6 * mobileSpeedMultiplier },
+        { health: 500, speed: 3 * mobileSpeedMultiplier, bulletSpeed: 7 * mobileSpeedMultiplier },
+        { health: 250, speed: 3.5 * mobileSpeedMultiplier, bulletSpeed: 8 * mobileSpeedMultiplier }
+    ]
+};
+
+// 게임 상태 변수에 추가
+let lastBossSpawnTime = Date.now();  // 마지막 보스 출현 시간을 현재 시간으로 초기화
+
+// 보스 생성 함수 수정
+function createBoss() {
+    console.log('보스 생성 함수 호출됨');
+    
+    // 이미 보스가 존재하는 경우
+    if (bossActive) {
+        console.log('보스가 이미 존재하여 생성하지 않음');
+        return;
+    }
+    
+    const currentTime = Date.now();
+    const timeSinceLastBoss = currentTime - lastBossSpawnTime;
+    
+   
+    // 시간 체크
+    if (timeSinceLastBoss < BOSS_SETTINGS.SPAWN_INTERVAL) {
+        console.log('보스 생성 시간이 되지 않음:', {
+            timeSinceLastBoss,
+            requiredInterval: BOSS_SETTINGS.SPAWN_INTERVAL,
+            remainingTime: BOSS_SETTINGS.SPAWN_INTERVAL - timeSinceLastBoss
+        });
+        return;
+    }
+    
+    console.log('보스 생성 시작:', {
+        currentTime,
+        lastBossSpawnTime,
+        timeSinceLastBoss
+    });
+    
+    
+    // 보스 상태 초기화
+    bossActive = true;
+    bossHealth = BOSS_SETTINGS.HEALTH;
+    bossPattern = 0;
+    bossTimer = currentTime;
+    lastBossSpawnTime = currentTime;
+    bossDestroyed = false;  // 보스 파괴 상태 초기화
+    
+    
+    // 보스 파괴 시 목숨 1개 추가
+    maxLives++; // 최대 목숨 증가
+    
+    // 보스 객체 생성
+    const boss = {
+        x: Math.random() * (canvas.width - 86),
+        y: -86,
+        width: 86,
+        height: 86,
+        speed: BOSS_SETTINGS.SPEED,
+        pattern: (gameLevel < 5) ? BOSS_PATTERNS.WAVE_SHOT : BOSS_PATTERNS.CIRCLE_SHOT,
+        angle: 0,
+        movePhase: 0,
+        targetX: canvas.width / 2 - 30,
+        targetY: 60,
+        phase: 0,
+        patternTimer: currentTime,
+        bulletSpeed: BOSS_SETTINGS.BULLET_SPEED,
+        isBoss: true,
+        health: BOSS_SETTINGS.HEALTH,
+        randomOffsetX: Math.random() * 120 - 60,
+        randomOffsetY: Math.random() * 120 - 60,
+        randomAngle: Math.random() * Math.PI * 2,
+        randomSpeed: Math.random() * 2 + 1,
+        lastUpdateTime: currentTime,
+        hitCount: 0,
+        totalHitTime: 0,
+        lastHitTime: null,
+        isBeingHit: false,
+        // 패턴 관련 타이머 변수들
+        lastPatternChange: currentTime,
+        patternDuration: 5000,  // 5초마다 패턴 변경
+        lastShot: currentTime,
+        patternAngle: 0,
+        // 단일 패턴 시스템 변수들
+        usedPatterns: [],  // 사용한 패턴들 기록
+        currentPatterns: [],  // 현재 사용 중인 패턴들
+        // 레벨별 패턴 순서 시스템 (레벨 1~5용)
+        patternSequence: [],  // 현재 레벨에서 사용할 패턴 순서
+        currentPatternIndex: 0,  // 현재 패턴 인덱스
+        isPatternSequenceComplete: false,  // 패턴 순서 완료 여부
+        // 단일 패턴 시스템 (레벨 1~5용)
+        singlePattern: null  // 현재 사용할 단일 패턴
+    };
+    
+    // 레벨별 패턴 설정
+    if (gameLevel <= 5) {
+        // 레벨 1~5: 순차적 단일 패턴 시스템
+        if (levelBossPatterns.usedPatterns.length < levelBossPatterns.patternSequence.length) {
+            // 아직 사용하지 않은 패턴이 있으면 다음 패턴 사용
+            boss.singlePattern = levelBossPatterns.patternSequence[levelBossPatterns.usedPatterns.length];
+            levelBossPatterns.currentLevelPattern = boss.singlePattern;
+        } else {
+            // 모든 패턴을 다 사용했으면 랜덤 패턴 사용
+            boss.singlePattern = levelBossPatterns.patternSequence[Math.floor(Math.random() * levelBossPatterns.patternSequence.length)];
+            levelBossPatterns.currentLevelPattern = boss.singlePattern;
+        }
+        console.log(`보스 생성 (레벨 ${gameLevel}): ${boss.singlePattern}`);
+    } else {
+        // 레벨 6 이상: 단일 랜덤 패턴 시스템
+        boss.singlePattern = null;
+        levelBossPatterns.currentLevelPattern = null;
+        console.log(`보스 생성 (레벨 ${gameLevel}): 단일 랜덤 패턴 시스템`);
+    }
+    
+    // 보스 추가
+    enemies.push(boss);
+    console.log('보스 생성 완료:', boss);
+}
+
+// 보스 패턴 처리 함수 수정
+function handleBossPattern(boss) {
+    const currentTime = Date.now();
+    
+    // 보스 체력이 0 이하이면 파괴 처리
+    if (boss.health <= 0 && !bossDestroyed) {
+        bossDestroyed = true;
+        bossActive = false;
+        bossHealth = 0;
+        updateScore(BOSS_SETTINGS.BONUS_SCORE);
+        
+        // 레벨 1~5에서 패턴 사용 기록
+        if (gameLevel <= 5 && boss.singlePattern) {
+            if (!levelBossPatterns.usedPatterns.includes(boss.singlePattern)) {
+                levelBossPatterns.usedPatterns.push(boss.singlePattern);
+                console.log(`패턴 사용 기록: ${boss.singlePattern} (총 ${levelBossPatterns.usedPatterns.length}/${levelBossPatterns.patternSequence.length})`);
+            }
+        }
+        
+        // 보스 파괴 시 목숨 1개 추가
+        maxLives++; // 최대 목숨 증가
+        
+        // 큰 폭발 효과
+        explosions.push(new Explosion(
+            boss.x + boss.width/2,
+            boss.y + boss.height/2,
+            true
+        ));
+        // 추가 폭발 효과
+        for (let i = 0; i < 8; i++) {
+            const angle = (Math.PI * 2 / 8) * i;
+            const distance = 50;
+            explosions.push(new Explosion(
+                boss.x + boss.width/2 + Math.cos(angle) * distance,
+                boss.y + boss.height/2 + Math.sin(angle) * distance,
+                false
+            ));
+        }
+        // 보스 파괴 시 폭발음 재생
+        applyGlobalVolume();
+        explosionSound.currentTime = 0;
+        explosionSound.play().catch(error => {
+            console.log('오디오 재생 실패:', error);
+        });
+        
+        // 보스 경고 시스템 초기화
+        bossWarning.active = false;
+        bossWarning.pattern = '';
+        bossWarning.message = '';
+        bossWarning.timer = 0;
+        bossWarning.patternDetails = '';
+        
+        // 보스 파괴 시 목숨 1개 추가
+        maxLives++; // 최대 목숨 증가
+        
+        return;
+    }
+
+    // 보스 이동 패턴
+    const movePattern = Math.floor(currentTime / 5000) % 4;  // 5초마다 이동 패턴 변경
+    
+    switch (movePattern) {
+        case 0:  // 좌우 이동
+            boss.x += Math.sin(currentTime / 500) * 3;  // 부드러운 좌우 이동
+            break;
+        case 1:  // 원형 이동
+            const radius = 100;
+            const centerX = canvas.width / 2;
+            const centerY = 100;
+            boss.x = centerX + Math.cos(currentTime / 1000) * radius;
+            boss.y = centerY + Math.sin(currentTime / 1000) * radius;
+            break;
+        case 2:  // 지그재그 이동
+            boss.x += Math.sin(currentTime / 300) * 4;
+            boss.y = 60 + Math.abs(Math.sin(currentTime / 500)) * 40;
+            break;
+        case 3:  // 추적 이동
+            const targetX = player.x;
+            const dx = targetX - boss.x;
+            boss.x += dx * 0.02;  // 부드러운 추적
+            break;
+    }
+    
+    // 패턴 단계별 패턴 선택
+    let patterns = [];
+    
+    // 사용 가능한 패턴 목록
+    const availablePatterns = [
+        BOSS_PATTERNS.BASIC,
+        BOSS_PATTERNS.CIRCLE_SHOT,
+        BOSS_PATTERNS.CROSS_SHOT,
+        BOSS_PATTERNS.SPIRAL_SHOT,
+        BOSS_PATTERNS.WAVE_SHOT,
+        BOSS_PATTERNS.DIAMOND_SHOT,
+        BOSS_PATTERNS.RANDOM_SPREAD,
+        BOSS_PATTERNS.DOUBLE_SPIRAL,
+        BOSS_PATTERNS.TRIPLE_WAVE,
+        BOSS_PATTERNS.TARGETED_SHOT,
+        BOSS_PATTERNS.BURST_SHOT
+    ];
+    
+    // 레벨별 패턴 시스템
+    if (gameLevel <= 5) {
+        // 레벨 1~5: 순차적 패턴 시스템
+        if (boss.singlePattern) {
+            patterns = [boss.singlePattern];
+        } else {
+            // 기본 패턴 사용
+            patterns = [BOSS_PATTERNS.BASIC];
+        }
+    } else {
+        // 레벨 6 이상: 단일 랜덤 패턴 시스템 (한 번 등장한 패턴은 모든 패턴이 등장한 후에 다시 등장)
+        
+        // 보스별 사용한 패턴 추적 시스템 초기화
+        if (!boss.usedPatterns) {
+            boss.usedPatterns = [];
+        }
+        
+        // 패턴 변경 체크 (5초마다)
+        if (currentTime - boss.lastPatternChange >= boss.patternDuration) {
+            // 사용 가능한 패턴 목록에서 아직 사용하지 않은 패턴들만 선택
+            const unusedPatterns = availablePatterns.filter(pattern => !boss.usedPatterns.includes(pattern));
+            
+            let selectedPattern;
+            
+            if (unusedPatterns.length > 0) {
+                // 아직 사용하지 않은 패턴이 있으면 그 중에서 랜덤 선택
+                selectedPattern = unusedPatterns[Math.floor(Math.random() * unusedPatterns.length)];
+                boss.usedPatterns.push(selectedPattern);
+                console.log(`보스 패턴 변경 (단일 랜덤): ${selectedPattern} (사용된 패턴: ${boss.usedPatterns.length}/${availablePatterns.length})`);
+            } else {
+                // 모든 패턴을 다 사용했으면 사용 기록 초기화하고 랜덤 선택
+                boss.usedPatterns = [];
+                selectedPattern = availablePatterns[Math.floor(Math.random() * availablePatterns.length)];
+                boss.usedPatterns.push(selectedPattern);
+                console.log(`보스 패턴 변경 (단일 랜덤): ${selectedPattern} (모든 패턴 사용 완료, 기록 초기화)`);
+            }
+            
+            boss.currentPatterns = [selectedPattern];
+            boss.lastPatternChange = currentTime;
+        }
+        
+        // 현재 패턴 사용
+        if (boss.currentPatterns.length > 0) {
+            patterns = boss.currentPatterns;
+        } else {
+            // 초기 패턴 설정
+            const initialPattern = availablePatterns[Math.floor(Math.random() * availablePatterns.length)];
+            patterns = [initialPattern];
+            boss.currentPatterns = [initialPattern];
+            boss.usedPatterns = [initialPattern];
+            console.log(`보스 초기 패턴 설정: ${initialPattern}`);
+        }
+    }
+    
+    // 현재 패턴들로 공격 실행
+    patterns.forEach(pattern => {
+        executeBossPattern(boss, pattern, currentTime);
+    });
+    
+    // 보스 체력에 따른 패턴 강화
+    const healthPercentage = boss.health / BOSS_SETTINGS.HEALTH;
+    if (healthPercentage < 0.3) {  // 체력 30% 이하
+        boss.bulletSpeed = BOSS_SETTINGS.BULLET_SPEED * 1.5;  // 총알 속도 증가
+        boss.lastShot = Math.min(boss.lastShot, currentTime - 500);  // 공격 간격 감소
+    } else if (healthPercentage < 0.6) {  // 체력 60% 이하
+        boss.bulletSpeed = BOSS_SETTINGS.BULLET_SPEED * 1.2;  // 총알 속도 약간 증가
+        boss.lastShot = Math.min(boss.lastShot, currentTime - 200);  // 공격 간격 약간 감소
+    }
+}
+
+// 개별 패턴 실행 함수
+function executeBossPattern(boss, pattern, currentTime) {
+    switch (pattern) {
+        case BOSS_PATTERNS.BASIC:
+            // 기본 패턴: 직선 발사 (느린 속도)
+            if (currentTime - boss.lastShot >= 1500) {
+                boss.lastShot = currentTime;
+                createBossBullet(boss, Math.PI / 2, false);  // 일반 폭탄
+            }
+            break;
+            
+        case BOSS_PATTERNS.CIRCLE_SHOT:
+            if (currentTime - boss.lastShot >= 500) {  // 0.5초마다 발사
+                for (let i = 0; i < 8; i++) {
+                    const angle = (Math.PI * 2 / 8) * i;
+                    createBossBullet(boss, angle);
+                }
+                boss.lastShot = currentTime;
+            }
+            break;
+            
+        case BOSS_PATTERNS.CROSS_SHOT:
+            if (currentTime - boss.lastShot >= 800) {  // 0.8초마다 발사
+                for (let i = 0; i < 4; i++) {
+                    const angle = (Math.PI / 2) * i;
+                    createBossBullet(boss, angle);
+                }
+                boss.lastShot = currentTime;
+            }
+            break;
+            
+        case BOSS_PATTERNS.SPIRAL_SHOT:
+            if (currentTime - boss.lastShot >= 200) {  // 0.2초마다 발사
+                createBossBullet(boss, boss.patternAngle);
+                boss.patternAngle += Math.PI / 8;  // 22.5도씩 회전
+                boss.lastShot = currentTime;
+                
+                // 나선 패턴이 한 바퀴 완료되면 초기화
+                if (boss.patternAngle >= Math.PI * 2) {
+                    boss.patternAngle = 0;
+                }
+            }
+            break;
+            
+        case BOSS_PATTERNS.WAVE_SHOT:
+            if (currentTime - boss.lastShot >= 300) {  // 0.3초마다 발사
+                const waveAngle = Math.sin(boss.patternAngle) * (Math.PI / 4);  // -45도 ~ 45도 사이
+                createBossBullet(boss, Math.PI / 2 + waveAngle);  // 아래쪽으로 파도형 발사
+                boss.patternAngle += 0.2;
+                boss.lastShot = currentTime;
+                
+                // 파도 패턴이 일정 시간 지나면 초기화
+                if (boss.patternAngle >= Math.PI * 2) {
+                    boss.patternAngle = 0;
+                }
+            }
+            break;
+            
+        case BOSS_PATTERNS.DIAMOND_SHOT:
+            if (currentTime - boss.lastShot >= 600) {  // 0.6초마다 발사
+                const angles = [0, Math.PI/2, Math.PI, Math.PI*3/2];  // 상, 우, 하, 좌
+                angles.forEach(angle => {
+                    createBossBullet(boss, angle);
+                });
+                boss.lastShot = currentTime;
+            }
+            break;
+            
+        case BOSS_PATTERNS.RANDOM_SPREAD:
+            if (currentTime - boss.lastShot >= 400) {  // 0.4초마다 발사
+                for (let i = 0; i < 5; i++) {
+                    const randomAngle = Math.random() * Math.PI * 2;  // 0~360도 랜덤
+                    createBossBullet(boss, randomAngle);
+                }
+                boss.lastShot = currentTime;
+            }
+            break;
+            
+        case BOSS_PATTERNS.DOUBLE_SPIRAL:
+            if (currentTime - boss.lastShot >= 150) {  // 0.15초마다 발사
+                // 두 개의 나선형 패턴을 동시에 발사
+                createBossBullet(boss, boss.patternAngle);
+                createBossBullet(boss, boss.patternAngle + Math.PI);  // 반대 방향
+                boss.patternAngle += Math.PI / 12;  // 15도씩 회전
+                boss.lastShot = currentTime;
+                
+                // 이중 나선 패턴이 한 바퀴 완료되면 초기화
+                if (boss.patternAngle >= Math.PI * 2) {
+                    boss.patternAngle = 0;
+                }
+            }
+            break;
+            
+        case BOSS_PATTERNS.TRIPLE_WAVE:
+            if (currentTime - boss.lastShot >= 200) {  // 0.2초마다 발사
+                // 세 개의 파도형 패턴을 동시에 발사
+                for (let i = 0; i < 3; i++) {
+                    const waveAngle = Math.sin(boss.patternAngle + (i * Math.PI * 2 / 3)) * (Math.PI / 3);
+                    createBossBullet(boss, Math.PI / 2 + waveAngle);
+                }
+                boss.patternAngle += 0.3;
+                boss.lastShot = currentTime;
+                
+                // 삼중 파도 패턴이 일정 시간 지나면 초기화
+                if (boss.patternAngle >= Math.PI * 2) {
+                    boss.patternAngle = 0;
+                }
+            }
+            break;
+            
+        case BOSS_PATTERNS.TARGETED_SHOT:
+            if (currentTime - boss.lastShot >= 400) {  // 0.4초마다 발사
+                // 플레이어를 향해 3발 연속 발사
+                const angleToPlayer = Math.atan2(player.y - boss.y, player.x - boss.x);
+                for (let i = -1; i <= 1; i++) {
+                    const spreadAngle = angleToPlayer + (i * Math.PI / 12);  // ±15도 스프레드
+                    createBossBullet(boss, spreadAngle);
+                }
+                boss.lastShot = currentTime;
+            }
+            break;
+            
+        case BOSS_PATTERNS.BURST_SHOT:
+            if (currentTime - boss.lastShot >= 1000) {  // 1초마다 발사
+                // 8방향으로 동시에 발사
+                for (let i = 0; i < 8; i++) {
+                    const angle = (Math.PI * 2 / 8) * i;
+                    createBossBullet(boss, angle);
+                }
+                // 중앙에 추가 발사
+                createBossBullet(boss, Math.PI / 2);
+                boss.lastShot = currentTime;
+            }
+            break;
+    }
+}
 
 // 보스 총알 생성 함수 수정
 function createBossBullet(boss, angle) {
@@ -4341,147 +5105,7 @@ function setSoundControlActive(active) {
 document.addEventListener('keydown', handleGameInput);
 document.addEventListener('keyup', handleGameInputRelease);
 
-// 게임 초기화 함수 수정
-async function initializeGame() {
-    console.log('게임 초기화 시작');
-    isGameActive = true;
-    isSoundControlActive = false;
-    
-    try {
-        // 이미지 로딩
-        await loadGameImages();
-        
-        // 모바일 컨트롤 설정
-        setupMobileControls();
-        
-        // 모바일에서 터치 드래그 컨트롤 설정
-        if (isMobile) {
-            setupTouchDragControls();
-        }
-        
-        // 전체화면 이벤트 리스너 설정
-        setupFullscreenEventListeners();
-        
-        // 종료 이벤트 핸들러 설정
-        setupExitHandlers();
-        
-        // 최고 점수 로드
-        highScore = await loadHighScore();
-        console.log('초기화된 최고 점수:', highScore);
-        
-        // === 모든 게임 요소 완전 초기화 ===
-        
-        // 1. 충돌 및 게임 상태 초기화
-        collisionCount = 0;
-        maxLives = 5;  // 최대 목숨 초기화
-        hasSecondPlane = false;
-        secondPlaneTimer = 0;
-        
-        // 2. 모든 배열 완전 초기화
-        score = 0;
-        levelScore = 0;
-        scoreForSpread = 0;
-        bullets = [];           // 총알 배열 초기화
-        enemies = [];           // 적 비행기 배열 초기화
-        bossBullets = [];       // 보스 총알 배열 초기화
-        explosions = [];        // 폭발 효과 배열 초기화
-        bombs = [];             // 폭탄 배열 초기화
-        dynamites = [];         // 다이나마이트 배열 초기화
-        powerUps = [];          // 파워업 배열 초기화
-        snakeEnemies = [];      // 뱀 패턴 적 배열 초기화
-        snakeGroups = [];       // 뱀 패턴 그룹 배열 초기화
-        enemyMissiles = [];     // 적 미사일 배열 초기화
-        shieldedEnemies = [];   // 방어막 적 배열 초기화
-        
-        // 3. 게임 상태 초기화
-        isGameOver = false;
-        isPaused = false;
-        gameStarted = false;  // 게임 시작 상태 초기화
-        flashTimer = 0;
-        gameOverStartTime = null;
-        
-        // 4. 뱀 패턴 상태 초기화
-        isSnakePatternActive = false;
-        snakePatternTimer = 0;
-        snakePatternInterval = 0;
-        lastSnakeGroupTime = 0;
-        
-        // 5. 보스 관련 상태 완전 초기화
-        bossActive = false;
-        bossHealth = 0;
-        bossDestroyed = false;
-        bossPattern = 0;
-        lastBossSpawnTime = Date.now();
-               
-        // 6. 플레이어 초기 위치 설정
-        player.x = canvas.width / 2 - player.width / 2;
-        player.y = canvas.height - player.height - 10;
-        secondPlane.x = canvas.width / 2 - 60 - player.width / 2;
-        secondPlane.y = canvas.height - secondPlane.height - 10;
-        
-        // 7. 게임 타이머 초기화
-        lastEnemySpawnTime = 0;
-        lastShieldedEnemySpawnTime = 0;
-        
-        // 8. 파워업 상태 초기화
-        hasSpreadShot = false;
-        hasShield = false;
-        damageMultiplier = 1;
-        fireRateMultiplier = 1;
-        
-        // 9. 발사 관련 상태 초기화
-        lastFireTime = 0;
-        isSpacePressed = false;
-        spacePressTime = 0;
-        fireDelay = 600;
-        continuousFireDelay = 50;
-        bulletSpeed = 12 * mobileSpeedMultiplier;
-        baseBulletSize = 4.5;
-        isContinuousFire = false;
-        canFire = true;
-        lastReleaseTime = 0;
-        singleShotCooldown = 500;
-        minPressDuration = 200;
-        minReleaseDuration = 100;
-        
-        // 10. 특수무기 관련 상태 초기화
-        specialWeaponCharged = false;
-        specialWeaponCharge = 0;
-        
-        // 11. 키보드 입력 상태 초기화
-        Object.keys(keys).forEach(key => {
-            keys[key] = false;
-        });
-        
-        // 12. 사운드 관련 상태 초기화
-        lastCollisionTime = 0;
-        lastExplosionTime = 0;
-        
-        // 13. 패턴 추적 시스템 초기화
-        levelBossPatterns.usedPatterns = [];
-        levelBossPatterns.currentLevelPattern = null;
-        
-        console.log('게임 상태 초기화 완료');
-        console.log('초기화된 상태:', {
-            enemies: enemies.length,
-            bullets: bullets.length,
-            explosions: explosions.length,
-            bombs: bombs.length,
-            dynamites: dynamites.length,
-            powerUps: powerUps.length,
-            snakeGroups: snakeGroups.length,
-            bossActive: bossActive,
-            isSnakePatternActive: isSnakePatternActive
-        });
-        
-        // 게임 루프 시작
-        startGameLoop();
-        console.log('게임 루프 시작됨');
-        
-    } catch (error) {
-        console.error('게임 초기화 중 오류:', error);
-    }
-}
+
 
 // 게임 오버 처리 함수 수정
 function handleGameOver() {
