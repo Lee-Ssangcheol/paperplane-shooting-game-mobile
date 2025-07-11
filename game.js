@@ -177,11 +177,21 @@ function setupMobileControls() {
         keys.ArrowRight = false;
     }, { passive: false });
     
-    // 시작/재시작 버튼 터치 이벤트
-    mobileControls.btnFire.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        console.log('시작/재시작 버튼 터치');
+    // 시작/재시작 버튼 - 중복 방지
+    let isFirePressed = false;
+    let lastFireTime = 0;
+    const fireCooldown = 300; // 300ms 쿨다운
+    
+    const handleFire = () => {
+        const now = Date.now();
+        if (isFirePressed || (now - lastFireTime) < fireCooldown) {
+            console.log('시작/재시작 중복 실행 방지됨');
+            return;
+        }
+        
+        isFirePressed = true;
+        lastFireTime = now;
+        console.log('시작/재시작 버튼 실행');
         
         // 시작 화면에서 버튼을 누르면 게임 시작
         if (isStartScreen) {
@@ -196,8 +206,16 @@ function setupMobileControls() {
             restartGame();
             // 전체화면 전환
             enableFullscreen();
-            return;
         }
+        
+        setTimeout(() => { isFirePressed = false; }, 500);
+    };
+    
+    mobileControls.btnFire.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('시작/재시작 버튼 터치');
+        handleFire();
     }, { passive: false });
     
     mobileControls.btnFire.addEventListener('touchend', (e) => {
@@ -219,21 +237,7 @@ function setupMobileControls() {
             e.preventDefault();
             e.stopPropagation();
             console.log('시작/재시작 버튼 클릭');
-            
-            if (isStartScreen) {
-                isStartScreen = false;
-                console.log('모바일에서 게임 시작');
-                // 전체화면 전환
-                enableFullscreen();
-            }
-            
-            // 게임 오버 상태에서 재시작
-            if (isGameOver) {
-                restartGame();
-                // 전체화면 전환
-                enableFullscreen();
-                return;
-            }
+            handleFire();
         });
     }
     
@@ -246,10 +250,21 @@ function setupMobileControls() {
         keys.KeyB = false;
     }, { passive: false });
     
-    mobileControls.btnPause.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        console.log('일시정지 버튼 터치');
+    // 일시정지 버튼 - 중복 방지
+    let isPausePressed = false;
+    let lastPauseTime = 0;
+    const pauseCooldown = 300; // 300ms 쿨다운
+    
+    const handlePause = () => {
+        const now = Date.now();
+        if (isPausePressed || (now - lastPauseTime) < pauseCooldown) {
+            console.log('일시정지 중복 실행 방지됨');
+            return;
+        }
+        
+        isPausePressed = true;
+        lastPauseTime = now;
+        console.log('일시정지 버튼 실행');
         
         if (!isGameOver) {
             isPaused = !isPaused;
@@ -259,6 +274,15 @@ function setupMobileControls() {
                 console.log('게임 재개됨');
             }
         }
+        
+        setTimeout(() => { isPausePressed = false; }, 500);
+    };
+    
+    mobileControls.btnPause.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('일시정지 버튼 터치');
+        handlePause();
     }, { passive: false });
     
     mobileControls.btnPause.addEventListener('touchend', (e) => {
@@ -279,15 +303,7 @@ function setupMobileControls() {
             e.preventDefault();
             e.stopPropagation();
             console.log('일시정지 버튼 클릭');
-            
-            if (!isGameOver) {
-                isPaused = !isPaused;
-                if (isPaused) {
-                    console.log('게임 일시정지됨');
-                } else {
-                    console.log('게임 재개됨');
-                }
-            }
+            handlePause();
         });
     }
     
@@ -388,13 +404,7 @@ function setupMobileControls() {
             e.preventDefault();
             e.stopPropagation();
             console.log('시작/재시작 버튼 마우스 다운');
-            
-            if (isStartScreen) {
-                isStartScreen = false;
-                console.log('모바일에서 게임 시작');
-                // 전체화면 전환
-                enableFullscreen();
-            }
+            handleFire();
         });
         
         mobileControls.btnFire.addEventListener('mouseup', (e) => {
@@ -407,15 +417,7 @@ function setupMobileControls() {
             e.preventDefault();
             e.stopPropagation();
             console.log('일시정지 버튼 마우스 다운');
-            
-            if (!isGameOver) {
-                isPaused = !isPaused;
-                if (isPaused) {
-                    console.log('게임 일시정지됨');
-                } else {
-                    console.log('게임 재개됨');
-                }
-            }
+            handlePause();
         });
         
         mobileControls.btnPause.addEventListener('mouseup', (e) => {
