@@ -14,7 +14,7 @@ function enableFullscreen() {
     if (isMobile) {
         console.log('모바일 전체화면 모드 활성화 시작');
         
-        // iOS Safari 전체화면 모드
+        // iOS Safari 전체화면 모드 (안내 문구 없이)
         if (document.documentElement.requestFullscreen) {
             document.documentElement.requestFullscreen().catch(err => {
                 console.log('전체화면 모드 실패:', err);
@@ -31,7 +31,7 @@ function enableFullscreen() {
             document.body.style.overflow = 'hidden';
         }
         
-        // Android Chrome 전체화면 모드
+        // Android Chrome 전체화면 모드 (안내 문구 없이)
         if (document.documentElement.webkitRequestFullscreen) {
             document.documentElement.webkitRequestFullscreen().catch(err => {
                 console.log('webkit 전체화면 모드 실패:', err);
@@ -50,6 +50,9 @@ function enableFullscreen() {
         document.body.style.userSelect = 'none';
         document.body.style.webkitTouchCallout = 'none';
         document.body.style.webkitTapHighlightColor = 'transparent';
+        
+        // 전체화면 종료 안내 문구 숨김
+        document.body.style.setProperty('--webkit-full-screen-exit-info', 'none', 'important');
         
         console.log('모바일 전체화면 모드 활성화 완료');
     }
@@ -259,19 +262,17 @@ function setupMobileControls() {
         e.stopPropagation();
         console.log('재시작 버튼 터치');
         
-        // 최고 점수 리셋 확인
-        if (confirm('최고 점수를 리셋하시겠습니까?')) {
-            ScoreManager.reset().then(() => {
-                console.log('ScoreManager를 통한 최고 점수 리셋 완료');
-            }).catch(error => {
-                console.error('ScoreManager 리셋 실패:', error);
-                // 백업 리셋 방법
-                highScore = 0;
-                localStorage.clear();
-                sessionStorage.clear();
-                console.log('백업 방법으로 최고 점수 리셋');
-            });
-        }
+        // 최고 점수 리셋 (확인 팝업 없이)
+        ScoreManager.reset().then(() => {
+            console.log('ScoreManager를 통한 최고 점수 리셋 완료');
+        }).catch(error => {
+            console.error('ScoreManager 리셋 실패:', error);
+            // 백업 리셋 방법
+            highScore = 0;
+            localStorage.clear();
+            sessionStorage.clear();
+            console.log('백업 방법으로 최고 점수 리셋');
+        });
     }, { passive: false });
     
     mobileControls.btnReset.addEventListener('touchend', (e) => {
@@ -285,19 +286,17 @@ function setupMobileControls() {
         e.stopPropagation();
         console.log('재시작 버튼 클릭');
         
-        // 최고 점수 리셋 확인
-        if (confirm('최고 점수를 리셋하시겠습니까?')) {
-            ScoreManager.reset().then(() => {
-                console.log('ScoreManager를 통한 최고 점수 리셋 완료');
-            }).catch(error => {
-                console.error('ScoreManager 리셋 실패:', error);
-                // 백업 리셋 방법
-                highScore = 0;
-                localStorage.clear();
-                sessionStorage.clear();
-                console.log('백업 방법으로 최고 점수 리셋');
-            });
-        }
+        // 최고 점수 리셋 (확인 팝업 없이)
+        ScoreManager.reset().then(() => {
+            console.log('ScoreManager를 통한 최고 점수 리셋 완료');
+        }).catch(error => {
+            console.error('ScoreManager 리셋 실패:', error);
+            // 백업 리셋 방법
+            highScore = 0;
+            localStorage.clear();
+            sessionStorage.clear();
+            console.log('백업 방법으로 최고 점수 리셋');
+        });
     });
     
     // 마우스 이벤트도 추가 (데스크탑용)
