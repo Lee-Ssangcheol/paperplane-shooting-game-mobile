@@ -12,6 +12,7 @@ const mobileSpeedMultiplier = isMobile ? 0.6 : 1.0;
 // 전역 중복 방지 시스템
 const EventThrottler = {
     events: new Map(),
+    touchEvents: new Map(),
     
     throttle: function(eventName, callback, delay = 300) {
         const now = Date.now();
@@ -29,6 +30,25 @@ const EventThrottler = {
     
     clear: function(eventName) {
         this.events.delete(eventName);
+    },
+    
+    // 터치 이벤트 전용 중복 방지
+    touchThrottle: function(elementId, callback, delay = 1000) {
+        const now = Date.now();
+        const lastTime = this.touchEvents.get(elementId) || 0;
+        
+        if (now - lastTime < delay) {
+            console.log(`${elementId} 터치 중복 방지됨`);
+            return false;
+        }
+        
+        this.touchEvents.set(elementId, now);
+        callback();
+        return true;
+    },
+    
+    clearTouch: function(elementId) {
+        this.touchEvents.delete(elementId);
     }
 };
 
@@ -226,8 +246,11 @@ function setupMobileControls() {
     mobileControls.btnFire.addEventListener('touchstart', (e) => {
         e.preventDefault();
         e.stopPropagation();
-        console.log('시작/재시작 버튼 터치');
-        handleFire();
+        
+        EventThrottler.touchThrottle('btnFire', () => {
+            console.log('시작/재시작 버튼 터치');
+            handleFire();
+        }, 1000);
     }, { passive: false });
     
     mobileControls.btnFire.addEventListener('touchend', (e) => {
@@ -301,8 +324,11 @@ function setupMobileControls() {
     mobileControls.btnPause.addEventListener('touchstart', (e) => {
         e.preventDefault();
         e.stopPropagation();
-        console.log('일시정지 버튼 터치');
-        handlePause();
+        
+        EventThrottler.touchThrottle('btnPause', () => {
+            console.log('일시정지 버튼 터치');
+            handlePause();
+        }, 1000);
     }, { passive: false });
     
     mobileControls.btnPause.addEventListener('touchend', (e) => {
@@ -377,8 +403,11 @@ function setupMobileControls() {
     mobileControls.btnReset.addEventListener('touchstart', (e) => {
         e.preventDefault();
         e.stopPropagation();
-        console.log('재시작 버튼 터치');
-        handleScoreReset();
+        
+        EventThrottler.touchThrottle('btnReset', () => {
+            console.log('재시작 버튼 터치');
+            handleScoreReset();
+        }, 1000);
     }, { passive: false });
     
     // 모바일에서 클릭 이벤트 완전 차단
