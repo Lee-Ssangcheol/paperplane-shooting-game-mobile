@@ -273,15 +273,26 @@ function setupMobileControls() {
         }
     });
     
+    // 최고 점수 리셋 중복 실행 방지를 위한 변수
+    let isResettingScore = false;
+    
     mobileControls.btnReset.addEventListener('touchstart', (e) => {
         e.preventDefault();
         e.stopPropagation();
         console.log('재시작 버튼 터치');
         
+        // 중복 실행 방지
+        if (isResettingScore) {
+            return;
+        }
+        
+        isResettingScore = true;
+        
         // 최고 점수 리셋 확인
         if (confirm('최고 점수를 리셋하시겠습니까?')) {
             ScoreManager.reset().then(() => {
                 console.log('ScoreManager를 통한 최고 점수 리셋 완료');
+                isResettingScore = false;
             }).catch(error => {
                 console.error('ScoreManager 리셋 실패:', error);
                 // 백업 리셋 방법
@@ -289,13 +300,21 @@ function setupMobileControls() {
                 localStorage.clear();
                 sessionStorage.clear();
                 console.log('백업 방법으로 최고 점수 리셋');
+                isResettingScore = false;
             });
+        } else {
+            isResettingScore = false;
         }
     }, { passive: false });
     
     mobileControls.btnReset.addEventListener('touchend', (e) => {
         e.preventDefault();
         e.stopPropagation();
+        
+        // 터치 종료 후 일정 시간 후에 플래그 리셋 (안전장치)
+        setTimeout(() => {
+            isResettingScore = false;
+        }, 1000);
     }, { passive: false });
     
     // 클릭 이벤트도 추가 (데스크탑용)
@@ -304,10 +323,18 @@ function setupMobileControls() {
         e.stopPropagation();
         console.log('재시작 버튼 클릭');
         
+        // 중복 실행 방지
+        if (isResettingScore) {
+            return;
+        }
+        
+        isResettingScore = true;
+        
         // 최고 점수 리셋 확인
         if (confirm('최고 점수를 리셋하시겠습니까?')) {
             ScoreManager.reset().then(() => {
                 console.log('ScoreManager를 통한 최고 점수 리셋 완료');
+                isResettingScore = false;
             }).catch(error => {
                 console.error('ScoreManager 리셋 실패:', error);
                 // 백업 리셋 방법
@@ -315,7 +342,10 @@ function setupMobileControls() {
                 localStorage.clear();
                 sessionStorage.clear();
                 console.log('백업 방법으로 최고 점수 리셋');
+                isResettingScore = false;
             });
+        } else {
+            isResettingScore = false;
         }
     });
     
