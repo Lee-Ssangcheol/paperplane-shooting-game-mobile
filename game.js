@@ -14,27 +14,35 @@ function enableFullscreen() {
     if (isMobile) {
         console.log('모바일 전체화면 모드 활성화 시작');
         
-        // iOS Safari 전체화면 모드 (안내 문구 없이)
+        // iOS Safari 전체화면 모드
         if (document.documentElement.requestFullscreen) {
             document.documentElement.requestFullscreen().catch(err => {
                 console.log('전체화면 모드 실패:', err);
             });
         }
         
-        // iOS Safari에서 주소창 숨김 및 전체화면 모드
-        if (window.navigator.standalone) {
+        // iOS Safari에서 주소창 숨김 및 전체화면 스타일 적용
+        if (window.navigator.standalone || /iPad|iPhone|iPod/.test(navigator.userAgent)) {
             document.body.style.position = 'fixed';
             document.body.style.top = '0';
             document.body.style.left = '0';
             document.body.style.width = '100vw';
             document.body.style.height = '100vh';
             document.body.style.overflow = 'hidden';
+            document.documentElement.style.overflow = 'hidden';
         }
         
-        // Android Chrome 전체화면 모드 (안내 문구 없이)
+        // Android Chrome 전체화면 모드
         if (document.documentElement.webkitRequestFullscreen) {
             document.documentElement.webkitRequestFullscreen().catch(err => {
                 console.log('webkit 전체화면 모드 실패:', err);
+            });
+        }
+        
+        // Android Chrome에서 추가 전체화면 시도
+        if (document.documentElement.mozRequestFullScreen) {
+            document.documentElement.mozRequestFullScreen().catch(err => {
+                console.log('moz 전체화면 모드 실패:', err);
             });
         }
         
@@ -51,8 +59,16 @@ function enableFullscreen() {
         document.body.style.webkitTouchCallout = 'none';
         document.body.style.webkitTapHighlightColor = 'transparent';
         
-        // 전체화면 종료 안내 문구 숨김
-        document.body.style.setProperty('--webkit-full-screen-exit-info', 'none', 'important');
+        // 게임 컨테이너 전체화면 스타일 적용
+        const gameContainer = document.getElementById('game-container');
+        if (gameContainer) {
+            gameContainer.style.position = 'fixed';
+            gameContainer.style.top = '0';
+            gameContainer.style.left = '0';
+            gameContainer.style.width = '100vw';
+            gameContainer.style.height = '100vh';
+            gameContainer.style.zIndex = '9999';
+        }
         
         console.log('모바일 전체화면 모드 활성화 완료');
     }
@@ -171,14 +187,14 @@ function setupMobileControls() {
         if (isStartScreen) {
             isStartScreen = false;
             console.log('모바일에서 게임 시작');
-            // 게임 시작 시 전체화면 전환
+            // 전체화면 전환
             enableFullscreen();
         }
         
         // 게임 오버 상태에서 재시작
         if (isGameOver) {
             restartGame();
-            // 게임 재시작 시 전체화면 전환
+            // 전체화면 전환
             enableFullscreen();
             return;
         }
@@ -199,14 +215,14 @@ function setupMobileControls() {
         if (isStartScreen) {
             isStartScreen = false;
             console.log('모바일에서 게임 시작');
-            // 게임 시작 시 전체화면 전환
+            // 전체화면 전환
             enableFullscreen();
         }
         
         // 게임 오버 상태에서 재시작
         if (isGameOver) {
             restartGame();
-            // 게임 재시작 시 전체화면 전환
+            // 전체화면 전환
             enableFullscreen();
             return;
         }
@@ -262,17 +278,19 @@ function setupMobileControls() {
         e.stopPropagation();
         console.log('재시작 버튼 터치');
         
-        // 최고 점수 리셋 (확인 팝업 없이)
-        ScoreManager.reset().then(() => {
-            console.log('ScoreManager를 통한 최고 점수 리셋 완료');
-        }).catch(error => {
-            console.error('ScoreManager 리셋 실패:', error);
-            // 백업 리셋 방법
-            highScore = 0;
-            localStorage.clear();
-            sessionStorage.clear();
-            console.log('백업 방법으로 최고 점수 리셋');
-        });
+        // 최고 점수 리셋 확인
+        if (confirm('최고 점수를 리셋하시겠습니까?')) {
+            ScoreManager.reset().then(() => {
+                console.log('ScoreManager를 통한 최고 점수 리셋 완료');
+            }).catch(error => {
+                console.error('ScoreManager 리셋 실패:', error);
+                // 백업 리셋 방법
+                highScore = 0;
+                localStorage.clear();
+                sessionStorage.clear();
+                console.log('백업 방법으로 최고 점수 리셋');
+            });
+        }
     }, { passive: false });
     
     mobileControls.btnReset.addEventListener('touchend', (e) => {
@@ -286,17 +304,19 @@ function setupMobileControls() {
         e.stopPropagation();
         console.log('재시작 버튼 클릭');
         
-        // 최고 점수 리셋 (확인 팝업 없이)
-        ScoreManager.reset().then(() => {
-            console.log('ScoreManager를 통한 최고 점수 리셋 완료');
-        }).catch(error => {
-            console.error('ScoreManager 리셋 실패:', error);
-            // 백업 리셋 방법
-            highScore = 0;
-            localStorage.clear();
-            sessionStorage.clear();
-            console.log('백업 방법으로 최고 점수 리셋');
-        });
+        // 최고 점수 리셋 확인
+        if (confirm('최고 점수를 리셋하시겠습니까?')) {
+            ScoreManager.reset().then(() => {
+                console.log('ScoreManager를 통한 최고 점수 리셋 완료');
+            }).catch(error => {
+                console.error('ScoreManager 리셋 실패:', error);
+                // 백업 리셋 방법
+                highScore = 0;
+                localStorage.clear();
+                sessionStorage.clear();
+                console.log('백업 방법으로 최고 점수 리셋');
+            });
+        }
     });
     
     // 마우스 이벤트도 추가 (데스크탑용)
@@ -308,14 +328,7 @@ function setupMobileControls() {
         if (isStartScreen) {
             isStartScreen = false;
             console.log('모바일에서 게임 시작');
-            // 게임 시작 시 전체화면 전환
-            enableFullscreen();
-        }
-        
-        // 게임 오버 상태에서 재시작
-        if (isGameOver) {
-            restartGame();
-            // 게임 재시작 시 전체화면 전환
+            // 전체화면 전환
             enableFullscreen();
         }
     });
@@ -1330,6 +1343,13 @@ function restartGame() {
     setTimeout(() => {
         document.getElementById('gameCanvas').focus();
     }, 100);
+    
+    // 16. 게임 재시작 시 전체화면 모드 활성화
+    if (isMobile) {
+        setTimeout(() => {
+            enableFullscreen();
+        }, 200);
+    }
     
     console.log('게임 재시작 완료 - 모든 요소 초기화됨');
     console.log('현재 최고 점수:', highScore);
@@ -5122,13 +5142,6 @@ async function initializeGame() {
         startGameLoop();
         console.log('게임 루프 시작됨');
         
-        // 모바일에서 게임 시작 시 전체화면 전환
-        if (isMobile) {
-            setTimeout(() => {
-                enableFullscreen();
-            }, 500);
-        }
-        
     } catch (error) {
         console.error('게임 초기화 중 오류:', error);
     }
@@ -5282,13 +5295,6 @@ function restartGame() {
     setTimeout(() => {
         startGameLoop();
     }, 200);
-    
-    // 18. 모바일에서 재시작 시 전체화면 전환
-    if (isMobile) {
-        setTimeout(() => {
-            enableFullscreen();
-        }, 300);
-    }
     
     console.log('게임 재시작 완료 - 모든 요소 초기화됨');
     console.log('현재 최고 점수:', highScore);
@@ -6177,4 +6183,17 @@ function startGameLoop() {
         console.log('게임 루프가 이미 실행 중입니다');
     }
 }
+
+// 페이지 로드 시 게임 초기화
+window.addEventListener('load', async () => {
+    console.log('페이지 로드 완료 - 게임 초기화 시작');
+    await initializeGame();
+    
+    // 모바일에서 게임 로드 후 전체화면 모드 활성화
+    if (isMobile) {
+        setTimeout(() => {
+            enableFullscreen();
+        }, 1500);
+    }
+});
 
