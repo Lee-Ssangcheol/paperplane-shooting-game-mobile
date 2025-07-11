@@ -3495,6 +3495,7 @@ document.addEventListener('keydown', (e) => {
         activeElement.id === 'muteBtn' ||
         activeElement.closest('#soundPanel')
     );
+    
 
     if (isSoundPanelFocused) {
         return;
@@ -3586,6 +3587,7 @@ document.addEventListener('keyup', (e) => {
         }
     }
 });
+*/
 
 // 보스 총알 생성 함수 수정
 function createBossBullet(boss, angle) {
