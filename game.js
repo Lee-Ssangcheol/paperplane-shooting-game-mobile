@@ -1298,8 +1298,11 @@ async function initializeGame() {
             isSnakePatternActive: isSnakePatternActive
         });
         
+        // 시작 화면 초기화
+        initStartScreen();
+        
         // 게임 루프 시작
-        requestAnimationFrame(gameLoop);
+        startGameLoop();
         console.log('게임 루프 시작됨');
         
         // 모바일에서 전체화면 모드 활성화
