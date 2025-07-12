@@ -3771,7 +3771,7 @@ function handleBullets() {
             // 확산탄 이동 (최적화: 단순한 그리기)
             bullet.x += Math.sin(bullet.angle) * bullet.speed;
             bullet.y -= Math.cos(bullet.angle) * bullet.speed;
-            ctx.fillStyle = '#ff4444';
+            ctx.fillStyle = '#00ffff';//확산탄 색상 청녹색으로 변경
             ctx.fillRect(bullet.x - bullet.width/2, bullet.y - bullet.height/2, bullet.width, bullet.height);
         } else {
             // 일반 총알 이동 (최적화: 크기에 따른 그리기 방식 변경)
