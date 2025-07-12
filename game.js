@@ -4002,10 +4002,10 @@ function createBoss() {
     
     // 보스 객체 생성
     const boss = {
-        x: Math.random() * (canvas.width - 86),
-        y: -86,
-        width: 86,
-        height: 86,
+        x: Math.random() * (canvas.width - 69),
+        y: -69,
+        width: 69,
+        height: 69,
         speed: BOSS_SETTINGS.SPEED,
         pattern: (gameLevel < 5) ? BOSS_PATTERNS.WAVE_SHOT : BOSS_PATTERNS.CIRCLE_SHOT,
         angle: 0,
@@ -5564,10 +5564,10 @@ function createShieldedEnemy() {
     const selectedPattern = patterns[Math.floor(Math.random() * patterns.length)];
     
     const shieldedEnemy = {
-        x: Math.random() * (canvas.width - 66),
-        y: -66,
-        width: 66,
-        height: 66,
+        x: Math.random() * (canvas.width - 53),
+        y: -53,
+        width: 53,
+        height: 53,
         speed: 1.5 * mobileSpeedMultiplier,
         health: 30,
         maxHealth: 30,
