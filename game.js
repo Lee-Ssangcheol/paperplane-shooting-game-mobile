@@ -6065,8 +6065,8 @@ function setupTouchDragControls() {
         }
         
         // 터치한 위치로 플레이어 즉시 이동 (터치 지점과 플레이어 중심점의 거리를 일정하게 유지)
-        let newX = touchX - player.width / 4; // 터치 지점을 기준으로 플레이어 중심을 왼쪽으로 조정하여 일정한 거리 유지
-        let newY = touchY - player.height * 0.8; // 비행기 꼬리 부분으로 조정 (꼬리가 터치 지점에 오도록)
+        let newX = touchX - player.width / 6; // 터치 지점을 기준으로 플레이어 중심을 왼쪽으로 조정하여 일정한 거리 유지 (50% 증가)
+        let newY = touchY - player.height * 1.2; // 비행기 꼬리 부분으로 조정 (꼬리가 터치 지점에 오도록) (50% 증가)
         
         // 경계 제한 - 왼쪽/오른쪽 확장 영역 추가
         const margin = 10;
@@ -6114,8 +6114,8 @@ function setupTouchDragControls() {
         const touchY = touch.clientY - rect.top;
         
         // 터치한 위치로 플레이어 즉시 이동 (터치 지점과 플레이어 중심점의 거리를 일정하게 유지)
-        let newX = touchX - player.width / 4; // 터치 지점을 기준으로 플레이어 중심을 왼쪽으로 조정하여 일정한 거리 유지
-        let newY = touchY - player.height * 0.8; // 비행기 꼬리 부분으로 조정 (꼬리가 터치 지점에 오도록)
+        let newX = touchX - player.width / 6; // 터치 지점을 기준으로 플레이어 중심을 왼쪽으로 조정하여 일정한 거리 유지 (50% 증가)
+        let newY = touchY - player.height * 1.2; // 비행기 꼬리 부분으로 조정 (꼬리가 터치 지점에 오도록) (50% 증가)
         
         // 경계 제한 - 왼쪽/오른쪽 확장 영역 추가
         const margin = 10;
