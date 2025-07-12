@@ -4600,8 +4600,8 @@ function applyPowerUp(type) {
             setTimeout(() => damageMultiplier = 1, 10000);
             break;
         case POWERUP_TYPES.RAPID_FIRE:
-            fireRateMultiplier = 4;  // 연사 속도 증가 효과 더욱 강화
-            setTimeout(() => fireRateMultiplier = 1, 10000);
+            fireRateMultiplier = 1.5;  // 연사 속도 증가 효과 완화
+            setTimeout(() => fireRateMultiplier = 1, 5000);
             break;
     }
 }
@@ -5234,9 +5234,9 @@ function restartGame() {
     lastFireTime = 0;
     isSpacePressed = false;
     spacePressTime = 0;
-    fireDelay = 1000;
-    continuousFireDelay = 70;
-    bulletSpeed = 12;
+    fireDelay = 1250;
+    continuousFireDelay = 87.5;
+    bulletSpeed = 7 * mobileSpeedMultiplier;
     baseBulletSize = 4.5;
     isContinuousFire = false;
     canFire = true;
@@ -5958,7 +5958,7 @@ let adaptiveFrameRate = {
     },
     
     shouldSkipFrame() {
-        return this.frameSkip > 0 && this.frameCount % (this.frameSkip + 1) === 0;
+        return false; // 프레임 스킵 비활성화로 일관된 속도 유지
     }
 };
 
