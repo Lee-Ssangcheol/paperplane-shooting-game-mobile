@@ -7,7 +7,7 @@ const TOP_EFFECT_ZONE = 20;  // 상단 효과 무시 영역 (픽셀)
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
 // 모바일 속도 조절 (60% 속도)
-const mobileSpeedMultiplier = isMobile ? 0.6 : 1.0;
+const mobileSpeedMultiplier = isMobile ? 0.8 : 1.0;
 
 // 전체화면 상태 추적 변수
 let isFullscreenActive = false;
