@@ -5503,27 +5503,14 @@ function drawEnemyMissiles() {
 function handleEnemyMissileFiring() {
     const currentTime = Date.now();
     
-    // 일반 적 비행기 미사일 발사
-    enemies.forEach(enemy => {
-        if (!enemy.lastMissileTime) {
-            enemy.lastMissileTime = currentTime;
-        }
-        
-        // 파괴된 적은 미사일 발사하지 않음
-        if (enemy.isHit) return;
-        
-        // 2-4초 간격으로 랜덤 발사
-        const missileInterval = 2000 + Math.random() * 2000;
-        if (currentTime - enemy.lastMissileTime > missileInterval) {
-            if (Math.random() < 0.3) { // 30% 확률로 발사
-                createEnemyMissile(enemy, 'missile1');
-                enemy.lastMissileTime = currentTime;
-            }
-        }
-    });
+    // 모든 적 비행기 미사일 발사 (일반 적, 뱀 패턴 적, 방어막 적, 보스 포함)
+    const allEnemies = [
+        ...enemies.map(enemy => ({ ...enemy, type: enemy.isBoss ? 'boss' : 'normal' })),
+        ...snakeEnemies.map(enemy => ({ ...enemy, type: 'snake' })),
+        ...shieldedEnemies.map(enemy => ({ ...enemy, type: 'shielded' }))
+    ];
     
-    // 뱀 패턴 적 미사일 발사
-    snakeEnemies.forEach(enemy => {
+    allEnemies.forEach(enemy => {
         if (!enemy.lastMissileTime) {
             enemy.lastMissileTime = currentTime;
         }
@@ -5531,11 +5518,39 @@ function handleEnemyMissileFiring() {
         // 파괴된 적은 미사일 발사하지 않음
         if (enemy.isHit) return;
         
-        // 1.5-3초 간격으로 랜덤 발사
-        const missileInterval = 1500 + Math.random() * 1500;
+        // 적 타입에 따른 미사일 발사 설정
+        let missileInterval, missileType, fireChance;
+        
+        switch(enemy.type) {
+            case 'normal':
+                missileInterval = 2000 + Math.random() * 2000; // 2-4초 간격
+                missileType = 'missile1';
+                fireChance = 0.3; // 30% 확률
+                break;
+            case 'snake':
+                missileInterval = 1500 + Math.random() * 1500; // 1.5-3초 간격
+                missileType = 'missile2';
+                fireChance = 0.4; // 40% 확률
+                break;
+            case 'shielded':
+                missileInterval = 2500 + Math.random() * 1500; // 2.5-4초 간격
+                missileType = 'missile1';
+                fireChance = 0.25; // 25% 확률
+                break;
+            case 'boss':
+                missileInterval = 1000 + Math.random() * 1000; // 1-2초 간격 (보스는 더 빠르게)
+                missileType = 'missile2';
+                fireChance = 0.5; // 50% 확률 (보스는 더 자주 발사)
+                break;
+            default:
+                missileInterval = 2000 + Math.random() * 2000; // 기본값
+                missileType = 'missile1';
+                fireChance = 0.3; // 기본값
+        }
+        
         if (currentTime - enemy.lastMissileTime > missileInterval) {
-            if (Math.random() < 0.4) { // 40% 확률로 발사
-                createEnemyMissile(enemy, 'missile2');
+            if (Math.random() < fireChance) {
+                createEnemyMissile(enemy, missileType);
                 enemy.lastMissileTime = currentTime;
             }
         }
