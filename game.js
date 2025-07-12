@@ -1268,8 +1268,8 @@ async function initializeGame() {
         lastFireTime = 0;
         isSpacePressed = false;
         spacePressTime = 0;
-        fireDelay = 400;
-        continuousFireDelay = 30;
+        fireDelay = 600;
+        continuousFireDelay = 50;
         bulletSpeed = 7 * mobileSpeedMultiplier;
         baseBulletSize = 4.5;
         isContinuousFire = false;
@@ -3723,7 +3723,7 @@ function handleSpreadShot() {
                 y: player.y,
                 width: 10,
                 height: 25,
-                speed: 12,
+                speed: 6,
                 angle: angle,
                 isSpread: true
             };
@@ -3736,7 +3736,7 @@ function handleSpreadShot() {
                     y: secondPlane.y,
                     width: 10,
                     height: 25,
-                    speed: 12,
+                    speed: 6,
                     angle: angle,
                     isSpread: true
                 };
