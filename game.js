@@ -9,6 +9,10 @@ const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/
 // 모바일 속도 조절 (60% 속도)
 const mobileSpeedMultiplier = isMobile ? 0.8 : 1.0;
 
+// 모바일 감지 디버그 로그
+console.log('모바일 디바이스 감지:', isMobile);
+console.log('User Agent:', navigator.userAgent);
+
 // 전체화면 상태 추적 변수
 let isFullscreenActive = false;
 let fullscreenReactivationPending = false;
@@ -5561,15 +5565,18 @@ function handleEnemyMissileFiring() {
     const currentTime = Date.now();
     
     // 일반 적과 뱀 패턴 적, 보스만 미사일 발사 (방어막 적은 별도 처리)
+    const normalEnemies = enemies.filter(enemy => !enemy.isBoss && enemy.type !== 'shielded');
     const allEnemies = [
-        ...enemies.filter(enemy => !enemy.isBoss && enemy.type !== 'shielded').map(enemy => { enemy.type = 'normal'; return enemy; }),
-        ...snakeEnemies.map(enemy => { enemy.type = 'snake'; return enemy; }),
-        ...enemies.filter(enemy => enemy.isBoss).map(enemy => { enemy.type = 'boss'; return enemy; })
+        ...normalEnemies.map(enemy => ({ ...enemy, type: 'normal' })),
+        ...snakeEnemies.map(enemy => ({ ...enemy, type: 'snake' })),
+        ...enemies.filter(enemy => enemy.isBoss).map(enemy => ({ ...enemy, type: 'boss' }))
     ];
     
     // 디버그: 현재 적 수 출력
     if (allEnemies.length > 0) {
-        console.log(`미사일 발사 대상 적 수: 일반 ${enemies.filter(e => !e.isBoss && e.type !== 'shielded').length}, 뱀 ${snakeEnemies.length}, 보스 ${enemies.filter(e => e.isBoss).length}`);
+        console.log(`미사일 발사 대상 적 수: 일반 ${normalEnemies.length}, 뱀 ${snakeEnemies.length}, 보스 ${enemies.filter(e => e.isBoss).length}`);
+        console.log('모바일 상태:', isMobile);
+        console.log('일반 적 타입들:', normalEnemies.map(e => e.type));
     }
     
     allEnemies.forEach(enemy => {
@@ -5578,7 +5585,10 @@ function handleEnemyMissileFiring() {
         }
         
         // 파괴된 적은 미사일 발사하지 않음
-        if (enemy.isHit) return;
+        if (enemy.isHit) {
+            console.log(`적 파괴됨으로 미사일 발사 스킵: ${enemy.type} 타입`);
+            return;
+        }
         
         // 적 타입에 따른 미사일 발사 설정 (모바일에서는 더 긴 간격으로 조정)
         let missileInterval, missileType, fireChance;
@@ -5613,15 +5623,28 @@ function handleEnemyMissileFiring() {
         }
         
         // 미사일 발사 조건 체크
-        if (currentTime - enemy.lastMissileTime > missileInterval) {
+        const timeSinceLastMissile = currentTime - enemy.lastMissileTime;
+        console.log(`적 미사일 체크: ${enemy.type} 타입, 경과시간: ${timeSinceLastMissile}ms, 필요간격: ${missileInterval}ms, 발사확률: ${fireChance}`);
+        
+        if (timeSinceLastMissile > missileInterval) {
             // 랜덤 확률로 미사일 발사
-            if (Math.random() < fireChance) {
-                console.log(`적 미사일 발사: ${enemy.type} 타입, 미사일: ${missileType}, 간격: ${missileInterval}ms`);
+            const randomValue = Math.random();
+            console.log(`미사일 발사 시도: ${enemy.type} 타입, 랜덤값: ${randomValue.toFixed(3)}, 필요확률: ${fireChance}`);
+            
+            if (randomValue < fireChance) {
+                console.log(`적 미사일 발사 성공: ${enemy.type} 타입, 미사일: ${missileType}, 간격: ${missileInterval}ms, 모바일: ${isMobile}`);
                 createEnemyMissile(enemy, missileType);
                 enemy.lastMissileTime = currentTime;
             } else {
                 // 발사하지 않더라도 다음 간격을 랜덤하게 조정
                 enemy.lastMissileTime = currentTime - (Math.random() * 500);
+                console.log(`미사일 발사 실패: ${enemy.type} 타입, 확률: ${fireChance}, 모바일: ${isMobile}`);
+            }
+        } else {
+            // 간격이 아직 안 된 경우
+            const remainingTime = missileInterval - timeSinceLastMissile;
+            if (Math.random() < 0.01) { // 1% 확률로만 로그 출력 (너무 많이 출력되지 않도록)
+                console.log(`미사일 발사 대기: ${enemy.type} 타입, 남은 시간: ${remainingTime.toFixed(0)}ms, 모바일: ${isMobile}`);
             }
         }
     });
