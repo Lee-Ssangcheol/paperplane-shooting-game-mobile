@@ -5676,11 +5676,11 @@ function handleEnemyMissileFiring() {
             return;
         }
         
-        // 보스: missile1과 missile2 랜덤 발사 (3-5초 간격, 모바일에서는 4.5-7.5초)
+        // 보스: missile1만 발사 (2-3초 간격, 모바일에서는 3-4.5초)
         const mobileIntervalMultiplier = isMobile ? 1.5 : 1.0;
-        const missileInterval = (3000 + Math.random() * 2000) * mobileIntervalMultiplier;
-        const missileType = Math.random() < 0.5 ? 'missile1' : 'missile2'; // 50% 확률로 적색, 50% 확률로 청색
-        const fireChance = isMobile ? 0.6 : 0.7; // 모바일에서는 발사 확률도 낮춤
+        const missileInterval = (2000 + Math.random() * 1000) * mobileIntervalMultiplier;
+        const missileType = 'missile1'; // 적색 미사일 이미지만 사용
+        const fireChance = isMobile ? 0.85 : 0.95; // 모바일에서도 발사 확률을 높임
         
         // 미사일 발사 조건 체크
         const timeSinceLastMissile = currentTime - enemy.lastMissileTime;
