@@ -1514,8 +1514,8 @@ function createEnemy() {
         dynamiteDropChance: 0.25
     };
     
-    // 뱀 패턴 시작 확률 (난이도에 따라 증가)
-    if (!isSnakePatternActive && Math.random() < currentDifficulty.patternChance * 0.5) {
+    // 뱀 패턴 시작 확률 (난이도에 따라 증가) - 확률을 높임
+    if (!isSnakePatternActive && Math.random() < currentDifficulty.patternChance * 0.8) {
         startSnakePattern();
     }
 
@@ -5590,7 +5590,7 @@ function handleEnemyMissileFiring() {
         const mobileIntervalMultiplier = isMobile ? 1.5 : 1.0;
         const missileInterval = (3000 + Math.random() * 1000) * mobileIntervalMultiplier;
         const missileType = 'missile1'; // 적색 미사일 이미지
-        const fireChance = isMobile ? 0.5 : 0.6; // 모바일에서는 발사 확률도 낮춤
+        const fireChance = isMobile ? 0.7 : 0.8; // 모바일에서도 발사 확률을 높임
         
         // 미사일 발사 조건 체크
         const timeSinceLastMissile = currentTime - enemy.lastMissileTime;
@@ -5635,7 +5635,7 @@ function handleEnemyMissileFiring() {
         const mobileIntervalMultiplier = isMobile ? 1.5 : 1.0;
         const missileInterval = (3000 + Math.random() * 1500) * mobileIntervalMultiplier;
         const missileType = 'missile2'; // 청색 미사일 이미지
-        const fireChance = isMobile ? 0.55 : 0.65; // 모바일에서는 발사 확률도 낮춤
+        const fireChance = isMobile ? 0.75 : 0.85; // 모바일에서도 발사 확률을 높임
         
         // 미사일 발사 조건 체크
         const timeSinceLastMissile = currentTime - enemy.lastMissileTime;
