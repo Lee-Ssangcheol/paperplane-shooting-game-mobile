@@ -186,6 +186,10 @@ let mobileContinuousFireInterval = null;
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
+// 캔버스 크기 변수 설정 (모바일용)
+const CANVAS_WIDTH = 392;
+const CANVAS_HEIGHT = 700;
+
 // 캔버스 크기 설정
 function resizeCanvas() {
     const container = document.getElementById('canvas-container');
@@ -199,8 +203,8 @@ function resizeCanvas() {
         canvas.style.borderRadius = '0';  // 모서리를 각지게
         
         // 캔버스 크기를 모바일 비율에 맞게 설정 (일관성 유지)
-        canvas.width = 392;  // 모바일 비율에 맞춘 가로 크기
-        canvas.height = 700;  // 모바일 비율에 맞춘 세로 크기
+        canvas.width = CANVAS_WIDTH;  // 모바일 비율에 맞춘 가로 크기
+        canvas.height = CANVAS_HEIGHT;  // 모바일 비율에 맞춘 세로 크기
         
         // CSS에서 설정한 크기와 일치하도록 스타일 설정
         canvas.style.width = '392px';
@@ -500,27 +504,29 @@ collisionSound.addEventListener('loadedmetadata', () => {
     collisionSound.duration = Math.min(collisionSound.duration, 0.8);
 });
 
-// 플레이어 우주선
+// 플레이어 우주선 - 모바일용 캔버스 크기(392x700)로 제한
+const canvasWidth = CANVAS_WIDTH;
+const canvasHeight = CANVAS_HEIGHT;
 const player = {
-    x: canvas.width / 2,
+    x: canvasWidth / 2,
     y: 0,  // 임시로 0으로 설정
     width: 58,
     height: 58,
     speed: 8
 };
 // Y 위치를 객체 생성 후 설정
-player.y = canvas.height - player.height - 10;
+player.y = canvasHeight - player.height - 10;
 
 // 두 번째 비행기
 const secondPlane = {
-    x: canvas.width / 2 - 60,
+    x: canvasWidth / 2 - 60,
     y: 0,  // 임시로 0으로 설정
     width: 58,
     height: 58,
     speed: 8
 };
 // Y 위치를 객체 생성 후 설정
-secondPlane.y = canvas.height - secondPlane.height - 10;
+secondPlane.y = canvasHeight - secondPlane.height - 10;
 
 // 게임 상태 변수 설정
 let bullets = [];          // 플레이어 총알 배열
@@ -1248,11 +1254,13 @@ async function initializeGame() {
         bossPattern = 0;
         lastBossSpawnTime = Date.now();
                
-        // 6. 플레이어 초기 위치 설정
-        player.x = canvas.width / 2 - player.width / 2;
-        player.y = canvas.height - player.height - 10;
-        secondPlane.x = canvas.width / 2 - 60 - player.width / 2;
-        secondPlane.y = canvas.height - secondPlane.height - 10;
+        // 6. 플레이어 초기 위치 설정 - 모바일용 캔버스 크기(392x700)로 제한
+        const canvasWidth = CANVAS_WIDTH;
+        const canvasHeight = CANVAS_HEIGHT;
+        player.x = canvasWidth / 2 - player.width / 2;
+        player.y = canvasHeight - player.height - 10;
+        secondPlane.x = canvasWidth / 2 - 60 - player.width / 2;
+        secondPlane.y = canvasHeight - secondPlane.height - 10;
         
         // 7. 게임 타이머 초기화
         lastEnemySpawnTime = 0;
@@ -1391,11 +1399,13 @@ function restartGame() {
     enemyMissiles = [];     // 적 미사일 배열 초기화
     shieldedEnemies = [];   // 방어막 적 배열 초기화
     
-    // 3. 플레이어 위치 초기화
-    player.x = canvas.width / 2;
-    player.y = canvas.height - player.height - 10;  // 10에서 player.height + 10으로 변경하여 캔버스 하단에서 10픽셀 위에 위치
-    secondPlane.x = canvas.width / 2 - 60;
-    secondPlane.y = canvas.height - secondPlane.height - 10;  // 10에서 secondPlane.height + 10으로 변경하여 캔버스 하단에서 10픽셀 위에 위치
+    // 3. 플레이어 위치 초기화 - 모바일용 캔버스 크기(392x700)로 제한
+    const canvasWidth = CANVAS_WIDTH;
+    const canvasHeight = CANVAS_HEIGHT;
+    player.x = canvasWidth / 2;
+    player.y = canvasHeight - player.height - 10;  // 10에서 player.height + 10으로 변경하여 캔버스 하단에서 10픽셀 위에 위치
+    secondPlane.x = canvasWidth / 2 - 60;
+    secondPlane.y = canvasHeight - secondPlane.height - 10;  // 10에서 secondPlane.height + 10으로 변경하여 캔버스 하단에서 10픽셀 위에 위치
     
     // 4. 게임 타이머 및 상태 초기화
     gameOverStartTime = null;
@@ -1510,8 +1520,10 @@ function createEnemy() {
     const enemyType = Math.random() < currentDifficulty.patternChance ? 
         patterns[Math.floor(Math.random() * patterns.length)] : ENEMY_PATTERNS.NORMAL;
     
-    // 적 생성 위치 계산
-    const spawnX = Math.random() * (canvas.width - 30);
+    // 적 생성 위치 계산 - 모바일용 캔버스 크기(392x700)로 제한
+    const canvasWidth = CANVAS_WIDTH;
+    const canvasHeight = CANVAS_HEIGHT;
+    const spawnX = Math.random() * (canvasWidth - 30);
     const spawnY = -30;
     
     const enemy = {
@@ -1585,6 +1597,10 @@ function updateEnemyPosition(enemy) {
     const currentTime = Date.now();
     const deltaTime = currentTime - enemy.lastUpdateTime;
     enemy.lastUpdateTime = currentTime;
+    
+    // 모바일용 캔버스 크기(392x700)로 제한
+    const canvasWidth = CANVAS_WIDTH;
+    const canvasHeight = CANVAS_HEIGHT;
     
     // 적군이 화면 상단에 머무르지 않도록 기본 하강 속도 추가
     const baseSpeed = enemy.speed || 1.5;  // 2에서 1.5로 조정
@@ -1714,19 +1730,19 @@ function updateEnemyPosition(enemy) {
             enemy.y += baseSpeed;
             if (currentTime - enemy.teleportTimer >= enemy.teleportInterval) {
                 enemy.teleportTimer = currentTime;
-                enemy.x = Math.random() * (canvas.width - enemy.width);
+                enemy.x = Math.random() * (canvasWidth - enemy.width);
                 enemy.y = Math.max(enemy.y - 100, 0); // 위로 순간이동
             }
             break;
             
-        case ENEMY_PATTERNS.MIRROR:
+                case ENEMY_PATTERNS.MIRROR:
             // 거울 패턴 (플레이어 반대 방향)
-            const mirrorX = canvas.width - player.x;
-            const targetMirrorX = mirrorX + (enemy.mirrorOffset - canvas.width / 2);
-            const dxMirror = targetMirrorX - enemy.x;
-            enemy.x += dxMirror * 0.02;
-            enemy.y += baseSpeed * 1.1;
-            break;
+        const mirrorX = canvasWidth - player.x;
+        const targetMirrorX = mirrorX + (enemy.mirrorOffset - canvasWidth / 2);
+        const dxMirror = targetMirrorX - enemy.x;
+        enemy.x += dxMirror * 0.02;
+        enemy.y += baseSpeed * 1.1;
+        break;
             
         case ENEMY_PATTERNS.ACCELERATE:
             // 가속 패턴
@@ -1745,10 +1761,10 @@ function updateEnemyPosition(enemy) {
     }
     
     // 화면 경계 체크 및 반전
-    if (enemy.x <= 0 || enemy.x >= canvas.width - enemy.width) {
+    if (enemy.x <= 0 || enemy.x >= canvasWidth - enemy.width) {
         enemy.direction *= -1;
     }
-    if (enemy.y <= 0 || enemy.y >= canvas.height - enemy.height) {
+    if (enemy.y <= 0 || enemy.y >= canvasHeight - enemy.height) {
         enemy.verticalDirection *= -1;
     }
     
@@ -1821,7 +1837,7 @@ function startSnakePattern() {
         bounceHeight: 50 + Math.random() * 30,
         bounceSpeed: 0.08 + Math.random() * 0.05,
         bounceAngle: 0,
-        mirrorOffset: Math.random() * canvas.width,
+        mirrorOffset: Math.random() * CANVAS_WIDTH,
         patternChangeTimer: 0,
         patternChangeInterval: 5000 + Math.random() * 3000, // 패턴 변경 간격
         currentSpeed: 2 + Math.random() * 2,
@@ -1858,9 +1874,13 @@ function startSnakePattern() {
 
 // 그룹별 시작 위치 계산 함수 추가
 function getRandomStartPosition() {
+    // 모바일용 캔버스 크기(392x700)로 제한
+    const canvasWidth = CANVAS_WIDTH;
+    const canvasHeight = CANVAS_HEIGHT;
+    
     // 화면을 4등분하여 각 구역별로 다른 시작 위치 설정
     const section = Math.floor(Math.random() * 4);
-    const sectionWidth = canvas.width / 4;
+    const sectionWidth = canvasWidth / 4;
     
     switch(section) {
         case 0: // 왼쪽 구역
@@ -2447,13 +2467,17 @@ function gameLoop() {
 
 // 플레이어 이동 처리 함수
 function handlePlayerMovement() {
-    if (keys.ArrowLeft && player.x > -player.width) {
+    // 모바일용 캔버스 크기로 플레이어 이동 영역 제한
+const canvasWidth = CANVAS_WIDTH;
+const canvasHeight = CANVAS_HEIGHT;
+    
+    if (keys.ArrowLeft && player.x > 0) {
         player.x -= player.speed * 0.5;
         if (hasSecondPlane) {
             secondPlane.x -= player.speed * 0.5;
         }
     }
-    if (keys.ArrowRight && player.x < canvas.width + player.width) {
+    if (keys.ArrowRight && player.x < CANVAS_WIDTH - player.width) {
         player.x += player.speed * 0.5;
         if (hasSecondPlane) {
             secondPlane.x += player.speed * 0.5;
@@ -2465,7 +2489,7 @@ function handlePlayerMovement() {
             secondPlane.y -= player.speed;
         }
     }
-    if (keys.ArrowDown && player.y < canvas.height - player.height - 10) {  // 150에서 player.height + 10으로 변경
+    if (keys.ArrowDown && player.y < CANVAS_HEIGHT - player.height - 10) {
         player.y += player.speed;
         if (hasSecondPlane) {
             secondPlane.y += player.speed;
@@ -2606,40 +2630,42 @@ function handleSnakePattern() {
                     group.currentSpeed = Math.min(group.currentSpeed * 1.2, group.maxSpeed);
                 }
                 
-                // 첫 번째 적의 이동 패턴
-                switch(group.patternType) {
-                    case PATTERN_TYPES.SNAKE:
-                        // S자 움직임 - 더 자연스럽게 조정
-                        enemy.angle += 0.04;  // 0.05에서 0.04로
-                        const baseX = group.startX;
-                        const waveX = Math.sin(enemy.angle * group.frequency) * group.amplitude;
-                        enemy.x = baseX + waveX;
-                        enemy.y += enemy.speed * 1.1;  // 1.3에서 1.1로
-                        break;
-                        
-                    case PATTERN_TYPES.VERTICAL:
-                        // 세로 움직임 - 약간의 흔들림 추가
-                        enemy.y += enemy.speed * 1.2;
-                        enemy.x = group.startX + Math.sin(enemy.angle) * 50;
-                        enemy.angle += 0.03;
-                        break;
-                        
-                    case PATTERN_TYPES.DIAGONAL:
-                        // 대각선 움직임 - 더 급격하게
-                        enemy.x += enemy.speed * group.direction * 1.5;
-                        enemy.y += enemy.speed * 1.3;
-                        if (enemy.x <= 0 || enemy.x >= canvas.width - enemy.width) {
-                            group.direction *= -1;
-                            enemy.y += 30;
-                        }
-                        break;
+                        // 첫 번째 적의 이동 패턴 - 모바일용 캔버스 크기(392x700)로 제한
+                const canvasWidth = CANVAS_WIDTH;
+                const canvasHeight = CANVAS_HEIGHT;
+        switch(group.patternType) {
+            case PATTERN_TYPES.SNAKE:
+                // S자 움직임 - 더 자연스럽게 조정
+                enemy.angle += 0.04;  // 0.05에서 0.04로
+                const baseX = group.startX;
+                const waveX = Math.sin(enemy.angle * group.frequency) * group.amplitude;
+                enemy.x = baseX + waveX;
+                enemy.y += enemy.speed * 1.1;  // 1.3에서 1.1로
+                break;
+                
+            case PATTERN_TYPES.VERTICAL:
+                // 세로 움직임 - 약간의 흔들림 추가
+                enemy.y += enemy.speed * 1.2;
+                enemy.x = group.startX + Math.sin(enemy.angle) * 50;
+                enemy.angle += 0.03;
+                break;
+                
+            case PATTERN_TYPES.DIAGONAL:
+                // 대각선 움직임 - 더 급격하게
+                enemy.x += enemy.speed * group.direction * 1.5;
+                enemy.y += enemy.speed * 1.3;
+                if (enemy.x <= 0 || enemy.x >= CANVAS_WIDTH - enemy.width) {
+                    group.direction *= -1;
+                    enemy.y += 30;
+                }
+                break;
                         
                     case PATTERN_TYPES.HORIZONTAL:
                         // 가로 움직임 - 더 역동적으로
                         enemy.x += enemy.speed * group.direction * 1.4;
                         enemy.y = group.startY + Math.sin(enemy.angle) * 60;
                         enemy.angle += 0.04;
-                        if (enemy.x <= 0 || enemy.x >= canvas.width - enemy.width) {
+                        if (enemy.x <= 0 || enemy.x >= CANVAS_WIDTH - enemy.width) {
                             group.direction *= -1;
                             group.startY += 40;
                         }
@@ -2707,8 +2733,8 @@ function handleSnakePattern() {
                         
                     case PATTERN_TYPES.MIRROR:
                         // 거울 움직임 (플레이어 반대 방향)
-                        const mirrorX = canvas.width - player.x;
-                        const targetMirrorX = mirrorX + (group.mirrorOffset - canvas.width / 2);
+                        const mirrorX = CANVAS_WIDTH - player.x;
+                        const targetMirrorX = mirrorX + (group.mirrorOffset - CANVAS_WIDTH / 2);
                         const dxMirror = targetMirrorX - enemy.x;
                         enemy.x += dxMirror * 0.03;
                         enemy.y += enemy.speed * 1.2;
@@ -2781,12 +2807,14 @@ function handleSnakePattern() {
             return false;
         }
         
-        // 화면 밖으로 나간 적 제거
+        // 화면 밖으로 나간 적 제거 - 모바일용 캔버스 크기(392x700)로 제한
+        const canvasWidth = CANVAS_WIDTH;
+        const canvasHeight = CANVAS_HEIGHT;
         group.enemies = group.enemies.filter(enemy => 
-            enemy.y < canvas.height + 100 && 
+            enemy.y < CANVAS_HEIGHT + 100 && 
             enemy.y > -100 && 
             enemy.x > -100 && 
-            enemy.x < canvas.width + 100
+            enemy.x < CANVAS_WIDTH + 100
         );
         
         // snakeEnemies 배열에서도 제거된 적들을 제거
@@ -3012,10 +3040,10 @@ function checkEnemyCollisions(enemy) {
     }
 
     // 화면 밖으로 나간 적 제거
-            return enemy.y < canvas.height + 100 && 
+    return enemy.y < canvasHeight + 100 && 
            enemy.y > -100 && 
            enemy.x > -100 && 
-           enemy.x < canvas.width + 100;
+           enemy.x < canvasWidth + 100;
 }
 
 // 보스 총알 처리 함수 (별도 분리)
@@ -3041,10 +3069,10 @@ function handleBossBullets() {
         }
         
         // 화면 밖으로 나간 총알 제거
-        return bullet.y < canvas.height + 50 && 
-               bullet.y > -50 && 
-               bullet.x > -50 && 
-               bullet.x < canvas.width + 50;
+        return bullet.y < CANVAS_HEIGHT + 50 && 
+        bullet.y > -50 && 
+        bullet.x > -50 && 
+        bullet.x < CANVAS_WIDTH + 50;
     });
 }
 
@@ -3323,24 +3351,24 @@ function drawUI() {
     ctx.fillStyle = 'white';
     ctx.font = '16px Arial';
     ctx.textAlign = 'right';
-    ctx.fillText('제작/저작권자:Lee.SS.C', canvas.width - 20, canvas.height - 30);
+    ctx.fillText('제작/저작권자:Lee.SS.C', CANVAS_WIDTH - 20, CANVAS_HEIGHT - 30);
     
     // 일시정지 상태 표시
     if (isPaused) {
         // 반투명 배경
         ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
         
         // 일시정지 텍스트
         ctx.fillStyle = 'yellow';
         ctx.font = 'bold 48px Arial';
         ctx.textAlign = 'center';
-        ctx.fillText('일시정지', canvas.width/2, canvas.height/2 - 50);
+        ctx.fillText('일시정지', CANVAS_WIDTH/2, CANVAS_HEIGHT/2 - 50);
         
         // 재개 안내 텍스트
         ctx.fillStyle = 'white';
         ctx.font = '24px Arial';
-        ctx.fillText('P키를 눌러 게임을 재개하세요', canvas.width/2, canvas.height/2 + 20);
+        ctx.fillText('P키를 눌러 게임을 재개하세요', CANVAS_WIDTH/2, CANVAS_HEIGHT/2 + 20);
         
         // 텍스트 정렬을 다시 왼쪽으로 복원
         ctx.textAlign = 'left';
@@ -3350,7 +3378,7 @@ function drawUI() {
     if (bossActive) {
         // 체력바 배경
         ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
-        ctx.fillRect(canvas.width/2 - 100, 10, 200, 20);
+        ctx.fillRect(CANVAS_WIDTH/2 - 100, 10, 200, 20);
         
         // 체력바
         const healthPercentage = Math.max(0, bossHealth) / BOSS_SETTINGS.HEALTH;
@@ -3360,20 +3388,20 @@ function drawUI() {
         else healthColor = 'rgba(255, 0, 0, 0.8)';
         
         ctx.fillStyle = healthColor;
-        ctx.fillRect(canvas.width/2 - 100, 10, healthPercentage * 200, 20);
+        ctx.fillRect(CANVAS_WIDTH/2 - 100, 10, healthPercentage * 200, 20);
         
         // 체력 수치
         ctx.fillStyle = 'white';
         ctx.font = 'bold 16px Arial';
         ctx.textAlign = 'center';
-        ctx.fillText(`보스 체력: ${Math.max(0, Math.ceil(bossHealth))}/${BOSS_SETTINGS.HEALTH}`, canvas.width/2, 30);
+        ctx.fillText(`보스 체력: ${Math.max(0, Math.ceil(bossHealth))}/${BOSS_SETTINGS.HEALTH}`, CANVAS_WIDTH/2, 30);       
         
         // 페이즈 표시
         const currentPhase = BOSS_SETTINGS.PHASE_THRESHOLDS.findIndex(
             threshold => bossHealth > threshold.health
         );
         if (currentPhase >= 0) {
-            ctx.fillText(`페이즈 ${currentPhase + 1}`, canvas.width/2, 50);
+        ctx.fillText(`페이즈 ${currentPhase + 1}`, CANVAS_WIDTH/2, 50);
         }
     }
     
@@ -3693,7 +3721,7 @@ function handleSecondPlane() {
         // 두 번째 비행기 획득 메시지
         ctx.fillStyle = 'yellow';
         ctx.font = '40px Arial';
-        ctx.fillText('추가 비행기 획득!', canvas.width/2 - 150, canvas.height/2 + 100);  // +100 추가
+        ctx.fillText('추가 비행기 획득!', CANVAS_WIDTH/2 - 150, CANVAS_HEIGHT/2 + 100);  // +100 추가
     }
 
     if (hasSecondPlane) {
@@ -3707,7 +3735,7 @@ function handleSecondPlane() {
             // 두 번째 비행기 소멸 메시지
             ctx.fillStyle = 'red';
             ctx.font = '40px Arial';
-            ctx.fillText('추가 비행기 소멸!', canvas.width/2 - 150, canvas.height/2 + 100);  // +100 추가
+            ctx.fillText('추가 비행기 소멸!', CANVAS_WIDTH/2 - 150, CANVAS_HEIGHT/2 + 100);  // +100 추가
         }
     }
 }
@@ -3932,9 +3960,11 @@ function handleBullets() {
             }
         }
         
-        // 화면 밖으로 나간 총알 제거
-        return bullet.y > 0 && bullet.y < canvas.height && 
-               bullet.x > 0 && bullet.x < canvas.width;
+        // 화면 밖으로 나간 총알 제거 - 모바일용 캔버스 크기로 제한
+const canvasWidth = CANVAS_WIDTH;
+const canvasHeight = CANVAS_HEIGHT;
+        return bullet.y > 0 && bullet.y < canvasHeight && 
+               bullet.x > 0 && bullet.x < canvasWidth;
     });
 }
 
@@ -4000,9 +4030,11 @@ function createBoss() {
     // 보스 파괴 시 목숨 1개 추가
     maxLives++; // 최대 목숨 증가
     
-    // 보스 객체 생성
+    // 보스 객체 생성 - 모바일용 캔버스 크기(392x700)로 제한
+    const canvasWidth = CANVAS_WIDTH;
+    const canvasHeight = CANVAS_HEIGHT;
     const boss = {
-        x: Math.random() * (canvas.width - 69),
+        x: Math.random() * (canvasWidth - 69),
         y: -69,
         width: 69,
         height: 69,
@@ -4134,7 +4166,7 @@ function handleBossPattern(boss) {
             break;
         case 1:  // 원형 이동
             const radius = 100;
-            const centerX = canvas.width / 2;
+            const centerX = CANVAS_WIDTH / 2;
             const centerY = 100;
             boss.x = centerX + Math.cos(currentTime / 1000) * radius;
             boss.y = centerY + Math.sin(currentTime / 1000) * radius;
@@ -4522,8 +4554,12 @@ function createPowerUp() {
     const types = Object.values(POWERUP_TYPES);
     const type = types[Math.floor(Math.random() * types.length)];
     
+    // 모바일용 캔버스 크기(392x700)로 제한
+    const canvasWidth = CANVAS_WIDTH;
+    const canvasHeight = CANVAS_HEIGHT;
+    
     const powerUp = {
-        x: Math.random() * (canvas.width - 30),
+        x: Math.random() * (canvasWidth - 30),
         y: -30,
         width: 30,
         height: 30,
@@ -4557,8 +4593,10 @@ function handlePowerUps() {
             return false;
         }
         
-        // 화면 밖으로 나간 경우 제거
-        return powerUp.y < canvas.height;
+        // 화면 밖으로 나간 경우 제거 - 모바일용 캔버스 크기(392x700)로 제한
+        const canvasWidth = CANVAS_WIDTH;
+        const canvasHeight = CANVAS_HEIGHT;
+        return powerUp.y < canvasHeight;
     });
 }
 
@@ -4671,17 +4709,19 @@ const MIN_ENEMY_SPAWN_INTERVAL = 500; // 최소 적 생성 간격 (밀리초)
 // 게임 상태 변수에 추가
 let startScreenAnimation = 0;  // 시작 화면 애니메이션 변수
 let titleY = -100;  // 제목 Y 위치
-let subtitleY = canvas.height + 100;  // 부제목 Y 위치
+let subtitleY = CANVAS_HEIGHT + 100;  // 부제목 Y 위치 - 모바일용 캔버스 크기(392x700)로 제한
 let stars = [];  // 배경 별들
 
 // 시작 화면 초기화 함수
 function initStartScreen() {
-    // 배경 별들 생성
+    // 배경 별들 생성 - 모바일용 캔버스 크기(392x700)로 제한
+    const canvasWidth = CANVAS_WIDTH;
+    const canvasHeight = CANVAS_HEIGHT;
     stars = [];
     for (let i = 0; i < 100; i++) {
         stars.push({
-            x: Math.random() * canvas.width,
-            y: Math.random() * canvas.height,
+            x: Math.random() * canvasWidth,
+            y: Math.random() * canvasHeight,
             size: Math.random() * 2 + 1,
             speed: Math.random() * 2 + 1,
             brightness: Math.random()
@@ -4691,19 +4731,21 @@ function initStartScreen() {
 
 // 시작 화면 그리기 함수
 function drawStartScreen() {
-    // 배경 그라데이션
-    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    // 배경 그라데이션 - 모바일용 캔버스 크기(392x700)로 제한
+    const canvasWidth = CANVAS_WIDTH;
+    const canvasHeight = CANVAS_HEIGHT;
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvasHeight);
     gradient.addColorStop(0, '#000033');
     gradient.addColorStop(1, '#000066');
     ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-    // 별들 그리기
+    // 별들 그리기 - 모바일용 캔버스 크기(392x700)로 제한
     stars.forEach(star => {
         star.y += star.speed;
-        if (star.y > canvas.height) {
+        if (star.y > canvasHeight) {
             star.y = 0;
-            star.x = Math.random() * canvas.width;
+            star.x = Math.random() * canvasWidth;
         }
         ctx.fillStyle = `rgba(255, 255, 255, ${star.brightness})`;
         ctx.beginPath();
@@ -4711,8 +4753,8 @@ function drawStartScreen() {
         ctx.fill();
     });
 
-    // 제목 그라데이션
-    const titleGradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
+    // 제목 그라데이션 - 모바일용 캔버스 크기(392x700)로 제한
+    const titleGradient = ctx.createLinearGradient(0, 0, canvasWidth, 0);
     titleGradient.addColorStop(0, '#ff0000');
     titleGradient.addColorStop(0.5, '#ffff00');
     titleGradient.addColorStop(1, '#ff0000');
@@ -4723,17 +4765,17 @@ function drawStartScreen() {
     ctx.shadowOffsetX = 5;
     ctx.shadowOffsetY = 5;
 
-    // 제목
+    // 제목 - 모바일용 캔버스 크기(392x700)로 제한
     ctx.font = 'bold 30px Arial';
     ctx.fillStyle = titleGradient;
     ctx.textAlign = 'center';
-    ctx.fillText('PAPER PLANE SHOOTER', canvas.width/2, titleY);
+    ctx.fillText('PAPER PLANE SHOOTER', canvasWidth/2, titleY);
 
-    // 시작 화면 애니메이션
-    if (titleY < canvas.height/2 - 100) {
+    // 시작 화면 애니메이션 - 모바일용 캔버스 크기(392x700)로 제한
+    if (titleY < canvasHeight/2 - 100) {
         titleY += 5;
     }
-    if (subtitleY > canvas.height/2 + 50) {
+    if (subtitleY > canvasHeight/2 + 50) {
         subtitleY -= 5;
     }
 
@@ -4753,9 +4795,9 @@ function drawStartScreen() {
     ctx.font = '18px Arial';
     ctx.fillStyle = '#ffffff';
     ctx.textAlign = 'left';
-    ctx.fillText('화면을 터치하면 플레이어 비행기가', 50, canvas.height - 200);
-    ctx.fillText('터치한 지점으로 바로 이동하고', 50, canvas.height - 170);
-    ctx.fillText('자동으로 총알이 발사됩니다.', 50, canvas.height - 140);
+    ctx.fillText('화면을 터치하면 플레이어 비행기가', 50, CANVAS_HEIGHT - 200);
+    ctx.fillText('터치한 지점으로 바로 이동하고', 50, CANVAS_HEIGHT - 170);
+    ctx.fillText('자동으로 총알이 발사됩니다.', 50, CANVAS_HEIGHT - 140);
 }
 
 // 폭탄 생성 함수 추가
@@ -4814,7 +4856,7 @@ function handleBombs() {
         }
         
         // 화면 밖으로 나간 폭탄 제거
-        return bomb.y < canvas.height;
+        return bomb.y < CANVAS_HEIGHT;
     });
 }
 
@@ -4932,7 +4974,7 @@ function handleDynamites() {
         }
         
         // 화면 밖으로 나간 다이나마이트 제거
-        return dynamite.y < canvas.height;
+        return dynamite.y < CANVAS_HEIGHT;
     });
 }
 
@@ -5188,11 +5230,13 @@ function restartGame() {
     enemyMissiles = [];     // 적 미사일 배열 초기화
     shieldedEnemies = [];   // 방어막 적 배열 초기화
     
-    // 3. 플레이어 위치 초기화
-    player.x = canvas.width / 2;
-    player.y = canvas.height - player.height - 10;  // 10에서 player.height + 10으로 변경하여 캔버스 하단에서 10픽셀 위에 위치
-    secondPlane.x = canvas.width / 2 - 60;
-    secondPlane.y = canvas.height - secondPlane.height - 10;  // 10에서 secondPlane.height + 10으로 변경하여 캔버스 하단에서 10픽셀 위에 위치
+    // 3. 플레이어 위치 초기화 - 모바일용 캔버스 크기(392x700)로 제한
+    const canvasWidth = CANVAS_WIDTH;
+    const canvasHeight = CANVAS_HEIGHT;
+    player.x = canvasWidth / 2;
+    player.y = canvasHeight - player.height - 10;  // 10에서 player.height + 10으로 변경하여 캔버스 하단에서 10픽셀 위에 위치
+    secondPlane.x = canvasWidth / 2 - 60;
+    secondPlane.y = canvasHeight - secondPlane.height - 10;  // 10에서 secondPlane.height + 10으로 변경하여 캔버스 하단에서 10픽셀 위에 위치
     
     // 4. 게임 타이머 및 상태 초기화
     gameOverStartTime = null;
@@ -5426,7 +5470,10 @@ function drawSnakeEnemy(x, y, width, height) {
 // 적 미사일 생성 함수
 function createEnemyMissile(enemy, missileType = 'missile1', angle = null) {
     // 파괴된 적은 미사일 발사하지 않음
-    if (enemy.isHit) return;
+    if (enemy.isHit) {
+        console.log('파괴된 적은 미사일 발사하지 않음');
+        return;
+    }
     
     // 성능 최적화: 적 미사일 배열 길이 제한
     if (enemyMissiles.length > 40) {
@@ -5446,6 +5493,7 @@ function createEnemyMissile(enemy, missileType = 'missile1', angle = null) {
         pattern: enemy.pattern // 패턴 정보 추가
     };
     enemyMissiles.push(missile);
+    console.log(`미사일 생성 완료: ${missileType}, 총 미사일 수: ${enemyMissiles.length}`);
 }
 
 // 적 미사일 업데이트 함수
@@ -5462,9 +5510,11 @@ function updateEnemyMissiles() {
             missile.y += missile.speed;
         }
         
-        // 화면 밖으로 나간 미사일 제거
-        if (missile.y > canvas.height + 50 || missile.y < -50 || 
-            missile.x > canvas.width + 50 || missile.x < -50) {
+        // 화면 밖으로 나간 미사일 제거 - 모바일용 캔버스 크기(392x700)로 제한
+        const canvasWidth = CANVAS_WIDTH;
+        const canvasHeight = CANVAS_HEIGHT;
+        if (missile.y > canvasHeight + 50 || missile.y < -50 || 
+            missile.x > canvasWidth + 50 || missile.x < -50) {
             enemyMissiles.splice(i, 1);
             continue;
         }
@@ -5503,11 +5553,11 @@ function drawEnemyMissiles() {
 function handleEnemyMissileFiring() {
     const currentTime = Date.now();
     
-    // 모든 적 비행기 미사일 발사 (일반 적, 뱀 패턴 적, 방어막 적, 보스 포함)
+    // 일반 적과 뱀 패턴 적, 보스만 미사일 발사 (방어막 적은 별도 처리)
     const allEnemies = [
-        ...enemies.map(enemy => ({ ...enemy, type: enemy.isBoss ? 'boss' : 'normal' })),
-        ...snakeEnemies.map(enemy => ({ ...enemy, type: 'snake' })),
-        ...shieldedEnemies.map(enemy => ({ ...enemy, type: 'shielded' }))
+        ...enemies.filter(enemy => !enemy.isBoss && enemy.type !== 'shielded').map(enemy => { enemy.type = 'normal'; return enemy; }),
+        ...snakeEnemies.map(enemy => { enemy.type = 'snake'; return enemy; }),
+        ...enemies.filter(enemy => enemy.isBoss).map(enemy => { enemy.type = 'boss'; return enemy; })
     ];
     
     allEnemies.forEach(enemy => {
@@ -5532,11 +5582,6 @@ function handleEnemyMissileFiring() {
                 missileType = 'missile2';
                 fireChance = 0.4; // 40% 확률
                 break;
-            case 'shielded':
-                missileInterval = 2500 + Math.random() * 1500; // 2.5-4초 간격
-                missileType = 'missile1';
-                fireChance = 0.25; // 25% 확률
-                break;
             case 'boss':
                 missileInterval = 1000 + Math.random() * 1000; // 1-2초 간격 (보스는 더 빠르게)
                 missileType = 'missile2';
@@ -5550,6 +5595,7 @@ function handleEnemyMissileFiring() {
         
         if (currentTime - enemy.lastMissileTime > missileInterval) {
             if (Math.random() < fireChance) {
+                console.log(`적 미사일 발사: ${enemy.type} 타입, 미사일: ${missileType}`);
                 createEnemyMissile(enemy, missileType);
                 enemy.lastMissileTime = currentTime;
             }
@@ -5563,8 +5609,12 @@ function createShieldedEnemy() {
     const patterns = ['zigzag', 'circle', 'wave', 'diagonal', 'spiral', 'bounce', 'chase', 'pendulum'];
     const selectedPattern = patterns[Math.floor(Math.random() * patterns.length)];
     
+    // 모바일용 캔버스 크기(392x700)로 제한
+    const canvasWidth = CANVAS_WIDTH;
+    const canvasHeight = CANVAS_HEIGHT;
+    
     const shieldedEnemy = {
-        x: Math.random() * (canvas.width - 53),
+        x: Math.random() * (canvasWidth - 53),
         y: -53,
         width: 53,
         height: 53,
@@ -5612,6 +5662,8 @@ function createShieldedEnemy() {
 // 방어막 적 업데이트 함수
 function updateShieldedEnemies() {
     const currentTime = Date.now();
+    const canvasWidth = CANVAS_WIDTH;
+    const canvasHeight = CANVAS_HEIGHT;
     
     for (let i = shieldedEnemies.length - 1; i >= 0; i--) {
         const enemy = shieldedEnemies[i];
@@ -5644,7 +5696,7 @@ function updateShieldedEnemies() {
         switch(enemy.pattern) {
             case 'zigzag':
                 enemy.x = enemy.originalX + Math.sin(currentTime * 0.003) * enemy.zigzagAmplitude;
-                if (enemy.x < 0 || enemy.x > canvas.width - enemy.width) {
+                if (enemy.x < 0 || enemy.x > canvasWidth - enemy.width) {
                     enemy.zigzagDirection *= -1;
                 }
                 break;
@@ -5661,7 +5713,7 @@ function updateShieldedEnemies() {
                 
             case 'diagonal':
                 enemy.x += enemy.diagonalDirection * 2;
-                if (enemy.x < 0 || enemy.x > canvas.width - enemy.width) {
+                if (enemy.x < 0 || enemy.x > canvasWidth - enemy.width) {
                     enemy.diagonalDirection *= -1;
                 }
                 break;
@@ -5676,8 +5728,8 @@ function updateShieldedEnemies() {
             case 'bounce':
                 enemy.bounceVelocity += enemy.bounceGravity;
                 enemy.y += enemy.bounceVelocity;
-                if (enemy.y > canvas.height - enemy.height) {
-                    enemy.y = canvas.height - enemy.height;
+                if (enemy.y > canvasHeight - enemy.height) {
+                    enemy.y = canvasHeight - enemy.height;
                     enemy.bounceVelocity = -Math.abs(enemy.bounceVelocity) * 0.8;
                 }
                 break;
@@ -5700,10 +5752,10 @@ function updateShieldedEnemies() {
         
         // 경계 체크
         if (enemy.x < 0) enemy.x = 0;
-        if (enemy.x > canvas.width - enemy.width) enemy.x = canvas.width - enemy.width;
+        if (enemy.x > canvasWidth - enemy.width) enemy.x = canvasWidth - enemy.width;
         
         // 화면 밖으로 나간 적 제거
-        if (enemy.y > canvas.height + 100) {
+        if (enemy.y > canvasHeight + 100) {
             shieldedEnemies.splice(i, 1);
             continue;
         }
@@ -6083,13 +6135,15 @@ function setupTouchDragControls() {
         let newX = touchX - player.width / 6; // 터치 지점을 기준으로 플레이어 중심을 왼쪽으로 조정하여 일정한 거리 유지 (50% 증가)
         let newY = touchY - player.height * 1.2; // 비행기 꼬리 부분으로 조정 (꼬리가 터치 지점에 오도록) (50% 증가)
         
-        // 경계 제한 - 왼쪽/오른쪽 확장 영역 추가
+        // 경계 제한 - 모바일용 캔버스 크기(392x700)로 제한
+        const canvasWidth = 392;
+        const canvasHeight = 700;
         const margin = 10;
-        const maxY = canvas.height - 100; // 모바일 컨트롤 영역 고려
+        const maxY = canvasHeight - 100; // 모바일 컨트롤 영역 고려
         const rightExpansion = player.width; // 오른쪽 확장 영역 (플레이어 몸체만큼)
         const leftExpansion = player.width; // 왼쪽 확장 영역 (플레이어 몸체만큼)
         
-        newX = Math.max(-leftExpansion, Math.min(canvas.width + rightExpansion, newX));
+        newX = Math.max(-leftExpansion, Math.min(canvasWidth + rightExpansion, newX));
         newY = Math.max(margin, Math.min(maxY, newY));
         
         // 플레이어 위치 업데이트
@@ -6098,7 +6152,7 @@ function setupTouchDragControls() {
         
         // 두 번째 비행기도 함께 이동
         if (hasSecondPlane) {
-            secondPlane.x = newX + (canvas.width / 2 - 60) - (canvas.width / 2 - (240 * 0.7 * 0.7 * 0.8) / 2);
+            secondPlane.x = newX + (canvasWidth / 2 - 60) - (canvasWidth / 2 - (240 * 0.7 * 0.7 * 0.8) / 2);
             secondPlane.y = newY;
         }
         
@@ -6132,13 +6186,15 @@ function setupTouchDragControls() {
         let newX = touchX - player.width / 6; // 터치 지점을 기준으로 플레이어 중심을 왼쪽으로 조정하여 일정한 거리 유지 (50% 증가)
         let newY = touchY - player.height * 1.2; // 비행기 꼬리 부분으로 조정 (꼬리가 터치 지점에 오도록) (50% 증가)
         
-        // 경계 제한 - 왼쪽/오른쪽 확장 영역 추가
+        // 경계 제한 - 모바일용 캔버스 크기로 제한
+        const canvasWidth = CANVAS_WIDTH;
+        const canvasHeight = CANVAS_HEIGHT;
         const margin = 10;
-        const maxY = canvas.height - 100; // 모바일 컨트롤 영역 고려
+        const maxY = canvasHeight - 100; // 모바일 컨트롤 영역 고려
         const rightExpansion = player.width; // 오른쪽 확장 영역 (플레이어 몸체만큼)
         const leftExpansion = player.width; // 왼쪽 확장 영역 (플레이어 몸체만큼)
         
-        newX = Math.max(-leftExpansion, Math.min(canvas.width + rightExpansion, newX));
+        newX = Math.max(-leftExpansion, Math.min(canvasWidth + rightExpansion, newX));
         newY = Math.max(margin, Math.min(maxY, newY));
         
         // 플레이어 위치 업데이트
@@ -6147,7 +6203,7 @@ function setupTouchDragControls() {
         
         // 두 번째 비행기도 함께 이동
         if (hasSecondPlane) {
-            secondPlane.x = newX + (canvas.width / 2 - 60) - (canvas.width / 2 - (240 * 0.7 * 0.7 * 0.8) / 2);
+            secondPlane.x = newX + (canvasWidth / 2 - 60) - (canvasWidth / 2 - (240 * 0.7 * 0.7 * 0.8) / 2);
             secondPlane.y = newY;
         }
         
