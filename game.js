@@ -1514,11 +1514,7 @@ function createEnemy() {
         dynamiteDropChance: 0.25
     };
     
-    // 뱀 패턴 시작 확률 (난이도에 따라 증가) - 확률을 더 높임
-    if (!isSnakePatternActive && Math.random() < currentDifficulty.patternChance * 0.9) {
-        console.log('createEnemy에서 뱀 패턴 생성 시도:', { patternChance: currentDifficulty.patternChance, isSnakePatternActive });
-        startSnakePattern();
-    }
+    // 뱀 패턴 생성은 handleSnakePattern에서 처리하도록 변경
 
     // 패턴 선택 확률 조정
     const patterns = Object.values(ENEMY_PATTERNS);
@@ -2520,10 +2516,8 @@ function handleEnemies() {
         dynamiteDropChance: 0.25
     };
 
-    // 뱀 패턴 처리
-    if (isSnakePatternActive) {
-        handleSnakePattern();
-    }
+    // 뱀 패턴 처리 - 항상 체크하도록 수정
+    handleSnakePattern();
 
     // 일반 적 생성 - 시간 기반 생성 로직으로 변경 (성능 모드에서 빈도 조절)
     const spawnRate = adaptiveFrameRate.performanceMode ? 
@@ -2571,10 +2565,8 @@ function handleSnakePattern() {
     
     // 새로운 그룹 생성 체크 - 더 자주 생성되도록 수정
     if (currentTime - lastSnakeGroupTime >= snakeGroupInterval && 
-        snakeGroups.length < maxSnakeGroups && 
-        Math.random() < 0.7) { // 70% 확률로 생성
+        snakeGroups.length < maxSnakeGroups) {
         lastSnakeGroupTime = currentTime;
-        console.log('뱀 패턴 생성 시도:', { currentTime, lastSnakeGroupTime, snakeGroupInterval, snakeGroupsLength: snakeGroups.length, maxSnakeGroups });
         startSnakePattern();
     }
     
@@ -5592,11 +5584,11 @@ function handleEnemyMissileFiring() {
             return;
         }
         
-        // 일반 적: missile1(적색) 미사일만 발사 (3-4초 간격, 모바일에서는 4.5-6초)
+        // 일반 적: missile1(적색) 미사일만 발사 (2-3초 간격, 모바일에서는 3-4.5초)
         const mobileIntervalMultiplier = isMobile ? 1.5 : 1.0;
-        const missileInterval = (3000 + Math.random() * 1000) * mobileIntervalMultiplier;
+        const missileInterval = (2000 + Math.random() * 1000) * mobileIntervalMultiplier;
         const missileType = 'missile1'; // 적색 미사일 이미지
-        const fireChance = isMobile ? 0.7 : 0.8; // 모바일에서도 발사 확률을 높임
+        const fireChance = isMobile ? 0.8 : 0.9; // 모바일에서도 발사 확률을 더 높임
         
         // 미사일 발사 조건 체크
         const timeSinceLastMissile = currentTime - enemy.lastMissileTime;
@@ -5638,11 +5630,11 @@ function handleEnemyMissileFiring() {
             return;
         }
         
-        // 뱀 패턴 적: missile2(청색) 미사일만 발사 (3-4.5초 간격, 모바일에서는 4.5-6.75초)
+        // 뱀 패턴 적: missile2(청색) 미사일만 발사 (2-3초 간격, 모바일에서는 3-4.5초)
         const mobileIntervalMultiplier = isMobile ? 1.5 : 1.0;
-        const missileInterval = (3000 + Math.random() * 1500) * mobileIntervalMultiplier;
+        const missileInterval = (2000 + Math.random() * 1000) * mobileIntervalMultiplier;
         const missileType = 'missile2'; // 청색 미사일 이미지
-        const fireChance = isMobile ? 0.75 : 0.85; // 모바일에서도 발사 확률을 높임
+        const fireChance = isMobile ? 0.85 : 0.95; // 모바일에서도 발사 확률을 더 높임
         
         // 미사일 발사 조건 체크
         const timeSinceLastMissile = currentTime - enemy.lastMissileTime;
