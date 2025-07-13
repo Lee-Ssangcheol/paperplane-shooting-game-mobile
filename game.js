@@ -5580,33 +5580,36 @@ function handleEnemyMissileFiring() {
         // 파괴된 적은 미사일 발사하지 않음
         if (enemy.isHit) return;
         
-        // 적 타입에 따른 미사일 발사 설정 (3초 이상 간격으로 조정)
+        // 적 타입에 따른 미사일 발사 설정 (모바일에서는 더 긴 간격으로 조정)
         let missileInterval, missileType, fireChance;
+        
+        // 모바일에서는 미사일 발사 간격을 1.5배로 늘림
+        const mobileIntervalMultiplier = isMobile ? 1.5 : 1.0;
         
         switch(enemy.type) {
             case 'normal':
-                // 일반 적: missile1(적색) 미사일만 발사 (3-4초 간격, 60% 확률)
-                missileInterval = 3000 + Math.random() * 1000;
+                // 일반 적: missile1(적색) 미사일만 발사 (3-4초 간격, 모바일에서는 4.5-6초)
+                missileInterval = (3000 + Math.random() * 1000) * mobileIntervalMultiplier;
                 missileType = 'missile1'; // 적색 미사일 이미지
-                fireChance = 0.6;
+                fireChance = isMobile ? 0.5 : 0.6; // 모바일에서는 발사 확률도 낮춤
                 break;
             case 'snake':
-                // 뱀 패턴 적: missile2(청색) 미사일만 발사 (3-4.5초 간격, 65% 확률)
-                missileInterval = 3000 + Math.random() * 1500;
+                // 뱀 패턴 적: missile2(청색) 미사일만 발사 (3-4.5초 간격, 모바일에서는 4.5-6.75초)
+                missileInterval = (3000 + Math.random() * 1500) * mobileIntervalMultiplier;
                 missileType = 'missile2'; // 청색 미사일 이미지
-                fireChance = 0.65;
+                fireChance = isMobile ? 0.55 : 0.65; // 모바일에서는 발사 확률도 낮춤
                 break;
             case 'boss':
-                // 보스: missile1과 missile2 랜덤 발사 (3-5초 간격, 70% 확률)
-                missileInterval = 3000 + Math.random() * 2000;
+                // 보스: missile1과 missile2 랜덤 발사 (3-5초 간격, 모바일에서는 4.5-7.5초)
+                missileInterval = (3000 + Math.random() * 2000) * mobileIntervalMultiplier;
                 missileType = Math.random() < 0.5 ? 'missile1' : 'missile2'; // 50% 확률로 적색, 50% 확률로 청색
-                fireChance = 0.7;
+                fireChance = isMobile ? 0.6 : 0.7; // 모바일에서는 발사 확률도 낮춤
                 break;
             default:
-                // 기본값: missile1(적색) 미사일 (3-4초 간격, 60% 확률)
-                missileInterval = 3000 + Math.random() * 1000;
+                // 기본값: missile1(적색) 미사일 (3-4초 간격, 모바일에서는 4.5-6초)
+                missileInterval = (3000 + Math.random() * 1000) * mobileIntervalMultiplier;
                 missileType = 'missile1';
-                fireChance = 0.6;
+                fireChance = isMobile ? 0.5 : 0.6; // 모바일에서는 발사 확률도 낮춤
         }
         
         // 미사일 발사 조건 체크
@@ -5646,7 +5649,7 @@ function createShieldedEnemy() {
         shieldTimer: Date.now(),
         shieldDuration: 5000,
         lastShot: 0,
-        shotInterval: 4000, // 4초로 증가 (3초 이상)
+        shotInterval: isMobile ? 6000 : 4000, // 모바일에서는 6초, 데스크탑에서는 4초
         type: 'shielded',
         
         // 동적 움직임 패턴 관련 속성
