@@ -560,7 +560,7 @@ let snakeEnemies = [];  // 뱀 패턴의 적군 배열
 let snakePatternInterval = 0;  // 뱀 패턴 생성 간격
 let snakeGroups = [];  // 뱀 패턴 그룹 배열
 let lastSnakeGroupTime = 0;  // 마지막 뱀 그룹 생성 시간
-const snakeGroupInterval = 8000;  // 그룹 생성 간격 (8초로 증가)
+const snakeGroupInterval = 3000;  // 그룹 생성 간격 (3초로 단축)
 const maxSnakeGroups = 2;  // 최대 동시 그룹 수 (3에서 2로 감소)
 let gameVersion = '1.0.0-202506161826';  // 게임 버전
 
@@ -1514,8 +1514,8 @@ function createEnemy() {
         dynamiteDropChance: 0.25
     };
     
-    // 뱀 패턴 시작 확률 (난이도에 따라 증가) - 확률을 높임
-    if (!isSnakePatternActive && Math.random() < currentDifficulty.patternChance * 0.8) {
+    // 뱀 패턴 시작 확률 (난이도에 따라 증가) - 확률을 더 높임
+    if (!isSnakePatternActive && Math.random() < currentDifficulty.patternChance * 0.9) {
         startSnakePattern();
     }
 
@@ -2566,9 +2566,10 @@ function handleEnemies() {
 function handleSnakePattern() {
     const currentTime = Date.now();
     
-    // 새로운 그룹 생성 체크
+    // 새로운 그룹 생성 체크 - 더 자주 생성되도록 수정
     if (currentTime - lastSnakeGroupTime >= snakeGroupInterval && 
-        snakeGroups.length < maxSnakeGroups) {
+        snakeGroups.length < maxSnakeGroups && 
+        Math.random() < 0.7) { // 70% 확률로 생성
         lastSnakeGroupTime = currentTime;
         startSnakePattern();
     }
@@ -5576,8 +5577,9 @@ function handleEnemyMissileFiring() {
     
     // 일반 적들 처리
     normalEnemies.forEach(enemy => {
-        if (!enemy.lastMissileTime) {
-            enemy.lastMissileTime = currentTime;
+        // 미사일 발사 시간 초기화 (파괴되지 않은 적만)
+        if (!enemy.lastMissileTime && !enemy.isHit) {
+            enemy.lastMissileTime = currentTime - Math.random() * 2000; // 랜덤한 시작 시간
         }
         
         // 파괴된 적은 미사일 발사하지 않음
@@ -5621,8 +5623,9 @@ function handleEnemyMissileFiring() {
     
     // 뱀 패턴 적들 처리
     snakeEnemies.forEach(enemy => {
-        if (!enemy.lastMissileTime) {
-            enemy.lastMissileTime = currentTime;
+        // 미사일 발사 시간 초기화 (파괴되지 않은 적만)
+        if (!enemy.lastMissileTime && !enemy.isHit) {
+            enemy.lastMissileTime = currentTime - Math.random() * 2000; // 랜덤한 시작 시간
         }
         
         // 파괴된 적은 미사일 발사하지 않음
@@ -5666,8 +5669,9 @@ function handleEnemyMissileFiring() {
     
     // 보스들 처리
     enemies.filter(enemy => enemy.isBoss).forEach(enemy => {
-        if (!enemy.lastMissileTime) {
-            enemy.lastMissileTime = currentTime;
+        // 미사일 발사 시간 초기화 (파괴되지 않은 적만)
+        if (!enemy.lastMissileTime && !enemy.isHit) {
+            enemy.lastMissileTime = currentTime - Math.random() * 2000; // 랜덤한 시작 시간
         }
         
         // 파괴된 적은 미사일 발사하지 않음
