@@ -3177,8 +3177,8 @@ function handleBulletFiring() {
 // 특수 무기 처리 함수 수정
 function handleSpecialWeapon() {
     if (specialWeaponCharged && keys.KeyB) {  // KeyV를 KeyB로 변경
-        // 특수 무기 발사 (최적화: 총알 개수 감소)
-        for (let i = 0; i < 360; i += 10) { // 각도 간격을 5도에서 10도로 증가 (총알 개수 절반 감소)
+        // 특수 무기 발사 (50% 증가: 36발 → 54발)
+        for (let i = 0; i < 360; i += 6.67) { // 각도 간격을 10도에서 6.67도로 감소 (총알 개수 50% 증가)
             const angle = (i * Math.PI) / 180;
             const bullet = {
                 x: player.x + player.width/2,
@@ -3194,9 +3194,9 @@ function handleSpecialWeapon() {
             bullets.push(bullet);
         }
         
-        // 두 번째 비행기가 있을 경우 추가 발사 (최적화: 총알 개수 감소)
+        // 두 번째 비행기가 있을 경우 추가 발사 (50% 증가: 36발 → 54발)
         if (hasSecondPlane) {
-            for (let i = 0; i < 360; i += 10) { // 각도 간격 증가
+            for (let i = 0; i < 360; i += 6.67) { // 각도 간격 감소
                 const angle = (i * Math.PI) / 180;
                 const bullet = {
                     x: secondPlane.x + secondPlane.width/2,
@@ -3799,7 +3799,7 @@ function handleBullets() {
             // 확산탄 이동 (최적화: 단순한 그리기)
             bullet.x += Math.sin(bullet.angle) * bullet.speed;
             bullet.y -= Math.cos(bullet.angle) * bullet.speed;
-            ctx.fillStyle = '#00ffff';//확산탄 색상 청녹색으로 변경
+            ctx.fillStyle = '#ff00ff'; // 확산탄 색상을 마젠타(핑크)로 변경하여 특수무기와 구분
             ctx.fillRect(bullet.x - bullet.width/2, bullet.y - bullet.height/2, bullet.width, bullet.height);
         } else {
             // 일반 총알 이동 (최적화: 크기에 따른 그리기 방식 변경)
@@ -3910,6 +3910,9 @@ function handleBullets() {
                 // 피격 효과
                 explosions.push(new Explosion(bullet.x, bullet.y, false));
                 
+                // 피격 로그 출력
+                console.log(`방어막 적 피격: ${enemy.health}/${enemy.maxHealth} (${20 - enemy.health}발 맞음)`);
+                
                 // 방어막이 비활성화된 경우 또는 체력이 0인 경우
                 if (enemy.health <= 0) {
                     // 적 파괴
@@ -3940,6 +3943,9 @@ function handleBullets() {
                     
                     // 점수 보상 (방어막 적은 더 높은 점수)
                     updateScore(100);
+                    
+                    // 파괴 로그 출력
+                    console.log(`방어막 적 파괴 완료! 총 20발 맞춤`);
                     
                     // 해당 적이 발사한 미사일들 제거
                     // removeEnemyMissiles(enemy);
@@ -5493,7 +5499,7 @@ function createEnemyMissile(enemy, missileType = 'missile1', angle = null) {
         pattern: enemy.pattern // 패턴 정보 추가
     };
     enemyMissiles.push(missile);
-    console.log(`미사일 생성 완료: ${missileType}, 총 미사일 수: ${enemyMissiles.length}`);
+    console.log(`미사일 생성 완료: ${missileType} (${missileType === 'missile1' ? '적색' : '청색'}), 총 미사일 수: ${enemyMissiles.length}`);
 }
 
 // 적 미사일 업데이트 함수
@@ -5540,10 +5546,11 @@ function drawEnemyMissiles() {
     enemyMissiles.forEach(missile => {
         const image = gameImages[missile.type];
         if (image) {
+            // 미사일 이미지 사용
             ctx.drawImage(image, missile.x, missile.y, missile.width, missile.height);
         } else {
-            // 이미지가 없으면 기본 미사일 모양 그리기
-            ctx.fillStyle = missile.type === 'missile1' ? '#ff4444' : '#ff8844';
+            // 이미지가 없으면 기본 미사일 모양 그리기 (fallback)
+            ctx.fillStyle = missile.type === 'missile1' ? '#ff4444' : '#4488ff';
             ctx.fillRect(missile.x, missile.y, missile.width, missile.height);
         }
     });
@@ -5573,33 +5580,33 @@ function handleEnemyMissileFiring() {
         // 파괴된 적은 미사일 발사하지 않음
         if (enemy.isHit) return;
         
-        // 적 타입에 따른 미사일 발사 설정 (레벨에 관계없이 랜덤)
+        // 적 타입에 따른 미사일 발사 설정 (3초 이상 간격으로 조정)
         let missileInterval, missileType, fireChance;
         
         switch(enemy.type) {
             case 'normal':
-                // 일반 적: 0.5-1.5초 간격, 75% 확률로 발사 (더 자주, 더 높은 확률)
-                missileInterval = 500 + Math.random() * 1000;
-                missileType = Math.random() < 0.7 ? 'missile1' : 'missile2'; // 70% 확률로 missile1, 30% 확률로 missile2
-                fireChance = 0.75;
+                // 일반 적: missile1(적색) 미사일만 발사 (3-4초 간격, 60% 확률)
+                missileInterval = 3000 + Math.random() * 1000;
+                missileType = 'missile1'; // 적색 미사일 이미지
+                fireChance = 0.6;
                 break;
             case 'snake':
-                // 뱀 패턴 적: 0.4-1.2초 간격, 80% 확률로 발사 (가장 자주 발사)
-                missileInterval = 400 + Math.random() * 800;
-                missileType = Math.random() < 0.6 ? 'missile2' : 'missile1'; // 60% 확률로 missile2, 40% 확률로 missile1
-                fireChance = 0.8;
+                // 뱀 패턴 적: missile2(청색) 미사일만 발사 (3-4.5초 간격, 65% 확률)
+                missileInterval = 3000 + Math.random() * 1500;
+                missileType = 'missile2'; // 청색 미사일 이미지
+                fireChance = 0.65;
                 break;
             case 'boss':
-                // 보스: 0.3-1초 간격, 90% 확률로 발사 (매우 자주 발사)
-                missileInterval = 300 + Math.random() * 700;
-                missileType = 'missile2'; // 보스는 항상 missile2
-                fireChance = 0.9;
+                // 보스: missile1과 missile2 랜덤 발사 (3-5초 간격, 70% 확률)
+                missileInterval = 3000 + Math.random() * 2000;
+                missileType = Math.random() < 0.5 ? 'missile1' : 'missile2'; // 50% 확률로 적색, 50% 확률로 청색
+                fireChance = 0.7;
                 break;
             default:
-                // 기본값: 0.8-1.5초 간격, 70% 확률
-                missileInterval = 800 + Math.random() * 700;
-                missileType = Math.random() < 0.5 ? 'missile1' : 'missile2';
-                fireChance = 0.7;
+                // 기본값: missile1(적색) 미사일 (3-4초 간격, 60% 확률)
+                missileInterval = 3000 + Math.random() * 1000;
+                missileType = 'missile1';
+                fireChance = 0.6;
         }
         
         // 미사일 발사 조건 체크
@@ -5633,13 +5640,13 @@ function createShieldedEnemy() {
         width: 53,
         height: 53,
         speed: 1.5 * mobileSpeedMultiplier,
-        health: 30,
-        maxHealth: 30,
+        health: 20, // 플레이어 총알 20발을 맞으면 피격
+        maxHealth: 20, // 최대 체력도 20으로 설정
         shieldActive: true,
         shieldTimer: Date.now(),
         shieldDuration: 5000,
         lastShot: 0,
-        shotInterval: 3000,
+        shotInterval: 4000, // 4초로 증가 (3초 이상)
         type: 'shielded',
         
         // 동적 움직임 패턴 관련 속성
@@ -5776,51 +5783,52 @@ function updateShieldedEnemies() {
         
         // 패턴별 미사일 발사
         if (currentTime - enemy.lastShot > enemy.shotInterval) {
-            // 패턴에 따른 다양한 미사일 발사
+            // 패턴에 따른 다양한 미사일 발사 (미사일 이미지 사용)
             switch(enemy.pattern) {
                 case 'zigzag':
-                    // 지그재그 패턴: 좌우 대각선 미사일
+                    // 지그재그 패턴: missile1(적색) 대각선 미사일
                     createEnemyMissile(enemy, 'missile1', Math.PI / 4);
                     createEnemyMissile(enemy, 'missile1', -Math.PI / 4);
                     break;
                 case 'circle':
-                    // 원형 패턴: 360도 분산 미사일
+                    // 원형 패턴: missile2(청색) 360도 분산 미사일
                     for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 4) {
-                        createEnemyMissile(enemy, 'missile1', angle);
+                        createEnemyMissile(enemy, 'missile2', angle);
                     }
                     break;
                 case 'wave':
-                    // 웨이브 패턴: 파도 모양 미사일
+                    // 웨이브 패턴: missile1(적색) 파도 모양 미사일
                     createEnemyMissile(enemy, 'missile1', Math.PI / 6);
                     createEnemyMissile(enemy, 'missile1', -Math.PI / 6);
                     createEnemyMissile(enemy, 'missile1', 0);
                     break;
                 case 'diagonal':
-                    // 대각선 패턴: 대각선 미사일
-                    createEnemyMissile(enemy, 'missile1', Math.PI / 3);
-                    createEnemyMissile(enemy, 'missile1', -Math.PI / 3);
+                    // 대각선 패턴: missile2(청색) 대각선 미사일
+                    createEnemyMissile(enemy, 'missile2', Math.PI / 3);
+                    createEnemyMissile(enemy, 'missile2', -Math.PI / 3);
                     break;
                 case 'spiral':
-                    // 스파이럴 패턴: 회전 미사일
+                    // 스파이럴 패턴: missile1(적색) 회전 미사일
                     createEnemyMissile(enemy, 'missile1', enemy.spiralAngle);
                     createEnemyMissile(enemy, 'missile1', enemy.spiralAngle + Math.PI);
                     break;
                 case 'bounce':
-                    // 바운스 패턴: 위아래 미사일
-                    createEnemyMissile(enemy, 'missile1', Math.PI / 2);
-                    createEnemyMissile(enemy, 'missile1', -Math.PI / 2);
+                    // 바운스 패턴: missile2(청색) 위아래 미사일
+                    createEnemyMissile(enemy, 'missile2', Math.PI / 2);
+                    createEnemyMissile(enemy, 'missile2', -Math.PI / 2);
                     break;
                 case 'chase':
-                    // 추적 패턴: 플레이어 방향 미사일
+                    // 추적 패턴: missile1(적색) 플레이어 방향 미사일
                     const angleToPlayer = Math.atan2(player.y - enemy.y, player.x - enemy.x);
                     createEnemyMissile(enemy, 'missile1', angleToPlayer);
                     break;
                 case 'pendulum':
-                    // 진자 패턴: 좌우 미사일
-                    createEnemyMissile(enemy, 'missile1', 0);
-                    createEnemyMissile(enemy, 'missile1', Math.PI);
+                    // 진자 패턴: missile2(청색) 좌우 미사일
+                    createEnemyMissile(enemy, 'missile2', 0);
+                    createEnemyMissile(enemy, 'missile2', Math.PI);
                     break;
                 default:
+                    // 기본: missile1(적색) 미사일
                     createEnemyMissile(enemy, 'missile1');
             }
             enemy.lastShot = currentTime;
@@ -5997,6 +6005,18 @@ function drawShieldedEnemies() {
         const healthPercentage = enemy.health / enemy.maxHealth;
         ctx.fillStyle = healthPercentage > 0.5 ? '#00ff00' : healthPercentage > 0.25 ? '#ffff00' : '#ff0000';
         ctx.fillRect(healthBarX, healthBarY, healthBarWidth * healthPercentage, healthBarHeight);
+        
+        // 체력 숫자 표시 (남은 총알 수)
+        ctx.save();
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 10px Arial';
+        ctx.textAlign = 'center';
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 1;
+        const healthText = `${enemy.health}/${enemy.maxHealth}`;
+        ctx.strokeText(healthText, enemy.x + enemy.width/2, healthBarY - 2);
+        ctx.fillText(healthText, enemy.x + enemy.width/2, healthBarY - 2);
+        ctx.restore();
     });
 }
 
@@ -6055,9 +6075,9 @@ function fireBullet() {
         bullets.splice(0, bullets.length - 80); // 오래된 총알 20개 제거
     }
     
-    // 확산탄 발사
+    // 확산탄 발사 (50% 증가: 7발 → 11발)
     if (hasSpreadShot) {
-        const spreadAngles = [-15, -10, -5, 0, 5, 10, 15];
+        const spreadAngles = [-20, -15, -10, -5, 0, 5, 10, 15, 20, -12.5, 12.5]; // 11발로 증가
         spreadAngles.forEach(angle => {
             const bullet = {
                 x: player.x + player.width / 2,
@@ -6065,7 +6085,8 @@ function fireBullet() {
                 width: 4,
                 height: 8,
                 speed: 8 * mobileSpeedMultiplier,
-                angle: (angle * Math.PI) / 180
+                angle: (angle * Math.PI) / 180,
+                isSpread: true // 확산탄임을 표시
             };
             bullets.push(bullet);
         });
