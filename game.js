@@ -560,7 +560,7 @@ let snakeEnemies = [];  // 뱀 패턴의 적군 배열
 let snakePatternInterval = 0;  // 뱀 패턴 생성 간격
 let snakeGroups = [];  // 뱀 패턴 그룹 배열
 let lastSnakeGroupTime = 0;  // 마지막 뱀 그룹 생성 시간
-const snakeGroupInterval = 3000;  // 그룹 생성 간격 (3초로 단축)
+const snakeGroupInterval = 2000;  // 그룹 생성 간격 (2초로 단축)
 const maxSnakeGroups = 2;  // 최대 동시 그룹 수 (3에서 2로 감소)
 let gameVersion = '1.0.0-202506161826';  // 게임 버전
 
@@ -1872,7 +1872,13 @@ function startSnakePattern() {
     newGroup.enemies.push(firstEnemy);
     snakeEnemies.push(firstEnemy); // snakeEnemies 배열에도 추가
     snakeGroups.push(newGroup);
-    console.log('뱀 패턴 생성 완료:', { snakeEnemiesLength: snakeEnemies.length, snakeGroupsLength: snakeGroups.length, isSnakePatternActive });
+    console.log('뱀 패턴 생성 완료:', { 
+        snakeEnemiesLength: snakeEnemies.length, 
+        snakeGroupsLength: snakeGroups.length, 
+        isSnakePatternActive,
+        firstEnemyType: firstEnemy.type,
+        firstEnemyPosition: { x: firstEnemy.x, y: firstEnemy.y }
+    });
 }
 
 // 그룹별 시작 위치 계산 함수 추가
@@ -2582,7 +2588,7 @@ function handleSnakePattern() {
         
         // 초기 비행기 생성 (그룹이 시작될 때 한 번만)
         if (!group.initialEnemiesCreated) {
-            if (Date.now() - group.patternInterval >= 400 && group.enemies.length < 8) {  // 300에서 400으로, 10에서 8로
+            if (Date.now() - group.patternInterval >= 300 && group.enemies.length < 8) {  // 400에서 300으로 단축
                 group.patternInterval = Date.now();
                 
                 // 파괴되지 않은 마지막 적을 찾기
@@ -2614,6 +2620,7 @@ function handleSnakePattern() {
                 };
                 group.enemies.push(newEnemy);
                 snakeEnemies.push(newEnemy); // snakeEnemies 배열에도 추가
+                console.log(`뱀 패턴 적 추가: 총 ${group.enemies.length}개, snakeEnemies 배열 ${snakeEnemies.length}개`);
             }
             
             if (group.enemies.length >= 8) {  // 10에서 8로
@@ -2822,6 +2829,11 @@ function handleSnakePattern() {
         snakeEnemies = snakeEnemies.filter(enemy => 
             group.enemies.includes(enemy) && !enemy.isHit
         );
+        
+        // 디버그: 뱀 패턴 적 상태 출력
+        if (group.enemies.length > 0) {
+            console.log(`뱀 패턴 그룹 상태: 활성 적 ${group.enemies.length}개, snakeEnemies 배열 ${snakeEnemies.length}개`);
+        }
         
         // 제거된 적들이 발사한 미사일들도 제거 - 제거됨
         // group.enemies.forEach(enemy => {
@@ -5564,9 +5576,21 @@ function handleEnemyMissileFiring() {
     // 일반 적과 뱀 패턴 적, 보스만 미사일 발사 (방어막 적은 별도 처리)
     const normalEnemies = enemies.filter(enemy => !enemy.isBoss && enemy.type !== 'shielded');
     
+    // 뱀 패턴 적들을 snakeGroups에서 추출하여 별도로 관리
+    const activeSnakeEnemies = [];
+    snakeGroups.forEach(group => {
+        if (group.isActive) {
+            group.enemies.forEach(enemy => {
+                if (!enemy.isHit) {
+                    activeSnakeEnemies.push(enemy);
+                }
+            });
+        }
+    });
+    
     // 디버그: 현재 적 수 출력
-    if (normalEnemies.length > 0 || snakeEnemies.length > 0 || enemies.filter(e => e.isBoss).length > 0) {
-        console.log(`미사일 발사 대상 적 수: 일반 ${normalEnemies.length}, 뱀 ${snakeEnemies.length}, 보스 ${enemies.filter(e => e.isBoss).length}`);
+    if (normalEnemies.length > 0 || activeSnakeEnemies.length > 0 || enemies.filter(e => e.isBoss).length > 0) {
+        console.log(`미사일 발사 대상 적 수: 일반 ${normalEnemies.length}, 뱀 ${activeSnakeEnemies.length}, 보스 ${enemies.filter(e => e.isBoss).length}`);
         console.log('모바일 상태:', isMobile);
         console.log('일반 적 타입들:', normalEnemies.map(e => e.type));
     }
@@ -5584,11 +5608,11 @@ function handleEnemyMissileFiring() {
             return;
         }
         
-        // 일반 적: missile1(적색) 미사일만 발사 (2-3초 간격, 모바일에서는 3-4.5초)
+        // 일반 적: missile1(적색) 미사일만 발사 (1.5-2.5초 간격, 모바일에서는 2.25-3.75초)
         const mobileIntervalMultiplier = isMobile ? 1.5 : 1.0;
-        const missileInterval = (2000 + Math.random() * 1000) * mobileIntervalMultiplier;
+        const missileInterval = (1500 + Math.random() * 1000) * mobileIntervalMultiplier;
         const missileType = 'missile1'; // 적색 미사일 이미지
-        const fireChance = isMobile ? 0.8 : 0.9; // 모바일에서도 발사 확률을 더 높임
+        const fireChance = isMobile ? 0.9 : 0.95; // 발사 확률을 더 높임
         
         // 미사일 발사 조건 체크
         const timeSinceLastMissile = currentTime - enemy.lastMissileTime;
@@ -5618,7 +5642,7 @@ function handleEnemyMissileFiring() {
     });
     
     // 뱀 패턴 적들 처리
-    snakeEnemies.forEach(enemy => {
+    activeSnakeEnemies.forEach(enemy => {
         // 미사일 발사 시간 초기화 (파괴되지 않은 적만)
         if (!enemy.lastMissileTime && !enemy.isHit) {
             enemy.lastMissileTime = currentTime - Math.random() * 2000; // 랜덤한 시작 시간
@@ -5630,11 +5654,11 @@ function handleEnemyMissileFiring() {
             return;
         }
         
-        // 뱀 패턴 적: missile2(청색) 미사일만 발사 (2-3초 간격, 모바일에서는 3-4.5초)
+        // 뱀 패턴 적: missile2(청색) 미사일만 발사 (1.5-2.5초 간격, 모바일에서는 2.25-3.75초)
         const mobileIntervalMultiplier = isMobile ? 1.5 : 1.0;
-        const missileInterval = (2000 + Math.random() * 1000) * mobileIntervalMultiplier;
+        const missileInterval = (1500 + Math.random() * 1000) * mobileIntervalMultiplier;
         const missileType = 'missile2'; // 청색 미사일 이미지
-        const fireChance = isMobile ? 0.85 : 0.95; // 모바일에서도 발사 확률을 더 높임
+        const fireChance = isMobile ? 0.92 : 0.98; // 발사 확률을 더 높임
         
         // 미사일 발사 조건 체크
         const timeSinceLastMissile = currentTime - enemy.lastMissileTime;
@@ -5676,11 +5700,11 @@ function handleEnemyMissileFiring() {
             return;
         }
         
-        // 보스: missile1만 발사 (2-3초 간격, 모바일에서는 3-4.5초)
+        // 보스: missile1만 발사 (1.5-2.5초 간격, 모바일에서는 2.25-3.75초)
         const mobileIntervalMultiplier = isMobile ? 1.5 : 1.0;
-        const missileInterval = (2000 + Math.random() * 1000) * mobileIntervalMultiplier;
+        const missileInterval = (1500 + Math.random() * 1000) * mobileIntervalMultiplier;
         const missileType = 'missile1'; // 적색 미사일 이미지만 사용
-        const fireChance = isMobile ? 0.85 : 0.95; // 모바일에서도 발사 확률을 높임
+        const fireChance = isMobile ? 0.9 : 0.96; // 발사 확률을 높임
         
         // 미사일 발사 조건 체크
         const timeSinceLastMissile = currentTime - enemy.lastMissileTime;
