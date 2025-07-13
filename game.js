@@ -1516,6 +1516,7 @@ function createEnemy() {
     
     // 뱀 패턴 시작 확률 (난이도에 따라 증가) - 확률을 더 높임
     if (!isSnakePatternActive && Math.random() < currentDifficulty.patternChance * 0.9) {
+        console.log('createEnemy에서 뱀 패턴 생성 시도:', { patternChance: currentDifficulty.patternChance, isSnakePatternActive });
         startSnakePattern();
     }
 
@@ -1804,6 +1805,7 @@ const PATTERN_TYPES = {
 
 // 뱀 패턴 시작 함수 수정
 function startSnakePattern() {
+    console.log('startSnakePattern 함수 호출됨');
     isSnakePatternActive = true;
     snakePatternTimer = Date.now();
     
@@ -1874,6 +1876,7 @@ function startSnakePattern() {
     newGroup.enemies.push(firstEnemy);
     snakeEnemies.push(firstEnemy); // snakeEnemies 배열에도 추가
     snakeGroups.push(newGroup);
+    console.log('뱀 패턴 생성 완료:', { snakeEnemiesLength: snakeEnemies.length, snakeGroupsLength: snakeGroups.length, isSnakePatternActive });
 }
 
 // 그룹별 시작 위치 계산 함수 추가
@@ -2571,6 +2574,7 @@ function handleSnakePattern() {
         snakeGroups.length < maxSnakeGroups && 
         Math.random() < 0.7) { // 70% 확률로 생성
         lastSnakeGroupTime = currentTime;
+        console.log('뱀 패턴 생성 시도:', { currentTime, lastSnakeGroupTime, snakeGroupInterval, snakeGroupsLength: snakeGroups.length, maxSnakeGroups });
         startSnakePattern();
     }
     
