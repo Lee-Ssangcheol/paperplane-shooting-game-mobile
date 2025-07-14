@@ -5723,9 +5723,9 @@ function handleEnemyMissileFiring() {
             return;
         }
         
-        // 일반 적: missile1(적색) 미사일만 발사 (4.5-7.5초 간격, 모바일에서는 6.75-11.25초)
+        // 일반 적: missile1(적색) 미사일만 발사 (2.25-3.75초 간격, 모바일에서는 3.375-5.625초)
         const mobileIntervalMultiplier = isMobile ? 1.5 : 1.0;
-        const missileInterval = (4500 + Math.random() * 3000) * mobileIntervalMultiplier;
+        const missileInterval = (2250 + Math.random() * 1500) * mobileIntervalMultiplier;
         const missileType = 'missile1'; // 적색 미사일 이미지
         const fireChance = isMobile ? 0.9 : 0.95; // 발사 확률을 더 높임
         
@@ -5769,9 +5769,9 @@ function handleEnemyMissileFiring() {
             return;
         }
         
-        // 뱀 패턴 적: missile2(청색) 미사일만 발사 (4.5-7.5초 간격, 모바일에서는 6.75-11.25초)
+        // 뱀 패턴 적: missile2(청색) 미사일만 발사 (2.25-3.75초 간격, 모바일에서는 3.375-5.625초)
         const mobileIntervalMultiplier = isMobile ? 1.5 : 1.0;
-        const missileInterval = (4500 + Math.random() * 3000) * mobileIntervalMultiplier;
+        const missileInterval = (2250 + Math.random() * 1500) * mobileIntervalMultiplier;
         const missileType = 'missile2'; // 청색 미사일 이미지
         const fireChance = isMobile ? 0.92 : 0.98; // 발사 확률을 더 높임
         
@@ -5815,9 +5815,9 @@ function handleEnemyMissileFiring() {
             return;
         }
         
-        // 보스: missile1만 발사 (4.5-7.5초 간격, 모바일에서는 6.75-11.25초)
+        // 보스: missile1만 발사 (2.25-3.75초 간격, 모바일에서는 3.375-5.625초)
         const mobileIntervalMultiplier = isMobile ? 1.5 : 1.0;
-        const missileInterval = (4500 + Math.random() * 3000) * mobileIntervalMultiplier;
+        const missileInterval = (2250 + Math.random() * 1500) * mobileIntervalMultiplier;
         const missileType = 'missile1'; // 적색 미사일 이미지만 사용
         const fireChance = isMobile ? 0.9 : 0.96; // 발사 확률을 높임
         
@@ -5871,7 +5871,7 @@ function createShieldedEnemy() {
         shieldTimer: Date.now(),
         shieldDuration: 5000,
         lastShot: 0,
-        shotInterval: isMobile ? 18000 : 12000, // 모바일에서는 18초, 데스크탑에서는 12초 (3배 느리게)
+        shotInterval: isMobile ? 9000 : 6000, // 모바일에서는 9초, 데스크탑에서는 6초 (반으로 줄임)
         type: 'shielded',
         
         // 동적 움직임 패턴 관련 속성
