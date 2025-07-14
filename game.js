@@ -4075,9 +4075,13 @@ function handleBullets() {
         }
         
         // 화면 밖으로 나간 총알 제거 - 모바일용 캔버스 크기로 제한
-const canvasWidth = CANVAS_WIDTH;
-const canvasHeight = CANVAS_HEIGHT;
-        return bullet.y > 0 && bullet.y < canvasHeight && 
+        const canvasWidth = CANVAS_WIDTH;
+        const canvasHeight = CANVAS_HEIGHT;
+        
+        // 상단에서 30픽셀 전에 총알 소멸 (모바일과 데스크톱 모두)
+        const topBoundary = 30;
+        
+        return bullet.y > topBoundary && bullet.y < canvasHeight && 
                bullet.x > 0 && bullet.x < canvasWidth;
     });
 }
