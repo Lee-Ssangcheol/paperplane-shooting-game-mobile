@@ -2956,6 +2956,16 @@ function checkEnemyCollisions(enemy) {
             return true;
         }
 
+        // 총알이 화면 밖으로 나간 경우 충돌 체크하지 않음
+        const canvasWidth = CANVAS_WIDTH;
+        const canvasHeight = CANVAS_HEIGHT;
+        const topBoundary = 30;
+        
+        if (bullet.y <= topBoundary || bullet.y >= canvasHeight || 
+            bullet.x <= 0 || bullet.x >= canvasWidth) {
+            return false;
+        }
+
         if (checkCollision(bullet, enemy)) {
             // 보스인 경우 체력 감소
             if (enemy.isBoss) {
