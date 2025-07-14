@@ -5723,8 +5723,8 @@ function handleEnemyMissileFiring() {
             return;
         }
         
-        // 일반 적: missile1(적색) 미사일만 발사 (2.25-3.75초 간격, 모바일에서는 3.375-5.625초)
-        const mobileIntervalMultiplier = isMobile ? 1.5 : 1.0;
+        // 일반 적: missile1(적색) 미사일만 발사 (2.25-3.75초 간격)
+        const mobileIntervalMultiplier = 1.0;
         const missileInterval = (2250 + Math.random() * 1500) * mobileIntervalMultiplier;
         const missileType = 'missile1'; // 적색 미사일 이미지
         const fireChance = isMobile ? 0.9 : 0.95; // 발사 확률을 더 높임
@@ -5769,8 +5769,8 @@ function handleEnemyMissileFiring() {
             return;
         }
         
-        // 뱀 패턴 적: missile2(청색) 미사일만 발사 (2.25-3.75초 간격, 모바일에서는 3.375-5.625초)
-        const mobileIntervalMultiplier = isMobile ? 1.5 : 1.0;
+        // 뱀 패턴 적: missile2(청색) 미사일만 발사 (2.25-3.75초 간격)
+        const mobileIntervalMultiplier = 1.0;
         const missileInterval = (2250 + Math.random() * 1500) * mobileIntervalMultiplier;
         const missileType = 'missile2'; // 청색 미사일 이미지
         const fireChance = isMobile ? 0.92 : 0.98; // 발사 확률을 더 높임
@@ -5815,8 +5815,8 @@ function handleEnemyMissileFiring() {
             return;
         }
         
-        // 보스: missile1만 발사 (2.25-3.75초 간격, 모바일에서는 3.375-5.625초)
-        const mobileIntervalMultiplier = isMobile ? 1.5 : 1.0;
+        // 보스: missile1만 발사 (2.25-3.75초 간격)
+        const mobileIntervalMultiplier = 1.0;
         const missileInterval = (2250 + Math.random() * 1500) * mobileIntervalMultiplier;
         const missileType = 'missile1'; // 적색 미사일 이미지만 사용
         const fireChance = isMobile ? 0.9 : 0.96; // 발사 확률을 높임
