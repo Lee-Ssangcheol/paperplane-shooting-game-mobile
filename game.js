@@ -675,6 +675,70 @@ const difficultySettings = {
     }
 };
 
+// 레벨 6 이상을 위한 확장 난이도 설정 (더 부드러운 증가)
+const extendedDifficultySettings = {
+    6: { // 그랜드마스터
+        enemySpeed: 4.8 * mobileSpeedMultiplier,
+        enemySpawnRate: 0.062,
+        horizontalSpeedRange: 5.5 * mobileSpeedMultiplier,
+        patternChance: 0.85,
+        maxEnemies: 18,
+        bossHealth: 2500,
+        bossSpawnInterval: 9000,
+        powerUpChance: 0.35,
+        bombDropChance: 0.35,
+        dynamiteDropChance: 0.3
+    },
+    7: { // 레전드
+        enemySpeed: 5.3 * mobileSpeedMultiplier,
+        enemySpawnRate: 0.068,
+        horizontalSpeedRange: 6 * mobileSpeedMultiplier,
+        patternChance: 0.9,
+        maxEnemies: 20,
+        bossHealth: 3000,
+        bossSpawnInterval: 8500,
+        powerUpChance: 0.4,
+        bombDropChance: 0.4,
+        dynamiteDropChance: 0.35
+    },
+    8: { // 미스터
+        enemySpeed: 5.7 * mobileSpeedMultiplier,
+        enemySpawnRate: 0.073,
+        horizontalSpeedRange: 6.4 * mobileSpeedMultiplier,
+        patternChance: 0.92,
+        maxEnemies: 22,
+        bossHealth: 3500,
+        bossSpawnInterval: 8000,
+        powerUpChance: 0.45,
+        bombDropChance: 0.45,
+        dynamiteDropChance: 0.4
+    },
+    9: { // 고드
+        enemySpeed: 6 * mobileSpeedMultiplier,
+        enemySpawnRate: 0.077,
+        horizontalSpeedRange: 6.7 * mobileSpeedMultiplier,
+        patternChance: 0.94,
+        maxEnemies: 24,
+        bossHealth: 4000,
+        bossSpawnInterval: 7500,
+        powerUpChance: 0.5,
+        bombDropChance: 0.5,
+        dynamiteDropChance: 0.45
+    },
+    10: { // 울티메이트
+        enemySpeed: 6.2 * mobileSpeedMultiplier,
+        enemySpawnRate: 0.08,
+        horizontalSpeedRange: 7 * mobileSpeedMultiplier,
+        patternChance: 0.95,
+        maxEnemies: 26,
+        bossHealth: 4500,
+        bossSpawnInterval: 7000,
+        powerUpChance: 0.55,
+        bombDropChance: 0.55,
+        dynamiteDropChance: 0.5
+    }
+};
+
 // IndexedDB 설정
 const dbName = 'ShootingGameDB';
 const dbVersion = 1;
@@ -1501,18 +1565,31 @@ function restartGame() {
 
 // 적 생성 함수 수정
 function createEnemy() {
-    const currentDifficulty = difficultySettings[Math.min(gameLevel, 5)] || {
-        enemySpeed: (4.2 + (gameLevel - 5) * 0.3) * mobileSpeedMultiplier,  // 더 부드러운 증가
-        enemySpawnRate: 0.055 + (gameLevel - 5) * 0.005,  // 더 부드러운 증가
-        horizontalSpeedRange: (5 + (gameLevel - 5) * 0.3) * mobileSpeedMultiplier,  // 더 부드러운 증가
-        patternChance: 0.8 + (gameLevel - 5) * 0.05,  // 점진적 증가
-        maxEnemies: 16 + (gameLevel - 5) * 1,  // 더 부드러운 증가
-        bossHealth: 2000 + (gameLevel - 5) * 300,  // 더 부드러운 증가
-        bossSpawnInterval: Math.max(15000, 20000 - (gameLevel - 5) * 800),  // 더 부드러운 감소
-        powerUpChance: 0.3,
-        bombDropChance: 0.3,
-        dynamiteDropChance: 0.25
-    };
+    // 레벨에 따른 난이도 설정 가져오기 (개선된 시스템)
+    let currentDifficulty;
+    if (gameLevel <= 5) {
+        currentDifficulty = difficultySettings[gameLevel];
+    } else if (gameLevel <= 10) {
+        currentDifficulty = extendedDifficultySettings[gameLevel];
+    } else {
+        // 레벨 11 이상: 더 부드러운 증가
+        const baseLevel = 10;
+        const levelDiff = gameLevel - baseLevel;
+        const baseSettings = extendedDifficultySettings[10];
+        
+        currentDifficulty = {
+            enemySpeed: baseSettings.enemySpeed + (levelDiff * 0.1) * mobileSpeedMultiplier,
+            enemySpawnRate: Math.min(0.12, baseSettings.enemySpawnRate + (levelDiff * 0.002)),
+            horizontalSpeedRange: baseSettings.horizontalSpeedRange + (levelDiff * 0.1) * mobileSpeedMultiplier,
+            patternChance: Math.min(0.98, baseSettings.patternChance + (levelDiff * 0.01)),
+            maxEnemies: Math.min(35, baseSettings.maxEnemies + levelDiff),
+            bossHealth: baseSettings.bossHealth + (levelDiff * 200),
+            bossSpawnInterval: Math.max(5000, baseSettings.bossSpawnInterval - (levelDiff * 100)),
+            powerUpChance: Math.min(0.7, baseSettings.powerUpChance + (levelDiff * 0.01)),
+            bombDropChance: Math.min(0.7, baseSettings.bombDropChance + (levelDiff * 0.01)),
+            dynamiteDropChance: Math.min(0.6, baseSettings.dynamiteDropChance + (levelDiff * 0.01))
+        };
+    }
     
     // 뱀 패턴 생성은 handleSnakePattern에서 처리하도록 변경
 
@@ -2509,27 +2586,41 @@ const canvasHeight = CANVAS_HEIGHT;
 // 적 처리 함수 수정
 function handleEnemies() {
     const currentTime = Date.now();
-    const currentDifficulty = difficultySettings[Math.min(gameLevel, 5)] || {
-        enemySpeed: (4.2 + (gameLevel - 5) * 0.3) * mobileSpeedMultiplier,  // 더 부드러운 증가
-        enemySpawnRate: 0.055 + (gameLevel - 5) * 0.005,  // 더 부드러운 증가
-        horizontalSpeedRange: (5 + (gameLevel - 5) * 0.3) * mobileSpeedMultiplier,  // 더 부드러운 증가
-        patternChance: 0.8 + (gameLevel - 5) * 0.05,  // 점진적 증가
-        maxEnemies: 16 + (gameLevel - 5) * 1,  // 더 부드러운 증가
-        bossHealth: 2000 + (gameLevel - 5) * 300,  // 더 부드러운 증가
-        bossSpawnInterval: Math.max(15000, 20000 - (gameLevel - 5) * 800),  // 더 부드러운 감소
-        powerUpChance: 0.3,
-        bombDropChance: 0.3,
-        dynamiteDropChance: 0.25
-    };
+    
+    // 레벨에 따른 난이도 설정 가져오기 (개선된 시스템)
+    let currentDifficulty;
+    if (gameLevel <= 5) {
+        currentDifficulty = difficultySettings[gameLevel];
+    } else if (gameLevel <= 10) {
+        currentDifficulty = extendedDifficultySettings[gameLevel];
+    } else {
+        // 레벨 11 이상: 더 부드러운 증가
+        const baseLevel = 10;
+        const levelDiff = gameLevel - baseLevel;
+        const baseSettings = extendedDifficultySettings[10];
+        
+        currentDifficulty = {
+            enemySpeed: baseSettings.enemySpeed + (levelDiff * 0.1) * mobileSpeedMultiplier,
+            enemySpawnRate: Math.min(0.12, baseSettings.enemySpawnRate + (levelDiff * 0.002)),
+            horizontalSpeedRange: baseSettings.horizontalSpeedRange + (levelDiff * 0.1) * mobileSpeedMultiplier,
+            patternChance: Math.min(0.98, baseSettings.patternChance + (levelDiff * 0.01)),
+            maxEnemies: Math.min(35, baseSettings.maxEnemies + levelDiff),
+            bossHealth: baseSettings.bossHealth + (levelDiff * 200),
+            bossSpawnInterval: Math.max(5000, baseSettings.bossSpawnInterval - (levelDiff * 100)),
+            powerUpChance: Math.min(0.7, baseSettings.powerUpChance + (levelDiff * 0.01)),
+            bombDropChance: Math.min(0.7, baseSettings.bombDropChance + (levelDiff * 0.01)),
+            dynamiteDropChance: Math.min(0.6, baseSettings.dynamiteDropChance + (levelDiff * 0.01))
+        };
+    }
 
     // 뱀 패턴 처리 - 항상 체크하도록 수정
     handleSnakePattern();
 
     // 일반 적 생성 - 시간 기반 생성 로직으로 변경 (성능 모드에서 빈도 조절)
     const spawnRate = adaptiveFrameRate.performanceMode ? 
-        currentDifficulty.enemySpawnRate * 0.85 : currentDifficulty.enemySpawnRate;  // 0.7에서 0.85로 완화
+        currentDifficulty.enemySpawnRate * 0.8 : currentDifficulty.enemySpawnRate;  // 성능 모드에서 20% 감소
     const maxEnemies = adaptiveFrameRate.performanceMode ? 
-        Math.min(currentDifficulty.maxEnemies, 18) : currentDifficulty.maxEnemies;  // 15에서 18로 완화
+        Math.min(currentDifficulty.maxEnemies, Math.floor(currentDifficulty.maxEnemies * 0.8)) : currentDifficulty.maxEnemies;  // 성능 모드에서 20% 감소
     
     if (currentTime - lastEnemySpawnTime >= MIN_ENEMY_SPAWN_INTERVAL &&
         Math.random() < spawnRate && 
@@ -3495,7 +3586,7 @@ window.addEventListener('load', async () => {
                 isMuted = (globalVolume === 0);
                 applyGlobalVolume();
                 volumeValue.textContent = Math.round(globalVolume * 100) + '%';
-                muteBtn.textContent = isMuted ? '🔇 전체 음소거' : '🔊 전체 음소거';
+                muteBtn.textContent = isMuted ? '🔇 전체 음소거 해제' : '🔊 전체 음소거';
             });
 
             // 마우스 조작이 끝난 직후(마우스가 어디에 있든) 항상 포커스 이동
@@ -3551,7 +3642,11 @@ window.addEventListener('load', async () => {
 
 // 난이도 이름 반환 함수
 function getDifficultyName(level) {
-    const names = ['초급', '중급', '고급', '전문가', '마스터', '그랜드마스터', '레전드', '미스터', '고드'];
+    const names = [
+        '초급', '중급', '고급', '전문가', '마스터', 
+        '그랜드마스터', '레전드', '미스터', '고드', '울티메이트',
+        '데빌', '카오스', '인페르노', '아포칼립스', '디바인'
+    ];
     return names[level - 1] || `레벨 ${level}`;
 }
 
@@ -3989,13 +4084,13 @@ const canvasHeight = CANVAS_HEIGHT;
 
 // 보스 관련 상수 추가
 const BOSS_SETTINGS = {
-    HEALTH: 1000,        // 기본 체력
+    HEALTH: 1000,        // 기본 체력 (레벨에 따라 동적 조정)
     DAMAGE: 50,          // 보스 총알 데미지
     SPEED: 2 * mobileSpeedMultiplier,           // 보스 이동 속도
     BULLET_SPEED: 5 * mobileSpeedMultiplier,    // 보스 총알 속도
     PATTERN_INTERVAL: 2000, // 패턴 변경 간격
-    SPAWN_INTERVAL: 15000,  // 보스 출현 간격 (15초)
-    BONUS_SCORE: 500,    // 보스 처치 보너스 점수를 500으로 설정
+    SPAWN_INTERVAL: 15000,  // 보스 출현 간격 (레벨에 따라 동적 조정)
+    BONUS_SCORE: 500,    // 보스 처치 보너스 점수
     PHASE_THRESHOLDS: [  // 페이즈 전환 체력 임계값
         { health: 750, speed: 2.5 * mobileSpeedMultiplier, bulletSpeed: 6 * mobileSpeedMultiplier },
         { health: 500, speed: 3 * mobileSpeedMultiplier, bulletSpeed: 7 * mobileSpeedMultiplier },
@@ -4455,21 +4550,41 @@ function checkLevelUp() {
     if (levelScore >= levelUpScore) {
         gameLevel++;
         levelScore = 0;
-        levelUpScore = 1000 * gameLevel; // 레벨이 올라갈수록 다음 레벨까지 필요한 점수 증가
         
-        // 현재 난이도 설정 가져오기
-        const currentDifficulty = difficultySettings[Math.min(gameLevel, 5)] || {
-            enemySpeed: (4.2 + (gameLevel - 5) * 0.3) * mobileSpeedMultiplier,  // 더 부드러운 증가
-            enemySpawnRate: 0.055 + (gameLevel - 5) * 0.005,  // 더 부드러운 증가
-            horizontalSpeedRange: (5 + (gameLevel - 5) * 0.3) * mobileSpeedMultiplier,  // 더 부드러운 증가
-            patternChance: 0.8 + (gameLevel - 5) * 0.05,  // 점진적 증가
-            maxEnemies: 16 + (gameLevel - 5) * 1,  // 더 부드러운 증가
-            bossHealth: 2000 + (gameLevel - 5) * 300,  // 더 부드러운 증가
-            bossSpawnInterval: Math.max(15000, 20000 - (gameLevel - 5) * 800),  // 더 부드러운 감소
-            powerUpChance: 0.3,
-            bombDropChance: 0.3,
-            dynamiteDropChance: 0.25
-        };
+        // 레벨업에 필요한 점수를 더 부드럽게 증가
+        if (gameLevel <= 5) {
+            levelUpScore = 1000 * gameLevel; // 레벨 1-5: 기존 방식
+        } else if (gameLevel <= 10) {
+            levelUpScore = 5000 + (gameLevel - 5) * 1500; // 레벨 6-10: 점진적 증가
+        } else {
+            levelUpScore = 12500 + (gameLevel - 10) * 2000; // 레벨 11+: 더 완만한 증가
+        }
+        
+        // 현재 난이도 설정 가져오기 (개선된 시스템)
+        let currentDifficulty;
+        if (gameLevel <= 5) {
+            currentDifficulty = difficultySettings[gameLevel];
+        } else if (gameLevel <= 10) {
+            currentDifficulty = extendedDifficultySettings[gameLevel];
+        } else {
+            // 레벨 11 이상: 더 부드러운 증가
+            const baseLevel = 10;
+            const levelDiff = gameLevel - baseLevel;
+            const baseSettings = extendedDifficultySettings[10];
+            
+            currentDifficulty = {
+                enemySpeed: baseSettings.enemySpeed + (levelDiff * 0.1) * mobileSpeedMultiplier,
+                enemySpawnRate: Math.min(0.12, baseSettings.enemySpawnRate + (levelDiff * 0.002)),
+                horizontalSpeedRange: baseSettings.horizontalSpeedRange + (levelDiff * 0.1) * mobileSpeedMultiplier,
+                patternChance: Math.min(0.98, baseSettings.patternChance + (levelDiff * 0.01)),
+                maxEnemies: Math.min(35, baseSettings.maxEnemies + levelDiff),
+                bossHealth: baseSettings.bossHealth + (levelDiff * 200),
+                bossSpawnInterval: Math.max(5000, baseSettings.bossSpawnInterval - (levelDiff * 100)),
+                powerUpChance: Math.min(0.7, baseSettings.powerUpChance + (levelDiff * 0.01)),
+                bombDropChance: Math.min(0.7, baseSettings.bombDropChance + (levelDiff * 0.01)),
+                dynamiteDropChance: Math.min(0.6, baseSettings.dynamiteDropChance + (levelDiff * 0.01))
+            };
+        }
         
         // 보스 설정 업데이트
         BOSS_SETTINGS.HEALTH = currentDifficulty.bossHealth;
