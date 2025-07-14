@@ -5723,7 +5723,7 @@ function handleEnemyMissileFiring() {
             return;
         }
         
-        // 일반 적: missile1(적색) 미사일만 발사 (2.25-3.75초 간격)
+        // 일반 적: missile1(적색) 미사일만 발사 간격(2.25-3.75초 간격)
         const mobileIntervalMultiplier = 1.0;
         const missileInterval = (2250 + Math.random() * 1500) * mobileIntervalMultiplier;
         const missileType = 'missile1'; // 적색 미사일 이미지
@@ -5769,7 +5769,7 @@ function handleEnemyMissileFiring() {
             return;
         }
         
-        // 뱀 패턴 적: missile2(청색) 미사일만 발사 (2.25-3.75초 간격)
+        // 뱀 패턴 적: missile2(청색) 미사일만 발사 간격 (2.25-3.75초 간격)
         const mobileIntervalMultiplier = 1.0;
         const missileInterval = (2250 + Math.random() * 1500) * mobileIntervalMultiplier;
         const missileType = 'missile2'; // 청색 미사일 이미지
@@ -5815,7 +5815,7 @@ function handleEnemyMissileFiring() {
             return;
         }
         
-        // 보스: missile1만 발사 (2.25-3.75초 간격)
+        // 보스: missile1만 미사일 발사 간격(2.25-3.75초 간격)
         const mobileIntervalMultiplier = 1.0;
         const missileInterval = (2250 + Math.random() * 1500) * mobileIntervalMultiplier;
         const missileType = 'missile1'; // 적색 미사일 이미지만 사용
