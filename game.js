@@ -80,9 +80,12 @@ function enableFullscreen() {
     }
 
     try {
-        // iOS Safari, Android Chrome 등 - 더 강력한 전체화면 전환
+        // 모든 가능한 전체화면 API를 순차적으로 시도
+        console.log('전체화면 API 시도 시작...');
+        
+        // 1. 표준 requestFullscreen API
         if (document.documentElement.requestFullscreen) {
-            // Promise 반환 여부 체크
+            console.log('표준 requestFullscreen API 시도...');
             const result = document.documentElement.requestFullscreen();
             if (result && typeof result.then === 'function') {
                 result.then(() => {
@@ -90,7 +93,7 @@ function enableFullscreen() {
                     fullscreenReactivationPending = false;
                     console.log('전체화면 모드 활성화 성공 (requestFullscreen)');
                 }).catch(err => {
-                    console.log('전체화면 모드 실패 (requestFullscreen):', err);
+                    console.log('표준 API 실패, webkit으로 재시도:', err);
                     // 실패 시 webkit 방식으로 재시도
                     if (document.documentElement.webkitRequestFullscreen) {
                         document.documentElement.webkitRequestFullscreen();
@@ -100,21 +103,43 @@ function enableFullscreen() {
                     }
                 });
             } else {
-                // 일부 브라우저는 Promise를 반환하지 않음
                 isFullscreenActive = true;
                 fullscreenReactivationPending = false;
                 console.log('전체화면 모드 활성화 성공 (requestFullscreen, non-promise)');
             }
-        } else if (document.documentElement.webkitRequestFullscreen) {
-            // webkit 브라우저
+        }
+        // 2. webkitRequestFullscreen API
+        else if (document.documentElement.webkitRequestFullscreen) {
+            console.log('webkitRequestFullscreen API 시도...');
             document.documentElement.webkitRequestFullscreen();
             isFullscreenActive = true;
             fullscreenReactivationPending = false;
             console.log('전체화면 모드 활성화 성공 (webkitRequestFullscreen)');
         }
+        // 3. mozRequestFullScreen API
+        else if (document.documentElement.mozRequestFullScreen) {
+            console.log('mozRequestFullScreen API 시도...');
+            document.documentElement.mozRequestFullScreen();
+            isFullscreenActive = true;
+            fullscreenReactivationPending = false;
+            console.log('전체화면 모드 활성화 성공 (mozRequestFullScreen)');
+        }
+        // 4. msRequestFullscreen API
+        else if (document.documentElement.msRequestFullscreen) {
+            console.log('msRequestFullscreen API 시도...');
+            document.documentElement.msRequestFullscreen();
+            isFullscreenActive = true;
+            fullscreenReactivationPending = false;
+            console.log('전체화면 모드 활성화 성공 (msRequestFullscreen)');
+        }
+        // 5. 모든 API가 실패한 경우
+        else {
+            console.log('모든 전체화면 API가 지원되지 않음');
+        }
 
         // iOS Safari에서 주소창 숨김 및 모바일 전체화면 강화
         if (window.navigator.standalone || isMobile) {
+            // 강제 전체화면 CSS 적용
             document.body.style.position = 'fixed';
             document.body.style.top = '0';
             document.body.style.left = '0';
@@ -123,8 +148,28 @@ function enableFullscreen() {
             document.body.style.overflow = 'hidden';
             document.body.style.margin = '0';
             document.body.style.padding = '0';
+            document.body.style.zIndex = '9999';
+            
+            // HTML 요소도 전체화면으로 설정
+            document.documentElement.style.position = 'fixed';
+            document.documentElement.style.top = '0';
+            document.documentElement.style.left = '0';
+            document.documentElement.style.width = '100vw';
+            document.documentElement.style.height = '100vh';
+            document.documentElement.style.overflow = 'hidden';
+            document.documentElement.style.margin = '0';
+            document.documentElement.style.padding = '0';
+            
             isFullscreenActive = true;
-            console.log('모바일 전체화면 강화 적용');
+            console.log('모바일 강제 전체화면 CSS 적용 완료');
+            
+            // 추가로 1초 후 다시 한 번 시도
+            setTimeout(() => {
+                if (isMobile && !checkFullscreenState()) {
+                    console.log('1초 후 전체화면 재시도...');
+                    enableFullscreen();
+                }
+            }, 1000);
         }
 
         // 화면 방향 고정 (세로 모드)
