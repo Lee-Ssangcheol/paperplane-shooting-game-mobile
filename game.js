@@ -3462,6 +3462,7 @@ function drawUI() {
     
     // 남은 목숨 표시 (붉은색으로)
     ctx.fillStyle = 'red';
+    ctx.font = 'bold 20px Arial';  // 폰트를 진하게 변경
     ctx.fillText(`남은 목숨: ${maxLives - collisionCount}`, 10, 210);
     
     // 특수 무기 게이지 표시
