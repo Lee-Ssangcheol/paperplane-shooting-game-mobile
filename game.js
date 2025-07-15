@@ -45,12 +45,8 @@ function reactivateFullscreen() {
         return;
     }
     
-    // 쿨다운 체크
+    // 쿨다운 체크 제거 - 즉시 재활성화 시도
     const currentTime = Date.now();
-    if (currentTime - lastFullscreenAttempt < FULLSCREEN_COOLDOWN) {
-        console.log('전체화면 재시도 쿨다운 중...');
-        return;
-    }
     lastFullscreenAttempt = currentTime;
     
     console.log('전체화면 재활성화 시도');
@@ -76,15 +72,15 @@ function enableFullscreen() {
 
     console.log('모바일 전체화면 모드 활성화 시도');
     
-    // 현재 전체화면 상태 확인
+    // 현재 전체화면 상태 확인 - 이미 전체화면이어도 강제로 시도
     const currentFullscreenState = checkFullscreenState();
     if (currentFullscreenState) {
-        console.log('이미 전체화면 모드가 활성화되어 있습니다.');
-        return;
+        console.log('이미 전체화면 모드가 활성화되어 있지만, 강제로 재시도합니다.');
+        // return 제거 - 이미 전체화면이어도 계속 진행
     }
 
     try {
-        // iOS Safari, Android Chrome 등
+        // iOS Safari, Android Chrome 등 - 더 강력한 전체화면 전환
         if (document.documentElement.requestFullscreen) {
             // Promise 반환 여부 체크
             const result = document.documentElement.requestFullscreen();
@@ -95,6 +91,13 @@ function enableFullscreen() {
                     console.log('전체화면 모드 활성화 성공 (requestFullscreen)');
                 }).catch(err => {
                     console.log('전체화면 모드 실패 (requestFullscreen):', err);
+                    // 실패 시 webkit 방식으로 재시도
+                    if (document.documentElement.webkitRequestFullscreen) {
+                        document.documentElement.webkitRequestFullscreen();
+                        isFullscreenActive = true;
+                        fullscreenReactivationPending = false;
+                        console.log('webkit 방식으로 재시도 성공');
+                    }
                 });
             } else {
                 // 일부 브라우저는 Promise를 반환하지 않음
@@ -110,15 +113,18 @@ function enableFullscreen() {
             console.log('전체화면 모드 활성화 성공 (webkitRequestFullscreen)');
         }
 
-        // iOS Safari에서 주소창 숨김
-        if (window.navigator.standalone) {
+        // iOS Safari에서 주소창 숨김 및 모바일 전체화면 강화
+        if (window.navigator.standalone || isMobile) {
             document.body.style.position = 'fixed';
             document.body.style.top = '0';
             document.body.style.left = '0';
             document.body.style.width = '100vw';
             document.body.style.height = '100vh';
+            document.body.style.overflow = 'hidden';
+            document.body.style.margin = '0';
+            document.body.style.padding = '0';
             isFullscreenActive = true;
-            console.log('iOS Safari 주소창 숨김 적용');
+            console.log('모바일 전체화면 강화 적용');
         }
 
         // 화면 방향 고정 (세로 모드)
