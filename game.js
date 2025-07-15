@@ -71,12 +71,7 @@ function enableFullscreen() {
         return;
     }
 
-    // 쿨다운 체크
     const currentTime = Date.now();
-    if (currentTime - lastFullscreenAttempt < FULLSCREEN_COOLDOWN) {
-        console.log('전체화면 재시도 쿨다운 중...');
-        return;
-    }
     lastFullscreenAttempt = currentTime;
 
     console.log('모바일 전체화면 모드 활성화 시도');
@@ -341,7 +336,7 @@ function setupMobileControls() {
         e.stopPropagation();
         console.log('시작/재시작 버튼 클릭');
         
-        // 전체화면 활성화 시도 (모바일에서만)
+        // 전체화면 활성화 시도 (모바일에서만) - 항상 먼저 실행
         if (isMobile) {
             console.log('전체화면 활성화 시도 - 현재 상태:', isFullscreenActive);
             enableFullscreen();
@@ -349,7 +344,8 @@ function setupMobileControls() {
         
         if (isStartScreen) {
             isStartScreen = false;
-            console.log('모바일에서 게임 시작');
+            gameStarted = false; // 화면 터치 대기 상태
+            console.log('모바일에서 게임 시작 준비 - 화면 터치 대기');
         }
         
         // 게임 오버 상태에서 재시작
@@ -450,7 +446,7 @@ function setupMobileControls() {
         e.stopPropagation();
         console.log('시작/재시작 버튼 마우스 다운');
         
-        // 전체화면 활성화 시도 (모바일에서만)
+        // 전체화면 활성화 시도 (모바일에서만) - 항상 먼저 실행
         if (isMobile) {
             console.log('전체화면 활성화 시도 - 현재 상태:', isFullscreenActive);
             enableFullscreen();
@@ -458,7 +454,8 @@ function setupMobileControls() {
         
         if (isStartScreen) {
             isStartScreen = false;
-            console.log('모바일에서 게임 시작');
+            gameStarted = false; // 화면 터치 대기 상태
+            console.log('모바일에서 게임 시작 준비 - 화면 터치 대기');
         }
     });
     
