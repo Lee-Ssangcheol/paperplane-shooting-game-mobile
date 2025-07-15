@@ -315,10 +315,11 @@ function setupMobileControls() {
             enableFullscreen();
         }
         
-        // 시작 화면에서 버튼을 누르면 게임 시작
+        // 시작 화면에서 버튼을 누르면 게임 시작 준비
         if (isStartScreen) {
             isStartScreen = false;
-            console.log('모바일에서 게임 시작');
+            gameStarted = false; // 화면 터치 대기 상태
+            console.log('모바일에서 게임 시작 준비 - 화면 터치 대기');
         }
         
         // 게임 오버 상태에서 재시작
@@ -566,6 +567,7 @@ let gameVersion = '1.0.0-202506161826';  // 게임 버전
 
 // 게임 상태 변수에 추가
 let isStartScreen = true;  // 시작 화면 상태
+let gameStarted = false;   // 모바일에서 화면 터치 후 게임 시작 상태
 let bossActive = false;
 let bossHealth = 0;
 let bossPattern = 0;
