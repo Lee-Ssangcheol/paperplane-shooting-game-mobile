@@ -2587,6 +2587,7 @@ const canvasHeight = CANVAS_HEIGHT;
 
 // 적 처리 함수 수정
 function handleEnemies() {
+    if (isMobile && !gameStarted) return;
     const currentTime = Date.now();
     
     // 레벨에 따른 난이도 설정 가져오기 (개선된 시스템)
@@ -2660,6 +2661,7 @@ function handleEnemies() {
 
 // 뱀 패턴 처리 함수 수정
 function handleSnakePattern() {
+    if (isMobile && !gameStarted) return;
     const currentTime = Date.now();
     
     // 새로운 그룹 생성 체크 - 더 자주 생성되도록 수정
@@ -4119,6 +4121,7 @@ let lastBossSpawnTime = Date.now();  // 마지막 보스 출현 시간을 현재
 
 // 보스 생성 함수 수정
 function createBoss() {
+    if (isMobile && !gameStarted) return;
     console.log('보스 생성 함수 호출됨');
     
     // 이미 보스가 존재하는 경우
@@ -5867,6 +5870,7 @@ function handleEnemyMissileFiring() {
 
 // 방어막 적 생성 함수
 function createShieldedEnemy() {
+    if (isMobile && !gameStarted) return;
     // 8가지 동적 움직임 패턴 중 하나 선택
     const patterns = ['zigzag', 'circle', 'wave', 'diagonal', 'spiral', 'bounce', 'chase', 'pendulum'];
     const selectedPattern = patterns[Math.floor(Math.random() * patterns.length)];
@@ -6391,6 +6395,10 @@ function setupTouchDragControls() {
     
     // 터치 시작
     canvas.addEventListener('touchstart', (e) => {
+        if (isMobile && !gameStarted && !isStartScreen && !isGameOver) {
+            gameStarted = true;
+            console.log('모바일 화면 터치로 게임 본격 시작!');
+        }
         e.preventDefault();
         const touch = e.touches[0];
         const rect = canvas.getBoundingClientRect();
