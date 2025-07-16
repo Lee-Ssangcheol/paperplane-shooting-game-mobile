@@ -3878,57 +3878,44 @@ function handleSecondPlane() {
             remainingPoints: Math.ceil(score / 4000) * 4000 - score
         });
     }
-    
-    // 디버깅을 위한 로그 추가
-    function handleSecondPlane() {
-        // 주기적으로 상태 출력 (너무 자주 출력되지 않도록 조건 추가)
-        if (Math.random() < 0.001) { // 0.1% 확률로만 로그 출력
-            console.log('추가 비행기 상태 체크:', {
-                score: score,
-                scoreMod4000: score % 4000,
-                hasSecondPlane: hasSecondPlane,
-                lastSecondPlaneScore: lastSecondPlaneScore,
-                remainingPoints: 4000 - (score - lastSecondPlaneScore)
+
+    // 4000점마다 추가 비행기 지급
+    if (!hasSecondPlane && score - lastSecondPlaneScore >= 4000) {
+        console.log('추가 비행기 획득 조건 만족:', {
+            score: score,
+            hasSecondPlane: hasSecondPlane
+        });
+        hasSecondPlane = true;
+        lastSecondPlaneScore = score;
+        secondPlane.x = player.x - 60;
+        secondPlane.y = player.y;
+        secondPlaneTimer = Date.now(); // 타이머 시작
+        console.log('추가 비행기 활성화:', {
+            x: secondPlane.x,
+            y: secondPlane.y,
+            timer: secondPlaneTimer
+        });
+        // 두 번째 비행기 획득 메시지
+        ctx.fillStyle = 'yellow';
+        ctx.font = '40px Arial';
+        ctx.fillText('추가 비행기 획득!', CANVAS_WIDTH/2 - 150, CANVAS_HEIGHT/2 + 100);
+    }
+
+    if (hasSecondPlane) {
+        const elapsedTime = Date.now() - secondPlaneTimer;
+        if (elapsedTime >= 10000) { // 10초 체크
+            console.log('추가 비행기 시간 만료:', {
+                elapsedTime: elapsedTime,
+                maxTime: 10000
             });
-        }
-    
-        // 4000점마다 추가 비행기 지급
-        if (!hasSecondPlane && score - lastSecondPlaneScore >= 4000) {
-            console.log('추가 비행기 획득 조건 만족:', {
-                score: score,
-                hasSecondPlane: hasSecondPlane
-            });
-            hasSecondPlane = true;
-            lastSecondPlaneScore = score;
-            secondPlane.x = player.x - 60;
-            secondPlane.y = player.y;
-            secondPlaneTimer = Date.now(); // 타이머 시작
-            console.log('추가 비행기 활성화:', {
-                x: secondPlane.x,
-                y: secondPlane.y,
-                timer: secondPlaneTimer
-            });
-            // 두 번째 비행기 획득 메시지
-            ctx.fillStyle = 'yellow';
+            hasSecondPlane = false;
+            // 두 번째 비행기 소멸 메시지
+            ctx.fillStyle = 'red';
             ctx.font = '40px Arial';
-            ctx.fillText('추가 비행기 획득!', CANVAS_WIDTH/2 - 150, CANVAS_HEIGHT/2 + 100);
-        }
-    
-        if (hasSecondPlane) {
-            const elapsedTime = Date.now() - secondPlaneTimer;
-            if (elapsedTime >= 10000) { // 10초 체크
-                console.log('추가 비행기 시간 만료:', {
-                    elapsedTime: elapsedTime,
-                    maxTime: 10000
-                });
-                hasSecondPlane = false;
-                // 두 번째 비행기 소멸 메시지
-                ctx.fillStyle = 'red';
-                ctx.font = '40px Arial';
-                ctx.fillText('추가 비행기 소멸!', CANVAS_WIDTH/2 - 150, CANVAS_HEIGHT/2 + 100);
-            }
+            ctx.fillText('추가 비행기 소멸!', CANVAS_WIDTH/2 - 150, CANVAS_HEIGHT/2 + 100);
         }
     }
+}
 
 // 확산탄 처리 함수 추가
 function handleSpreadShot() {
@@ -6588,4 +6575,3 @@ function startGameLoop() {
         console.log('게임 루프가 이미 실행 중입니다');
     }
 }
-
