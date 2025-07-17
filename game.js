@@ -2609,33 +2609,32 @@ function gameLoop() {
 
 // 플레이어 이동 처리 함수
 function handlePlayerMovement() {
-    // 모바일용 캔버스 크기로 플레이어 이동 영역 제한
-const canvasWidth = CANVAS_WIDTH;
-const canvasHeight = CANVAS_HEIGHT;
-    
+    const canvasWidth = CANVAS_WIDTH;
+    const canvasHeight = CANVAS_HEIGHT;
+
     if (keys.ArrowLeft && player.x > 0) {
         player.x -= player.speed * 0.5;
-        if (hasSecondPlane) {
-            secondPlane.x -= player.speed * 0.5;
-        }
     }
     if (keys.ArrowRight && player.x < CANVAS_WIDTH - player.width) {
         player.x += player.speed * 0.5;
-        if (hasSecondPlane) {
-            secondPlane.x += player.speed * 0.5;
-        }
     }
     if (keys.ArrowUp && player.y > 0) {
         player.y -= player.speed;
-        if (hasSecondPlane) {
-            secondPlane.y -= player.speed;
-        }
     }
     if (keys.ArrowDown && player.y < CANVAS_HEIGHT - player.height - 10) {
         player.y += player.speed;
-        if (hasSecondPlane) {
-            secondPlane.y += player.speed;
+    }
+    // ↓↓↓ 아래 코드만 남기세요
+    if (hasSecondPlane) {
+        const minGap = 80;
+        if (player.x + player.width + minGap + secondPlane.width < CANVAS_WIDTH) {
+            secondPlane.x = player.x + player.width + minGap;
+        } else if (player.x - minGap - secondPlane.width > 0) {
+            secondPlane.x = player.x - minGap - secondPlane.width;
+        } else {
+            secondPlane.x = CANVAS_WIDTH - secondPlane.width - 10;
         }
+        secondPlane.y = player.y;
     }
 }
 
@@ -3881,15 +3880,21 @@ function handleSecondPlane() {
 
     // 4000점마다 추가 비행기 지급
     if (!hasSecondPlane && score - lastSecondPlaneScore >= 4000) {
-        console.log('추가 비행기 획득 조건 만족:', {
-            score: score,
-            hasSecondPlane: hasSecondPlane
-        });
         hasSecondPlane = true;
         lastSecondPlaneScore = score;
-        secondPlane.x = player.x - 60;
+        // 기존 비행기와 일정 거리(예: 80px) 이상 떨어지게 배치
+        const minGap = 80;
+        // 오른쪽에 공간이 충분하면 오른쪽, 아니면 왼쪽에 배치
+        if (player.x + player.width + minGap + secondPlane.width < CANVAS_WIDTH) {
+            secondPlane.x = player.x + player.width + minGap;
+        } else if (player.x - minGap - secondPlane.width > 0) {
+            secondPlane.x = player.x - minGap - secondPlane.width;
+        } else {
+            // 공간이 부족하면 화면 오른쪽 끝에 배치
+            secondPlane.x = CANVAS_WIDTH - secondPlane.width - 10;
+        }
         secondPlane.y = player.y;
-        secondPlaneTimer = Date.now(); // 타이머 시작
+        secondPlaneTimer = Date.now();
         console.log('추가 비행기 활성화:', {
             x: secondPlane.x,
             y: secondPlane.y,
@@ -6491,10 +6496,16 @@ function setupTouchDragControls() {
         
         // 두 번째 비행기도 함께 이동
         if (hasSecondPlane) {
-            secondPlane.x = newX + (canvasWidth / 2 - 60) - (canvasWidth / 2 - (240 * 0.7 * 0.7 * 0.8) / 2);
-            secondPlane.y = newY;
+            const minGap = 80;
+            if (player.x + player.width + minGap + secondPlane.width < CANVAS_WIDTH) {
+                secondPlane.x = player.x + player.width + minGap;
+            } else if (player.x - minGap - secondPlane.width > 0) {
+                secondPlane.x = player.x - minGap - secondPlane.width;
+            } else {
+                secondPlane.x = CANVAS_WIDTH - secondPlane.width - 10;
+            }
+            secondPlane.y = player.y;
         }
-        
         // 터치 시 자동 연속발사 시작
         if (!isGameOver && !isStartScreen) {
             keys.Space = true;
