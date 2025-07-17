@@ -2626,11 +2626,10 @@ function handlePlayerMovement() {
     }
     // ↓↓↓ 아래 코드만 남기세요
     if (hasSecondPlane) {
-        const minGap = 80;
-        if (player.x + player.width + minGap + secondPlane.width < CANVAS_WIDTH) {
-            secondPlane.x = player.x + player.width + minGap;
-        } else if (player.x - minGap - secondPlane.width > 0) {
-            secondPlane.x = player.x - minGap - secondPlane.width;
+        if (player.x + player.width + secondPlane.width < CANVAS_WIDTH) {
+            secondPlane.x = player.x + player.width;
+        } else if (player.x - secondPlane.width > 0) {
+            secondPlane.x = player.x - secondPlane.width;
         } else {
             secondPlane.x = CANVAS_WIDTH - secondPlane.width - 10;
         }
@@ -3882,17 +3881,14 @@ function handleSecondPlane() {
     if (!hasSecondPlane && score - lastSecondPlaneScore >= 4000) {
         hasSecondPlane = true;
         lastSecondPlaneScore = score;
-        // 기존 비행기와 일정 거리(예: 80px) 이상 떨어지게 배치
-        const minGap = 80;
-        // 오른쪽에 공간이 충분하면 오른쪽, 아니면 왼쪽에 배치
-        if (player.x + player.width + minGap + secondPlane.width < CANVAS_WIDTH) {
-            secondPlane.x = player.x + player.width + minGap;
-        } else if (player.x - minGap - secondPlane.width > 0) {
-            secondPlane.x = player.x - minGap - secondPlane.width;
-        } else {
-            // 공간이 부족하면 화면 오른쪽 끝에 배치
-            secondPlane.x = CANVAS_WIDTH - secondPlane.width - 10;
-        }
+    // minGap을 0으로, 바로 옆에 붙이기
+    if (player.x + player.width + secondPlane.width < CANVAS_WIDTH) {
+        secondPlane.x = player.x + player.width;
+    } else if (player.x - secondPlane.width > 0) {
+        secondPlane.x = player.x - secondPlane.width;
+    } else {
+        secondPlane.x = CANVAS_WIDTH - secondPlane.width - 10;
+    }
         secondPlane.y = player.y;
         secondPlaneTimer = Date.now();
         console.log('추가 비행기 활성화:', {
@@ -6496,11 +6492,10 @@ function setupTouchDragControls() {
         
         // 두 번째 비행기도 함께 이동
         if (hasSecondPlane) {
-            const minGap = 80;
-            if (player.x + player.width + minGap + secondPlane.width < CANVAS_WIDTH) {
-                secondPlane.x = player.x + player.width + minGap;
-            } else if (player.x - minGap - secondPlane.width > 0) {
-                secondPlane.x = player.x - minGap - secondPlane.width;
+            if (player.x + player.width + secondPlane.width < CANVAS_WIDTH) {
+                secondPlane.x = player.x + player.width;
+            } else if (player.x - secondPlane.width > 0) {
+                secondPlane.x = player.x - secondPlane.width;
             } else {
                 secondPlane.x = CANVAS_WIDTH - secondPlane.width - 10;
             }
