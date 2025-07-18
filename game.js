@@ -1340,6 +1340,7 @@ async function initializeGame() {
         maxLives = 5;  // 최대 목숨 초기화
         hasSecondPlane = false;
         secondPlaneTimer = 0;
+        lastSecondPlaneScore = 0; // ← 추가!
         
         // 2. 모든 배열 완전 초기화
         score = 0;
@@ -5426,6 +5427,7 @@ function restartGame() {
     maxLives = 5;  // 최대 목숨 초기화
     hasSecondPlane = false;
     secondPlaneTimer = 0;
+    lastSecondPlaneScore = 0; // ← 추가!
     
     // 2. 모든 배열 완전 초기화
     enemies = [];           // 적 비행기 배열 초기화
