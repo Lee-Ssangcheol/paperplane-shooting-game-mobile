@@ -3878,17 +3878,18 @@ function handleSecondPlane() {
     }
 
     // 4000점마다 추가 비행기 지급
-    if (!hasSecondPlane && score - lastSecondPlaneScore >= 4000) {
+    // 여러 구간을 건너뛰었을 때도 모두 지급
+    while (score - lastSecondPlaneScore >= 4000) {
         hasSecondPlane = true;
-        lastSecondPlaneScore = score;
-    // minGap을 0으로, 바로 옆에 붙이기
-    if (player.x + player.width + secondPlane.width < CANVAS_WIDTH) {
-        secondPlane.x = player.x + player.width;
-    } else if (player.x - secondPlane.width > 0) {
-        secondPlane.x = player.x - secondPlane.width;
-    } else {
-        secondPlane.x = CANVAS_WIDTH - secondPlane.width - 10;
-    }
+        lastSecondPlaneScore += 4000; // score가 아니라, 4000씩 증가!
+        // 기존 위치 계산 로직
+        if (player.x + player.width + secondPlane.width < CANVAS_WIDTH) {
+            secondPlane.x = player.x + player.width;
+        } else if (player.x - secondPlane.width > 0) {
+            secondPlane.x = player.x - secondPlane.width;
+        } else {
+            secondPlane.x = CANVAS_WIDTH - secondPlane.width - 10;
+        }
         secondPlane.y = player.y;
         secondPlaneTimer = Date.now();
         console.log('추가 비행기 활성화:', {
