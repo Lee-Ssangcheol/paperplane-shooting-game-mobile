@@ -2101,9 +2101,9 @@ function handleCollision() {
         ));
         
         // 주변 폭발 효과
-        for (let i = 0; i < 12; i++) {
-            const angle = (Math.PI * 2 / 12) * i;
-            const distance = 60;
+        for (let i = 0; i < 16; i++) {
+            const angle = (Math.PI * 2 / 16) * i;
+            const distance = 80;
             explosions.push(new Explosion(
                 player.x + player.width/2 + Math.cos(angle) * distance,
                 player.y + player.height/2 + Math.sin(angle) * distance,
@@ -2118,9 +2118,9 @@ function handleCollision() {
                 true
             ));
             
-            for (let i = 0; i < 12; i++) {
-                const angle = (Math.PI * 2 / 12) * i;
-                const distance = 60;
+            for (let i = 0; i < 16; i++) {
+                const angle = (Math.PI * 2 / 16) * i;
+                const distance = 80;
                 explosions.push(new Explosion(
                     secondPlane.x + secondPlane.width/2 + Math.cos(angle) * distance,
                     secondPlane.y + secondPlane.height/2 + Math.sin(angle) * distance,
@@ -2144,8 +2144,8 @@ class Explosion {
         this.x = x;
         this.y = y;
         this.radius = 1;
-        this.maxRadius = isFinal ? 60 : 30; // 최적화: 크기 감소
-        this.speed = isFinal ? 1.5 : 2; // 최적화: 속도 증가
+        this.maxRadius = isFinal ? 80 : 40; // 기본 크기로 복구
+        this.speed = isFinal ? 1.2 : 1.5; // 기본 속도로 복구
         this.isFinal = isFinal;
         
         // 폭발 시 주변 적에게 데미지 (최적화: 간소화)
@@ -2179,31 +2179,66 @@ class Explosion {
     }
 
     draw() {
-        // 성능 모드에서는 단순한 폭발 효과만 표시
-        if (adaptiveFrameRate.performanceMode) {
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-            ctx.fillStyle = this.isFinal ? 'rgba(255, 100, 0, 0.8)' : 'rgba(255, 200, 0, 0.6)';
-            ctx.fill();
-            return;
-        }
-        
         if (this.isFinal) {
-            // 최종 폭발 효과 (최적화: 단순화)
+            // 최종 폭발 효과 - 화려한 다중 원형 효과
+            const alpha = 1 - this.radius / this.maxRadius;
+            
+            // 외부 원 (주황색)
             ctx.beginPath();
             ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(255, 200, 0, ${1 - this.radius / this.maxRadius})`;
+            ctx.fillStyle = `rgba(255, 165, 0, ${alpha * 0.8})`;
             ctx.fill();
             
+            // 중간 원 (빨간색)
             ctx.beginPath();
-            ctx.arc(this.x, this.y, this.radius * 0.7, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(255, 100, 0, ${1 - this.radius / this.maxRadius})`;
+            ctx.arc(this.x, this.y, this.radius * 0.8, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255, 100, 0, ${alpha * 0.9})`;
             ctx.fill();
+            
+            // 내부 원 (노란색)
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius * 0.6, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255, 255, 0, ${alpha})`;
+            ctx.fill();
+            
+            // 중심 원 (흰색)
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius * 0.4, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 0.7})`;
+            ctx.fill();
+            
+            // 파편 효과 (작은 원들)
+            for (let i = 0; i < 8; i++) {
+                const angle = (Math.PI * 2 / 8) * i;
+                const fragmentX = this.x + Math.cos(angle) * this.radius * 0.9;
+                const fragmentY = this.y + Math.sin(angle) * this.radius * 0.9;
+                const fragmentSize = this.radius * 0.1;
+                
+                ctx.beginPath();
+                ctx.arc(fragmentX, fragmentY, fragmentSize, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 200, 0, ${alpha * 0.6})`;
+                ctx.fill();
+            }
         } else {
-            // 일반 폭발 효과 (최적화: 단순화)
+            // 일반 폭발 효과 - 기본적인 원형 효과
+            const alpha = 1 - this.radius / this.maxRadius;
+            
+            // 외부 원
             ctx.beginPath();
             ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(255, 200, 0, ${1 - this.radius / this.maxRadius})`;
+            ctx.fillStyle = `rgba(255, 200, 0, ${alpha * 0.8})`;
+            ctx.fill();
+            
+            // 내부 원
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius * 0.7, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255, 100, 0, ${alpha * 0.9})`;
+            ctx.fill();
+            
+            // 중심 원
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius * 0.4, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255, 255, 0, ${alpha})`;
             ctx.fill();
         }
     }
@@ -3039,17 +3074,17 @@ function checkEnemyCollisions(enemy) {
                     // 보스 파괴 시 목숨 1개 추가
                     maxLives++; // 최대 목숨 증가
                     
-                    // 큰 폭발 효과 (최적화: 개수 감소)
+                    // 큰 폭발 효과
                     explosions.push(new Explosion(
                         enemy.x + enemy.width/2,
                         enemy.y + enemy.height/2,
                         true
                     ));
                     
-                    // 추가 폭발 효과 (개수 감소)
-                    for (let i = 0; i < 4; i++) {
-                        const angle = (Math.PI * 2 / 4) * i;
-                        const distance = 30;
+                    // 추가 폭발 효과
+                    for (let i = 0; i < 8; i++) {
+                        const angle = (Math.PI * 2 / 8) * i;
+                        const distance = 40;
                         explosions.push(new Explosion(
                             enemy.x + enemy.width/2 + Math.cos(angle) * distance,
                             enemy.y + enemy.height/2 + Math.sin(angle) * distance,
@@ -3071,12 +3106,23 @@ function checkEnemyCollisions(enemy) {
                     enemy.lastHitTime = currentTime;
                 }
                 
-                // 보스가 맞았을 때 시각 효과 추가 (최적화: 작은 폭발만)
+                // 보스가 맞았을 때 시각 효과 추가
                 explosions.push(new Explosion(
                     bullet.x,
                     bullet.y,
                     false
                 ));
+                
+                // 추가 작은 폭발 효과
+                for (let i = 0; i < 3; i++) {
+                    const offsetX = (Math.random() - 0.5) * 20;
+                    const offsetY = (Math.random() - 0.5) * 20;
+                    explosions.push(new Explosion(
+                        bullet.x + offsetX,
+                        bullet.y + offsetY,
+                        false
+                    ));
+                }
                 
                 // 체력 감소 (각 총알당 100의 데미지)
                 enemy.health -= 100;
@@ -3111,17 +3157,17 @@ function checkEnemyCollisions(enemy) {
                         maxLives++; // 최대 목숨 증가
                     }
                     
-                    // 큰 폭발 효과 (최적화: 개수 감소)
+                    // 큰 폭발 효과
                     explosions.push(new Explosion(
                         enemy.x + enemy.width/2,
                         enemy.y + enemy.height/2,
                         true
                     ));
                     
-                    // 추가 폭발 효과 (개수 감소)
-                    for (let i = 0; i < 4; i++) {
-                        const angle = (Math.PI * 2 / 4) * i;
-                        const distance = 30;
+                    // 추가 폭발 효과
+                    for (let i = 0; i < 8; i++) {
+                        const angle = (Math.PI * 2 / 8) * i;
+                        const distance = 40;
                         explosions.push(new Explosion(
                             enemy.x + enemy.width/2 + Math.cos(angle) * distance,
                             enemy.y + enemy.height/2 + Math.sin(angle) * distance,
@@ -3152,6 +3198,18 @@ function checkEnemyCollisions(enemy) {
                     enemy.x + enemy.width/2,
                     enemy.y + enemy.height/2
                 ));
+                
+                // 추가 작은 폭발 효과
+                for (let i = 0; i < 2; i++) {
+                    const offsetX = (Math.random() - 0.5) * 15;
+                    const offsetY = (Math.random() - 0.5) * 15;
+                    explosions.push(new Explosion(
+                        enemy.x + enemy.width/2 + offsetX,
+                        enemy.y + enemy.height/2 + offsetY,
+                        false
+                    ));
+                }
+                
                 updateScore(20); //적 처치 시 획득 점수
                 
                 // 해당 적이 발사한 미사일들 제거
@@ -3203,6 +3261,17 @@ function checkEnemyCollisions(enemy) {
     if (checkCollision(player, enemy) || (hasSecondPlane && checkCollision(secondPlane, enemy))) {
         handleCollision();
         explosions.push(new Explosion(enemy.x + enemy.width/2, enemy.y + enemy.height/2));
+        
+        // 충돌 시 추가 폭발 효과
+        for (let i = 0; i < 4; i++) {
+            const angle = (Math.PI * 2 / 4) * i;
+            const distance = 25;
+            explosions.push(new Explosion(
+                enemy.x + enemy.width/2 + Math.cos(angle) * distance,
+                enemy.y + enemy.height/2 + Math.sin(angle) * distance,
+                false
+            ));
+        }
         
         // 해당 적이 발사한 미사일들 제거
         // removeEnemyMissiles(enemy);
