@@ -2180,66 +2180,129 @@ class Explosion {
 
     draw() {
         if (this.isFinal) {
-            // 최종 폭발 효과 - 화려한 다중 원형 효과
+            // 최종 폭발 효과 - 몽글몽글한 주황색 폭발
             const alpha = 1 - this.radius / this.maxRadius;
             
-            // 외부 원 (주황색)
+            // 외부 원 (연한 주황색)
             ctx.beginPath();
             ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(255, 165, 0, ${alpha * 0.8})`;
+            ctx.fillStyle = `rgba(255, 180, 100, ${alpha * 0.8})`;
             ctx.fill();
             
-            // 중간 원 (빨간색)
+            // 중간 원 (밝은 주황색)
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius * 0.9, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255, 160, 80, ${alpha * 0.85})`;
+            ctx.fill();
+            
+            // 내부 원 (주황색)
             ctx.beginPath();
             ctx.arc(this.x, this.y, this.radius * 0.8, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(255, 100, 0, ${alpha * 0.9})`;
+            ctx.fillStyle = `rgba(255, 140, 60, ${alpha * 0.9})`;
             ctx.fill();
             
-            // 내부 원 (노란색)
+            // 중심 원 (진한 주황색)
             ctx.beginPath();
-            ctx.arc(this.x, this.y, this.radius * 0.6, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(255, 255, 0, ${alpha})`;
+            ctx.arc(this.x, this.y, this.radius * 0.65, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255, 120, 40, ${alpha * 0.95})`;
             ctx.fill();
             
-            // 중심 원 (흰색)
+            // 핵심 원 (밝은 주황색)
             ctx.beginPath();
-            ctx.arc(this.x, this.y, this.radius * 0.4, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 0.7})`;
+            ctx.arc(this.x, this.y, this.radius * 0.5, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255, 200, 100, ${alpha})`;
             ctx.fill();
             
-            // 파편 효과 (작은 원들)
+            // 가장 중심 원 (흰색-주황색)
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius * 0.3, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255, 255, 220, ${alpha * 0.7})`;
+            ctx.fill();
+            
+            // 몽글몽글한 파편 효과 (주황색 계열의 둥근 원들)
+            for (let i = 0; i < 12; i++) {
+                const angle = (Math.PI * 2 / 12) * i;
+                const fragmentX = this.x + Math.cos(angle) * this.radius * 0.85;
+                const fragmentY = this.y + Math.sin(angle) * this.radius * 0.85;
+                const fragmentSize = this.radius * 0.15;
+                
+                ctx.beginPath();
+                ctx.arc(fragmentX, fragmentY, fragmentSize, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 160, 80, ${alpha * 0.6})`;
+                ctx.fill();
+            }
+            
+            // 추가 몽글몽글한 파편 (더 작은 주황색 원들)
             for (let i = 0; i < 8; i++) {
-                const angle = (Math.PI * 2 / 8) * i;
-                const fragmentX = this.x + Math.cos(angle) * this.radius * 0.9;
-                const fragmentY = this.y + Math.sin(angle) * this.radius * 0.9;
+                const angle = (Math.PI * 2 / 8) * i + Math.PI / 8;
+                const fragmentX = this.x + Math.cos(angle) * this.radius * 0.7;
+                const fragmentY = this.y + Math.sin(angle) * this.radius * 0.7;
                 const fragmentSize = this.radius * 0.1;
                 
                 ctx.beginPath();
                 ctx.arc(fragmentX, fragmentY, fragmentSize, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(255, 200, 0, ${alpha * 0.6})`;
+                ctx.fillStyle = `rgba(255, 180, 100, ${alpha * 0.5})`;
+                ctx.fill();
+            }
+            
+            // 가장 작은 몽글몽글한 파편들
+            for (let i = 0; i < 6; i++) {
+                const angle = (Math.PI * 2 / 6) * i + Math.PI / 6;
+                const fragmentX = this.x + Math.cos(angle) * this.radius * 0.55;
+                const fragmentY = this.y + Math.sin(angle) * this.radius * 0.55;
+                const fragmentSize = this.radius * 0.08;
+                
+                ctx.beginPath();
+                ctx.arc(fragmentX, fragmentY, fragmentSize, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 200, 120, ${alpha * 0.4})`;
                 ctx.fill();
             }
         } else {
-            // 일반 폭발 효과 - 기본적인 원형 효과
+            // 일반 폭발 효과 - 몽글몽글한 주황색 원형 효과
             const alpha = 1 - this.radius / this.maxRadius;
             
-            // 외부 원
+            // 외부 원 (연한 주황색)
             ctx.beginPath();
             ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(255, 200, 0, ${alpha * 0.8})`;
+            ctx.fillStyle = `rgba(255, 180, 100, ${alpha * 0.8})`;
             ctx.fill();
             
-            // 내부 원
+            // 중간 원 (밝은 주황색)
             ctx.beginPath();
-            ctx.arc(this.x, this.y, this.radius * 0.7, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(255, 100, 0, ${alpha * 0.9})`;
+            ctx.arc(this.x, this.y, this.radius * 0.8, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255, 160, 80, ${alpha * 0.85})`;
             ctx.fill();
             
-            // 중심 원
+            // 내부 원 (주황색)
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius * 0.6, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255, 140, 60, ${alpha * 0.9})`;
+            ctx.fill();
+            
+            // 중심 원 (진한 주황색)
             ctx.beginPath();
             ctx.arc(this.x, this.y, this.radius * 0.4, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(255, 255, 0, ${alpha})`;
+            ctx.fillStyle = `rgba(255, 120, 40, ${alpha * 0.95})`;
             ctx.fill();
+            
+            // 핵심 원 (밝은 주황색)
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius * 0.2, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255, 200, 100, ${alpha})`;
+            ctx.fill();
+            
+            // 몽글몽글한 작은 파편들
+            for (let i = 0; i < 6; i++) {
+                const angle = (Math.PI * 2 / 6) * i;
+                const fragmentX = this.x + Math.cos(angle) * this.radius * 0.7;
+                const fragmentY = this.y + Math.sin(angle) * this.radius * 0.7;
+                const fragmentSize = this.radius * 0.12;
+                
+                ctx.beginPath();
+                ctx.arc(fragmentX, fragmentY, fragmentSize, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 160, 80, ${alpha * 0.5})`;
+                ctx.fill();
+            }
         }
     }
 }
