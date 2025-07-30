@@ -2146,11 +2146,26 @@ class Explosion {
         this.x = x;
         this.y = y;
         this.radius = 1;
-        this.maxRadius = isFinal ? 80 : 40; // 기본 크기로 복구
-        this.speed = isFinal ? 1.2 : 1.5; // 기본 속도로 복구
+        this.maxRadius = isFinal ? 100 : 50; // 최종 폭발은 더 크게
+        this.speed = isFinal ? 1 : 1.5;
+        this.particles = [];
         this.isFinal = isFinal;
         
-        // 폭발 시 주변 적에게 데미지 (최적화: 간소화)
+        // 파티클 생성
+        if (isFinal) {
+            for (let i = 0; i < 20; i++) {
+                this.particles.push({
+                    x: this.x,
+                    y: this.y,
+                    speed: Math.random() * 8 + 2,
+                    angle: (Math.PI * 2 / 20) * i,
+                    size: Math.random() * 4 + 2,
+                    life: 1
+                });
+            }
+        }
+
+        // 폭발 시 주변 적에게 데미지
         if (isFinal) {
             enemies.forEach(enemy => {
                 const dx = enemy.x + enemy.width/2 - this.x;
@@ -2177,134 +2192,75 @@ class Explosion {
 
     update() {
         this.radius += this.speed;
+        
+        if (this.isFinal) {
+            // 파티클 업데이트
+            for (let particle of this.particles) {
+                particle.x += Math.cos(particle.angle) * particle.speed;
+                particle.y += Math.sin(particle.angle) * particle.speed;
+                particle.life -= 0.02;
+                particle.size *= 0.98;
+            }
+            
+            // 파티클이 모두 사라졌는지 확인
+            return this.particles.some(p => p.life > 0);
+        }
+        
         return this.radius < this.maxRadius;
     }
 
     draw() {
         if (this.isFinal) {
-            // 최종 폭발 효과 - 강렬한 주황색 폭발
-            const alpha = 1 - this.radius / this.maxRadius;
+            // 중심 폭발
+            const gradient = ctx.createRadialGradient(
+                this.x, this.y, 0,
+                this.x, this.y, this.radius
+            );
+            gradient.addColorStop(0, 'rgba(255, 255, 200, 0.8)');
+            gradient.addColorStop(0.4, 'rgba(255, 100, 0, 0.6)');
+            gradient.addColorStop(1, 'rgba(255, 0, 0, 0)');
             
-            // 외부 원 (강한 주황색)
             ctx.beginPath();
             ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(255, 140, 0, ${alpha * 0.9})`;
+            ctx.fillStyle = gradient;
             ctx.fill();
             
-            // 중간 원 (진한 주황색)
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.radius * 0.9, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(255, 120, 0, ${alpha * 0.95})`;
-            ctx.fill();
-            
-            // 내부 원 (강렬한 주황색)
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.radius * 0.8, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(255, 100, 0, ${alpha})`;
-            ctx.fill();
-            
-            // 중심 원 (매우 진한 주황색)
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.radius * 0.65, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(255, 80, 0, ${alpha * 0.98})`;
-            ctx.fill();
-            
-            // 핵심 원 (밝은 주황색)
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.radius * 0.5, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(255, 180, 0, ${alpha * 0.9})`;
-            ctx.fill();
-            
-            // 가장 중심 원 (흰색-주황색)
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.radius * 0.3, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(255, 255, 200, ${alpha * 0.8})`;
-            ctx.fill();
-            
-            // 강렬한 파편 효과 (주황색 계열의 둥근 원들)
-            for (let i = 0; i < 12; i++) {
-                const angle = (Math.PI * 2 / 12) * i;
-                const fragmentX = this.x + Math.cos(angle) * this.radius * 0.85;
-                const fragmentY = this.y + Math.sin(angle) * this.radius * 0.85;
-                const fragmentSize = this.radius * 0.15;
-                
-                ctx.beginPath();
-                ctx.arc(fragmentX, fragmentY, fragmentSize, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(255, 120, 0, ${alpha * 0.7})`;
-                ctx.fill();
-            }
-            
-            // 추가 강렬한 파편 (더 작은 주황색 원들)
-            for (let i = 0; i < 8; i++) {
-                const angle = (Math.PI * 2 / 8) * i + Math.PI / 8;
-                const fragmentX = this.x + Math.cos(angle) * this.radius * 0.7;
-                const fragmentY = this.y + Math.sin(angle) * this.radius * 0.7;
-                const fragmentSize = this.radius * 0.1;
-                
-                ctx.beginPath();
-                ctx.arc(fragmentX, fragmentY, fragmentSize, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(255, 140, 0, ${alpha * 0.6})`;
-                ctx.fill();
-            }
-            
-            // 가장 작은 강렬한 파편들
-            for (let i = 0; i < 6; i++) {
-                const angle = (Math.PI * 2 / 6) * i + Math.PI / 6;
-                const fragmentX = this.x + Math.cos(angle) * this.radius * 0.55;
-                const fragmentY = this.y + Math.sin(angle) * this.radius * 0.55;
-                const fragmentSize = this.radius * 0.08;
-                
-                ctx.beginPath();
-                ctx.arc(fragmentX, fragmentY, fragmentSize, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(255, 160, 0, ${alpha * 0.5})`;
-                ctx.fill();
+            // 파티클 그리기
+            for (let particle of this.particles) {
+                if (particle.life > 0) {
+                    ctx.beginPath();
+                    ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, ${Math.floor(200 * particle.life)}, 0, ${particle.life})`;
+                    ctx.fill();
+                    
+                    // 파티클 꼬리 효과
+                    ctx.beginPath();
+                    ctx.moveTo(particle.x, particle.y);
+                    ctx.lineTo(
+                        particle.x - Math.cos(particle.angle) * (particle.speed * 4),
+                        particle.y - Math.sin(particle.angle) * (particle.speed * 4)
+                    );
+                    ctx.strokeStyle = `rgba(255, ${Math.floor(100 * particle.life)}, 0, ${particle.life * 0.5})`;
+                    ctx.lineWidth = particle.size * 0.8;
+                    ctx.stroke();
+                }
             }
         } else {
-            // 일반 폭발 효과 - 강렬한 주황색 원형 효과
-            const alpha = 1 - this.radius / this.maxRadius;
-            
-            // 외부 원 (강한 주황색)
+            // 일반 폭발 효과
             ctx.beginPath();
             ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(255, 140, 0, ${alpha * 0.85})`;
+            ctx.fillStyle = `rgba(255, 200, 0, ${1 - this.radius / this.maxRadius})`;
             ctx.fill();
             
-            // 중간 원 (진한 주황색)
             ctx.beginPath();
-            ctx.arc(this.x, this.y, this.radius * 0.8, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(255, 120, 0, ${alpha * 0.9})`;
+            ctx.arc(this.x, this.y, this.radius * 0.7, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255, 100, 0, ${1 - this.radius / this.maxRadius})`;
             ctx.fill();
             
-            // 내부 원 (강렬한 주황색)
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.radius * 0.6, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(255, 100, 0, ${alpha * 0.95})`;
-            ctx.fill();
-            
-            // 중심 원 (매우 진한 주황색)
             ctx.beginPath();
             ctx.arc(this.x, this.y, this.radius * 0.4, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(255, 80, 0, ${alpha})`;
+            ctx.fillStyle = `rgba(255, 50, 0, ${1 - this.radius / this.maxRadius})`;
             ctx.fill();
-            
-            // 핵심 원 (밝은 주황색)
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.radius * 0.2, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(255, 180, 0, ${alpha * 0.85})`;
-            ctx.fill();
-            
-            // 강렬한 작은 파편들
-            for (let i = 0; i < 6; i++) {
-                const angle = (Math.PI * 2 / 6) * i;
-                const fragmentX = this.x + Math.cos(angle) * this.radius * 0.7;
-                const fragmentY = this.y + Math.sin(angle) * this.radius * 0.7;
-                const fragmentSize = this.radius * 0.12;
-                
-                ctx.beginPath();
-                ctx.arc(fragmentX, fragmentY, fragmentSize, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(255, 120, 0, ${alpha * 0.6})`;
-                ctx.fill();
-            }
         }
     }
 }
@@ -3576,7 +3532,9 @@ function handleSpecialWeapon() {
                 angle: angle,
                 isSpecial: true,
                 life: 80,   // 총알 지속 시간 감소
-                trail: []   // 꼬리 효과를 위한 배열
+                trail: [],   // 꼬리 효과를 위한 배열
+                rotation: 0,
+                rotationSpeed: 0.1
             };
             bullets.push(bullet);
         }
@@ -3594,7 +3552,9 @@ function handleSpecialWeapon() {
                     angle: angle,
                     isSpecial: true,
                     life: 80,   // 총알 지속 시간 감소
-                    trail: []
+                    trail: [],
+                    rotation: 0,
+                    rotationSpeed: 0.1
                 };
                 bullets.push(bullet);
             }
@@ -4179,39 +4139,108 @@ function handleSpreadShot() {
 // 총알 이동 및 충돌 체크 함수 수정
 function handleBullets() {
     bullets = bullets.filter(bullet => {
-        if (bullet.isSpecial) {
-            // 특수 무기 총알 이동 및 효과 (최적화: 복잡한 효과 제거)
+        if (bullet.isBossBullet) {
+            // 보스 총알 이동 및 효과
             bullet.x += Math.cos(bullet.angle) * bullet.speed;
             bullet.y += Math.sin(bullet.angle) * bullet.speed;
             
-            // 총알 그리기 (최적화: 단순한 사각형)
-            ctx.fillStyle = '#00ffff';
+            // 총알 회전 효과
+            bullet.rotation += bullet.rotationSpeed;
+            
+            // 총알 꼬리 효과 추가
+            bullet.trail.unshift({x: bullet.x, y: bullet.y});
+            if (bullet.trail.length > 5) bullet.trail.pop();
+            
+            // 총알 그리기
+            ctx.save();
+            ctx.translate(bullet.x, bullet.y);
+            ctx.rotate(bullet.rotation);
+            
+            // 총알 본체
+            const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, bullet.width/2);
+            gradient.addColorStop(0, 'rgba(255, 0, 0, 0.8)');
+            gradient.addColorStop(1, 'rgba(255, 0, 0, 0)');
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(0, 0, bullet.width/2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 총알 꼬리
+            bullet.trail.forEach((pos, index) => {
+                const alpha = 1 - (index / bullet.trail.length);
+                ctx.fillStyle = `rgba(255, 0, 0, ${alpha * 0.5})`;
+                ctx.beginPath();
+                ctx.arc(pos.x - bullet.x, pos.y - bullet.y, 
+                        bullet.width/2 * (1 - index/bullet.trail.length), 0, Math.PI * 2);
+                ctx.fill();
+            });
+            
+            // 총알 주변에 빛나는 효과
+            const glowGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, bullet.width);
+            glowGradient.addColorStop(0, 'rgba(255, 0, 0, 0.3)');
+            glowGradient.addColorStop(1, 'rgba(255, 0, 0, 0)');
+            ctx.fillStyle = glowGradient;
+            ctx.beginPath();
+            ctx.arc(0, 0, bullet.width, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.restore();
+            
+            // 보스 총알과 플레이어 충돌 체크
+            if (checkCollision(bullet, player) || 
+                (hasSecondPlane && checkCollision(bullet, secondPlane))) {
+                handleCollision();
+                // 총알 충돌 시 작은 폭발 효과
+                explosions.push(new Explosion(bullet.x, bullet.y, false));
+                return false;
+            }
+        } else if (bullet.isSpecial) {
+            // 특수 무기 총알 이동 및 효과
+            bullet.x += Math.cos(bullet.angle) * bullet.speed;
+            bullet.y += Math.sin(bullet.angle) * bullet.speed;
+            
+            // 꼬리 효과 추가
+            bullet.trail.unshift({x: bullet.x, y: bullet.y});
+            if (bullet.trail.length > 5) bullet.trail.pop();
+            
+            // 총알 그리기
+            ctx.fillStyle = '#00ff88';
             ctx.fillRect(bullet.x - bullet.width/2, bullet.y - bullet.height/2, bullet.width, bullet.height);
+            
+            // 꼬리 그리기
+            bullet.trail.forEach((pos, index) => {
+                const alpha = 1 - (index / bullet.trail.length);
+                ctx.fillStyle = `rgba(0, 255, 136, ${alpha * 0.5})`;
+                ctx.fillRect(pos.x - bullet.width/2, pos.y - bullet.height/2, 
+                            bullet.width * (1 - index/bullet.trail.length), 
+                            bullet.height * (1 - index/bullet.trail.length));
+            });
+            
+            // 총알 주변에 빛나는 효과
+            const gradient = ctx.createRadialGradient(
+                bullet.x, bullet.y, 0,
+                bullet.x, bullet.y, bullet.width
+            );
+            gradient.addColorStop(0, 'rgba(0, 255, 136, 0.3)');
+            gradient.addColorStop(1, 'rgba(0, 255, 136, 0)');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(bullet.x - bullet.width, bullet.y - bullet.height, 
+                        bullet.width * 2, bullet.height * 2);
             
             // 총알 지속 시간 감소
             bullet.life--;
             if (bullet.life <= 0) return false;
         } else if (bullet.isSpread) {
-            // 확산탄 이동 (최적화: 단순한 그리기)
+            // 확산탄 이동
             bullet.x += Math.sin(bullet.angle) * bullet.speed;
             bullet.y -= Math.cos(bullet.angle) * bullet.speed;
-            ctx.fillStyle = '#ff00ff'; // 확산탄 색상을 마젠타(핑크)로 변경하여 특수무기와 구분
+            ctx.fillStyle = '#ff4444';
             ctx.fillRect(bullet.x - bullet.width/2, bullet.y - bullet.height/2, bullet.width, bullet.height);
         } else {
-            // 일반 총알 이동 (최적화: 크기에 따른 그리기 방식 변경)
+            // 일반 총알 이동
             bullet.y -= bullet.speed;
-            
-            // 큰 총알일 때는 단순한 원형으로 그리기 (성능 향상)
-            if (bullet.width > 6) {
-                ctx.fillStyle = 'yellow';
-                ctx.beginPath();
-                ctx.arc(bullet.x, bullet.y, bullet.width/2, 0, Math.PI * 2);
-                ctx.fill();
-            } else {
-                // 작은 총알은 기존 방식 유지
-                ctx.fillStyle = 'yellow';
-                ctx.fillRect(bullet.x - bullet.width/2, bullet.y - bullet.height/2, bullet.width, bullet.height);
-            }
+            ctx.fillStyle = 'yellow';
+            ctx.fillRect(bullet.x - bullet.width/2, bullet.y - bullet.height/2, bullet.width, bullet.height);
         }
         
         // 보스 총알과 플레이어 충돌 체크는 별도 함수에서 처리
@@ -5258,18 +5287,11 @@ function handleBombs() {
         ctx.translate(bomb.x, bomb.y);
         ctx.rotate(bomb.rotation);
         
-        // 폭탄 본체 (빨간색)
+        // 폭탄 본체
         ctx.fillStyle = '#ff0000';
         ctx.beginPath();
         ctx.arc(0, 0, bomb.width/2, 0, Math.PI * 2);
         ctx.fill();
-        
-        // 폭탄 테두리 (선명한 주황색)
-        ctx.strokeStyle = '#ff8c00';
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.arc(0, 0, bomb.width/2, 0, Math.PI * 2);
-        ctx.stroke();
         
         // 폭탄 꼬리
         bomb.trail.forEach((pos, index) => {
@@ -6641,7 +6663,10 @@ function fireBullet() {
                 height: 8,
                 speed: 8 * mobileSpeedMultiplier,
                 angle: (angle * Math.PI) / 180,
-                isSpread: true // 확산탄임을 표시
+                isSpread: true, // 확산탄임을 표시
+                trail: [],
+                rotation: 0,
+                rotationSpeed: 0.1
             };
             bullets.push(bullet);
         });
@@ -6650,6 +6675,9 @@ function fireBullet() {
         const bullet = {
             x: player.x + player.width / 2,
             y: player.y,
+            trail: [],
+            rotation: 0,
+            rotationSpeed: 0.1,
             width: 4,
             height: 8,
             speed: 8 * mobileSpeedMultiplier
@@ -6664,7 +6692,10 @@ function fireBullet() {
             y: secondPlane.y,
             width: 4,
             height: 8,
-            speed: 8 * mobileSpeedMultiplier
+            speed: 8 * mobileSpeedMultiplier,
+            trail: [],
+            rotation: 0,
+            rotationSpeed: 0.1
         };
         bullets.push(bullet);
     }
