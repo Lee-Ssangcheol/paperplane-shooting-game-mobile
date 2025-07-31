@@ -4098,7 +4098,7 @@ function handleSecondPlane() {
 
 // 확산탄 처리 함수 추가
 function handleSpreadShot() {
-    if (scoreForSpread >= 2000) {  // 500에서 2000으로 복구
+    if (scoreForSpread >= 2000) {  // 2000점으로 복구
         // 24발의 확산탄을 원형으로 발사 (8발에서 3배 증가)
         for (let i = 0; i < 24; i++) {
             const angle = (i * 15) * (Math.PI / 180); // 360도를 24등분 (360/24 = 15도)
@@ -4107,7 +4107,7 @@ function handleSpreadShot() {
                 y: player.y - player.height/2,  // 비행기 앞부분 Y좌표
                 width: 10,
                 height: 25,
-                speed: 8,  // 속도를 6에서 8로 증가
+                speed: 4,  // 속도 50% 감소 (8에서 4로)
                 angle: angle,
                 isSpread: true
             };
@@ -4120,7 +4120,7 @@ function handleSpreadShot() {
                     y: secondPlane.y - secondPlane.height/2,  // 두 번째 비행기 앞부분 Y좌표
                     width: 10,
                     height: 25,
-                    speed: 8,  // 속도를 6에서 8로 증가
+                    speed: 4,  // 속도 50% 감소 (8에서 4로)
                     angle: angle,
                     isSpread: true
                 };
