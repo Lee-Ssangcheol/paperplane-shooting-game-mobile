@@ -4098,16 +4098,16 @@ function handleSecondPlane() {
 
 // 확산탄 처리 함수 추가
 function handleSpreadShot() {
-    if (scoreForSpread >= 2000) {
-        // 8발의 확산탄을 원형으로 발사
-        for (let i = 0; i < 8; i++) {
-            const angle = (i * 45) * (Math.PI / 180);
+    if (scoreForSpread >= 2000) {  // 500에서 2000으로 복구
+        // 24발의 확산탄을 원형으로 발사 (8발에서 3배 증가)
+        for (let i = 0; i < 24; i++) {
+            const angle = (i * 15) * (Math.PI / 180); // 360도를 24등분 (360/24 = 15도)
             const missile = {
-                x: player.x + player.width/2,
-                y: player.y,
+                x: player.x + player.width/2,  // 비행기 중앙 X좌표
+                y: player.y - player.height/2,  // 비행기 앞부분 Y좌표
                 width: 10,
                 height: 25,
-                speed: 6,
+                speed: 8,  // 속도를 6에서 8로 증가
                 angle: angle,
                 isSpread: true
             };
@@ -4116,22 +4116,19 @@ function handleSpreadShot() {
             // 두 번째 비행기가 있으면 확산탄 발사
             if (hasSecondPlane) {
                 const secondMissile = {
-                    x: secondPlane.x + secondPlane.width/2,
-                    y: secondPlane.y,
+                    x: secondPlane.x + secondPlane.width/2,  // 두 번째 비행기 중앙 X좌표
+                    y: secondPlane.y - secondPlane.height/2,  // 두 번째 비행기 앞부분 Y좌표
                     width: 10,
                     height: 25,
-                    speed: 6,
+                    speed: 8,  // 속도를 6에서 8로 증가
                     angle: angle,
                     isSpread: true
                 };
                 bullets.push(secondMissile);
             }
         }
-        applyGlobalVolume();
-        shootSound.currentTime = 0;
-        shootSound.play().catch(error => {
-            console.log('오디오 재생 실패:', error);
-        });
+        // 확산탄 발사음도 제거 (적기에 맞았을 때만 재생)
+        // safePlay(shootSound);
         scoreForSpread = 0;
     }
 }
@@ -4234,7 +4231,7 @@ function handleBullets() {
             // 확산탄 이동
             bullet.x += Math.sin(bullet.angle) * bullet.speed;
             bullet.y -= Math.cos(bullet.angle) * bullet.speed;
-            ctx.fillStyle = '#ff69b4';
+            ctx.fillStyle = '#87CEEB'; // 스카이블루로 변경
             ctx.fillRect(bullet.x - bullet.width/2, bullet.y - bullet.height/2, bullet.width, bullet.height);
         } else {
             // 일반 총알 이동
