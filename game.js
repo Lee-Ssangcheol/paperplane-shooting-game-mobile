@@ -22,6 +22,92 @@ let fullscreenReactivationPending = false;
 let lastFullscreenAttempt = 0;
 const FULLSCREEN_COOLDOWN = 1000; // 전체화면 재시도 간격 (1초)
 
+// 화면 방향 고정 대체 함수
+function lockScreenOrientation() {
+    try {
+        // iOS Safari용 대체 방법
+        if (navigator.userAgent.includes('iPhone') || navigator.userAgent.includes('iPad')) {
+            // iOS에서는 CSS transform을 사용하여 강제로 세로 모드 유지
+            document.body.style.transform = 'rotate(0deg)';
+            document.body.style.width = '100vw';
+            document.body.style.height = '100vh';
+            document.body.style.overflow = 'hidden';
+            console.log('iOS용 화면 방향 고정 적용');
+        }
+        
+        // Android용 대체 방법
+        if (navigator.userAgent.includes('Android')) {
+            // Android에서는 viewport meta 태그 조정
+            const viewport = document.querySelector('meta[name="viewport"]');
+            if (viewport) {
+                viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover, orientation=portrait');
+            }
+            console.log('Android용 화면 방향 고정 적용');
+        }
+        
+        // CSS를 통한 강제 세로 모드
+        document.documentElement.style.orientation = 'portrait';
+        document.body.style.orientation = 'portrait';
+        
+        // 강제 세로 모드 CSS 스타일 추가
+        const existingStyle = document.getElementById('orientation-lock-style');
+        if (!existingStyle) {
+            const style = document.createElement('style');
+            style.id = 'orientation-lock-style';
+            style.textContent = `
+                @media screen and (orientation: landscape) {
+                    html, body {
+                        transform: rotate(90deg) !important;
+                        transform-origin: center center !important;
+                        width: 100vh !important;
+                        height: 100vw !important;
+                        overflow: hidden !important;
+                    }
+                    #game-container {
+                        transform: rotate(-90deg) !important;
+                        transform-origin: center center !important;
+                        width: 100vh !important;
+                        height: 100vw !important;
+                        position: fixed !important;
+                        top: 0 !important;
+                        left: 0 !important;
+                    }
+                    #canvas-container {
+                        width: 100vh !important;
+                        height: calc(100vw - 80px) !important;
+                    }
+                    #gameCanvas {
+                        width: 392px !important;
+                        height: 700px !important;
+                        max-width: 100vh !important;
+                        max-height: calc(100vw - 80px) !important;
+                    }
+                    #mobile-controls {
+                        width: 100vh !important;
+                        height: 80px !important;
+                        bottom: 0 !important;
+                        left: 0 !important;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        // 추가로 1초 후 다시 한 번 확인
+        setTimeout(() => {
+            const isLandscape = window.innerWidth > window.innerHeight;
+            if (isLandscape) {
+                console.log('1초 후 가로 모드 재감지, 다시 세로 모드로 강제 변경');
+                lockScreenOrientation();
+            }
+        }, 1000);
+        
+        console.log('대체 화면 방향 고정 방법 적용 완료');
+    } catch (error) {
+        console.log('대체 화면 방향 고정 실패:', error);
+    }
+}
+
 // 전체화면 상태 확인 함수
 function checkFullscreenState() {
     const isFullscreen = !!(document.fullscreenElement || 
@@ -175,11 +261,25 @@ function enableFullscreen() {
             }, 1000);
         }
 
-        // 화면 방향 고정 (세로 모드)
-        if (screen.orientation && screen.orientation.lock) {
-            screen.orientation.lock('portrait').catch(err => {
-                console.log('화면 방향 고정 실패:', err);
-            });
+        // 화면 방향 고정 (세로 모드) - 강화된 버전
+        try {
+            // 표준 Screen Orientation API
+            if (screen.orientation && screen.orientation.lock) {
+                screen.orientation.lock('portrait').then(() => {
+                    console.log('화면 방향 세로 모드로 고정 성공');
+                }).catch(err => {
+                    console.log('표준 화면 방향 고정 실패:', err);
+                    // 대체 방법 시도
+                    lockScreenOrientation();
+                });
+            } else {
+                // 대체 방법 사용
+                lockScreenOrientation();
+            }
+        } catch (error) {
+            console.log('화면 방향 고정 중 오류:', error);
+            // 대체 방법 사용
+            lockScreenOrientation();
         }
 
         console.log('모바일 전체화면 모드 활성화 시도 완료');
@@ -223,6 +323,24 @@ function setupFullscreenEventListeners() {
         checkFullscreenState();
     });
     
+    // 화면 방향 변경 이벤트 리스너 추가
+    window.addEventListener('orientationchange', () => {
+        console.log('화면 방향 변경 감지');
+        // 방향 변경 후 세로 모드로 다시 고정
+        setTimeout(() => {
+            lockScreenOrientation();
+        }, 100);
+    });
+    
+    // resize 이벤트에서도 방향 확인
+    window.addEventListener('resize', () => {
+        // 화면이 가로 모드로 변경되었는지 확인
+        if (window.innerWidth > window.innerHeight) {
+            console.log('가로 모드 감지, 세로 모드로 강제 변경');
+            lockScreenOrientation();
+        }
+    });
+    
     console.log('전체화면 이벤트 리스너 설정 완료');
 }
 
@@ -247,6 +365,15 @@ const CANVAS_HEIGHT = 700;
 function resizeCanvas() {
     const container = document.getElementById('canvas-container');
     if (container) {
+        // 화면 방향 확인
+        const isLandscape = window.innerWidth > window.innerHeight;
+        
+        if (isLandscape) {
+            // 가로 모드일 때 세로 모드로 강제 변경
+            console.log('가로 모드 감지, 세로 모드로 강제 변경');
+            lockScreenOrientation();
+        }
+        
         // 컨테이너 스타일 조정
         container.style.height = 'calc(100vh - 80px)';  // 모바일 컨트롤 높이만큼 제외
         container.style.position = 'relative';
@@ -262,6 +389,10 @@ function resizeCanvas() {
         // CSS에서 설정한 크기와 일치하도록 스타일 설정
         canvas.style.width = '392px';
         canvas.style.height = '700px';
+        
+        // 세로 모드 강제 적용
+        document.documentElement.style.orientation = 'portrait';
+        document.body.style.orientation = 'portrait';
     }
 }
 
@@ -1327,6 +1458,9 @@ async function initializeGame() {
         // 전체화면 이벤트 리스너 설정
         setupFullscreenEventListeners();
         
+        // 화면 방향 초기화 및 고정
+        initializeOrientation();
+        
         // 종료 이벤트 핸들러 설정
         setupExitHandlers();
         
@@ -1457,11 +1591,11 @@ async function initializeGame() {
         console.log('게임 루프 시작됨');
         
         // 모바일에서 전체화면 모드 활성화
-        //if (isMobile) {
-        //    setTimeout(() => {
-        //        enableFullscreen();
-        //    }, 1000);
-        //}
+        if (isMobile) {
+            setTimeout(() => {
+                enableFullscreen();
+            }, 1000);
+        }
         
     } catch (error) {
         console.error('게임 초기화 중 오류:', error);
@@ -1473,9 +1607,9 @@ window.addEventListener('DOMContentLoaded', () => {
     // 모바일에서 전체화면 모드 활성화
     if (isMobile) {
         // 페이지 로드 후 약간의 지연을 두고 전체화면 모드 활성화
-        //setTimeout(() => {
-        //    enableFullscreen();
-        //}, 1000);
+        setTimeout(() => {
+            enableFullscreen();
+        }, 1000);
         
         // 사용자 상호작용 후 전체화면 모드 활성화 (iOS Safari 요구사항)
         document.addEventListener('touchstart', () => {
@@ -6828,6 +6962,41 @@ function setupTouchDragControls() {
         
         console.log('터치 종료');
     }, { passive: false });
+}
+
+// 초기 화면 방향 확인 및 고정
+function initializeOrientation() {
+    console.log('초기 화면 방향 확인 및 고정 시작');
+    
+    // 현재 화면 방향 확인
+    const isLandscape = window.innerWidth > window.innerHeight;
+    console.log('현재 화면 방향:', isLandscape ? '가로' : '세로');
+    
+    if (isLandscape) {
+        console.log('가로 모드 감지, 세로 모드로 강제 변경');
+        lockScreenOrientation();
+    }
+    
+    // 화면 방향 변경 감지 설정
+    window.addEventListener('orientationchange', () => {
+        console.log('화면 방향 변경 감지됨');
+        setTimeout(() => {
+            const newIsLandscape = window.innerWidth > window.innerHeight;
+            if (newIsLandscape) {
+                console.log('가로 모드로 변경됨, 세로 모드로 강제 변경');
+                lockScreenOrientation();
+            }
+        }, 100);
+    });
+    
+    // resize 이벤트에서도 방향 확인
+    window.addEventListener('resize', () => {
+        const resizeIsLandscape = window.innerWidth > window.innerHeight;
+        if (resizeIsLandscape) {
+            console.log('resize로 가로 모드 감지, 세로 모드로 강제 변경');
+            lockScreenOrientation();
+        }
+    });
 }
 
 // 게임 루프 시작
