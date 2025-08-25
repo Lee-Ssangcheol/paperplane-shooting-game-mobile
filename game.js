@@ -560,6 +560,16 @@ collisionSound.addEventListener('loadedmetadata', () => {
     collisionSound.duration = Math.min(collisionSound.duration, 0.8);
 });
 
+// 목숨 감소 시 경고음과 UI 깜빡임을 위한 변수들
+let warningSound = document.getElementById('warningSound');
+let lifeBlinkTimer = 0;
+let lifeBlinkDuration = 2000; // 2초간 깜빡임
+let isLifeBlinking = false;
+let lastLifeCount = 5; // 이전 목숨 수
+
+// 경고음 볼륨 설정
+warningSound.volume = clampVolume(0.6);
+
 // 플레이어 우주선 - 모바일용 캔버스 크기(392x700)로 제한
 const canvasWidth = CANVAS_WIDTH;
 const canvasHeight = CANVAS_HEIGHT;
@@ -1432,6 +1442,11 @@ async function initializeGame() {
         lastCollisionTime = 0;
         lastExplosionTime = 0;
         
+        // 13. 목숨 깜빡임 상태 초기화
+        lifeBlinkTimer = 0;
+        isLifeBlinking = false;
+        lastLifeCount = maxLives;
+        
         // 13. 패턴 추적 시스템 초기화
         levelBossPatterns.usedPatterns = [];
         levelBossPatterns.currentLevelPattern = null;
@@ -1591,9 +1606,14 @@ function restartGame() {
     isStartScreen = false;
     isPaused = false;
     
-    // 13. 사운드 관련 상태 초기화
-    lastCollisionTime = 0;
-    lastExplosionTime = 0;
+            // 13. 사운드 관련 상태 초기화
+        lastCollisionTime = 0;
+        lastExplosionTime = 0;
+        
+        // 14. 목숨 깜빡임 상태 초기화
+        lifeBlinkTimer = 0;
+        isLifeBlinking = false;
+        lastLifeCount = maxLives;
     
     // 14. 패턴 추적 시스템 초기화
     levelBossPatterns.usedPatterns = [];
@@ -2060,8 +2080,28 @@ function handleCollision() {
     }
     
     const currentTime = Date.now();
+    const previousLifeCount = maxLives - collisionCount;
     collisionCount++;
     flashTimer = flashDuration;
+    
+    // 목숨이 감소했을 때 경고음 재생 및 깜빡임 시작
+    const currentLifeCount = maxLives - collisionCount;
+    if (currentLifeCount < previousLifeCount) {
+        // 경고음 재생
+        warningSound.currentTime = 0;
+        warningSound.volume = clampVolume(0.6);
+        applyGlobalVolume();
+        warningSound.play().catch(error => {
+            console.log('경고음 재생 실패:', error);
+        });
+        
+        // 목숨 UI 깜빡임 시작
+        lifeBlinkTimer = lifeBlinkDuration;
+        isLifeBlinking = true;
+        lastLifeCount = currentLifeCount;
+        
+        console.log(`목숨 감소! 경고음 재생 및 UI 깜빡임 시작. 남은 목숨: ${currentLifeCount}`);
+    }
     
     // 플레이어와 미사일 충돌 시 폭발 효과 생성
     explosions.push(new Explosion(
@@ -2551,6 +2591,15 @@ function gameLoop() {
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 flashTimer -= 16;
             }
+            
+            // 목숨 깜빡임 타이머 업데이트
+            if (lifeBlinkTimer > 0) {
+                lifeBlinkTimer -= 16;
+                if (lifeBlinkTimer <= 0) {
+                    isLifeBlinking = false;
+                    lifeBlinkTimer = 0;
+                }
+            }
 
             // 플레이어 이동 처리
             handlePlayerMovement();
@@ -2652,6 +2701,15 @@ function gameLoop() {
                 ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 flashTimer -= 16;
+            }
+            
+            // 목숨 깜빡임 타이머 업데이트
+            if (lifeBlinkTimer > 0) {
+                lifeBlinkTimer -= 16;
+                if (lifeBlinkTimer <= 0) {
+                    isLifeBlinking = false;
+                    lifeBlinkTimer = 0;
+                }
             }
 
             // 플레이어 이동 처리
@@ -3641,9 +3699,38 @@ function drawUI() {
         ctx.fillText(`추가 비행기 남은 시간: ${remainingTime}초`, 10, 180);
     }
     
-    // 남은 목숨 표시 (붉은색으로)
-    ctx.fillStyle = 'red';
-    ctx.font = 'bold 20px Arial';  // 폰트를 진하게 변경
+    // 남은 목숨 표시 (깜빡임 효과 포함)
+    if (isLifeBlinking && lifeBlinkTimer > 0) {
+        // 깜빡임 효과: 흰 배경에 빨간 텍스트
+        const blinkInterval = 200; // 200ms마다 깜빡임
+        const isBlinkOn = Math.floor(lifeBlinkTimer / blinkInterval) % 2 === 0;
+        
+        if (isBlinkOn) {
+            // 흰 배경에 빨간 텍스트
+            ctx.fillStyle = 'white';
+            ctx.fillRect(5, 190, 200, 30);
+            ctx.fillStyle = 'red';
+        } else {
+            // 빨간 배경에 흰 텍스트
+            ctx.fillStyle = 'red';
+            ctx.fillRect(5, 190, 200, 30);
+            ctx.fillStyle = 'white';
+        }
+        
+        // 깜빡임 타이머 감소
+        lifeBlinkTimer -= 16; // 약 60fps 기준
+        
+        // 깜빡임 종료 체크
+        if (lifeBlinkTimer <= 0) {
+            isLifeBlinking = false;
+            lifeBlinkTimer = 0;
+        }
+    } else {
+        // 일반 상태: 빨간색 텍스트
+        ctx.fillStyle = 'red';
+    }
+    
+    ctx.font = 'bold 20px Arial';
     ctx.fillText(`남은 목숨: ${maxLives - collisionCount}`, 10, 210);
     
     // 특수 무기 게이지 표시
