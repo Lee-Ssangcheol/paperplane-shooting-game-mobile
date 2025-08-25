@@ -1539,8 +1539,44 @@ async function initializeGame() {
     }
 }
 
-// 페이지 로드 시 모바일 전체화면 모드 활성화
+// 페이지 로드 시 오디오 요소 초기화 및 모바일 전체화면 모드 활성화
 window.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM 로드 완료 - 오디오 요소 초기화 시작...');
+    
+    // 오디오 요소들을 즉시 초기화
+    try {
+        shootSound = document.getElementById('shootSound');
+        explosionSound = document.getElementById('explosionSound');
+        collisionSound = document.getElementById('collisionSound');
+        warningSound = document.getElementById('warningSound');
+        
+        console.log('DOM 로드 시 오디오 요소 초기화 결과:', {
+            shootSound: !!shootSound,
+            explosionSound: !!explosionSound,
+            collisionSound: !!collisionSound,
+            warningSound: !!warningSound
+        });
+        
+        // 사운드 볼륨 설정
+        if (shootSound) {
+            shootSound.volume = clampVolume(0.4);
+        }
+        if (explosionSound) {
+            explosionSound.volume = clampVolume(0.6);
+        }
+        if (collisionSound) {
+            collisionSound.volume = clampVolume(0.5);
+        }
+        if (warningSound) {
+            warningSound.volume = clampVolume(0.6);
+        }
+        
+        console.log('오디오 요소 초기화 완료!');
+        
+    } catch (error) {
+        console.error('DOM 로드 시 오디오 요소 초기화 실패:', error);
+    }
+    
     // 모바일에서 전체화면 모드 활성화
     if (isMobile) {
         // 페이지 로드 후 약간의 지연을 두고 전체화면 모드 활성화
@@ -6105,8 +6141,47 @@ async function loadGameImages() {
                 }
             };
             img.src = src;
+            });
+});
+
+// 모든 리소스 로드 완료 후 오디오 요소 최종 확인
+window.addEventListener('load', () => {
+    console.log('모든 리소스 로드 완료 - 오디오 요소 최종 확인...');
+    
+    // 오디오 요소들을 다시 한 번 확인
+    try {
+        if (!shootSound) shootSound = document.getElementById('shootSound');
+        if (!explosionSound) explosionSound = document.getElementById('explosionSound');
+        if (!collisionSound) collisionSound = document.getElementById('collisionSound');
+        if (!warningSound) warningSound = document.getElementById('warningSound');
+        
+        console.log('리소스 로드 후 오디오 요소 최종 상태:', {
+            shootSound: !!shootSound,
+            explosionSound: !!explosionSound,
+            collisionSound: !!collisionSound,
+            warningSound: !!warningSound
         });
-    });
+        
+        // 경고음이 여전히 없으면 강제로 찾기
+        if (!warningSound) {
+            console.log('경고음 요소를 강제로 찾는 중...');
+            const allAudioElements = document.querySelectorAll('audio');
+            console.log('페이지의 모든 오디오 요소:', allAudioElements);
+            
+            for (let audio of allAudioElements) {
+                if (audio.id === 'warningSound') {
+                    warningSound = audio;
+                    warningSound.volume = clampVolume(0.6);
+                    console.log('경고음 요소 강제 발견 및 설정 완료!');
+                    break;
+                }
+            }
+        }
+        
+    } catch (error) {
+        console.error('리소스 로드 후 오디오 요소 확인 실패:', error);
+    }
+});
 }
 
 // 이미지 기반 비행기 그리기 함수
