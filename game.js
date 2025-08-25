@@ -1432,24 +1432,35 @@ async function initializeGame() {
         lastCollisionTime = 0;
         lastExplosionTime = 0;
         
-        // 13. 오디오 요소 초기화
-        shootSound = document.getElementById('shootSound');
-        explosionSound = document.getElementById('explosionSound');
-        collisionSound = document.getElementById('collisionSound');
-        warningSound = document.getElementById('warningSound');
-        
-        // 사운드 볼륨 설정
-        if (shootSound) {
-            shootSound.volume = clampVolume(0.4);
-        }
-        if (explosionSound) {
-            explosionSound.volume = clampVolume(0.6);
-        }
-        if (collisionSound) {
-            collisionSound.volume = clampVolume(0.5);
-        }
-        if (warningSound) {
-            warningSound.volume = clampVolume(0.6);
+        // 13. 오디오 요소 초기화 (안전하게)
+        try {
+            shootSound = document.getElementById('shootSound');
+            explosionSound = document.getElementById('explosionSound');
+            collisionSound = document.getElementById('collisionSound');
+            warningSound = document.getElementById('warningSound');
+            
+            console.log('게임 초기화 - 오디오 요소 초기화 결과:', {
+                shootSound: !!shootSound,
+                explosionSound: !!explosionSound,
+                collisionSound: !!collisionSound,
+                warningSound: !!warningSound
+            });
+            
+            // 사운드 볼륨 설정
+            if (shootSound) {
+                shootSound.volume = clampVolume(0.4);
+            }
+            if (explosionSound) {
+                explosionSound.volume = clampVolume(0.6);
+            }
+            if (collisionSound) {
+                collisionSound.volume = clampVolume(0.5);
+            }
+            if (warningSound) {
+                warningSound.volume = clampVolume(0.6);
+            }
+        } catch (error) {
+            console.error('게임 초기화 - 오디오 요소 초기화 실패:', error);
         }
         
         // 충돌 사운드 길이 제어 설정
@@ -1628,24 +1639,35 @@ function restartGame() {
         lastCollisionTime = 0;
         lastExplosionTime = 0;
         
-        // 14. 오디오 요소 초기화
-        shootSound = document.getElementById('shootSound');
-        explosionSound = document.getElementById('explosionSound');
-        collisionSound = document.getElementById('collisionSound');
-        warningSound = document.getElementById('warningSound');
-        
-        // 사운드 볼륨 설정
-        if (shootSound) {
-            shootSound.volume = clampVolume(0.4);
-        }
-        if (explosionSound) {
-            explosionSound.volume = clampVolume(0.6);
-        }
-        if (collisionSound) {
-            collisionSound.volume = clampVolume(0.5);
-        }
-        if (warningSound) {
-            warningSound.volume = clampVolume(0.6);
+        // 14. 오디오 요소 초기화 (안전하게)
+        try {
+            shootSound = document.getElementById('shootSound');
+            explosionSound = document.getElementById('explosionSound');
+            collisionSound = document.getElementById('collisionSound');
+            warningSound = document.getElementById('warningSound');
+            
+            console.log('오디오 요소 초기화 결과:', {
+                shootSound: !!shootSound,
+                explosionSound: !!explosionSound,
+                collisionSound: !!collisionSound,
+                warningSound: !!warningSound
+            });
+            
+            // 사운드 볼륨 설정
+            if (shootSound) {
+                shootSound.volume = clampVolume(0.4);
+            }
+            if (explosionSound) {
+                explosionSound.volume = clampVolume(0.6);
+            }
+            if (collisionSound) {
+                collisionSound.volume = clampVolume(0.5);
+            }
+            if (warningSound) {
+                warningSound.volume = clampVolume(0.6);
+            }
+        } catch (error) {
+            console.error('오디오 요소 초기화 실패:', error);
         }
         
         // 15. 목숨 깜빡임 상태 초기화
