@@ -1543,14 +1543,72 @@ async function initializeGame() {
 window.addEventListener('DOMContentLoaded', () => {
     console.log('DOM 로드 완료 - 오디오 요소 초기화 시작...');
     
-    // 오디오 요소들을 즉시 초기화
-    try {
-        shootSound = document.getElementById('shootSound');
-        explosionSound = document.getElementById('explosionSound');
-        collisionSound = document.getElementById('collisionSound');
-        warningSound = document.getElementById('warningSound');
+    // GitHub Pages 호환성을 위한 오디오 요소 동적 생성
+    const createAudioElement = (id, filename) => {
+        // 기존 요소가 있으면 제거
+        const existingElement = document.getElementById(id);
+        if (existingElement) {
+            existingElement.remove();
+        }
         
-        console.log('DOM 로드 시 오디오 요소 초기화 결과:', {
+        // 새로운 오디오 요소 생성
+        const audio = document.createElement('audio');
+        audio.id = id;
+        audio.preload = 'auto';
+        
+        // 다양한 경로 시도 (GitHub Pages 호환성)
+        const possiblePaths = [
+            `sounds/${filename}`,
+            `./sounds/${filename}`,
+            `../sounds/${filename}`,
+            `../../sounds/${filename}`,
+            `/${filename}`,
+            filename
+        ];
+        
+        // 첫 번째 경로로 설정
+        audio.src = possiblePaths[0];
+        
+        // 오류 시 다른 경로 시도
+        audio.addEventListener('error', () => {
+            console.log(`${id} 오디오 로드 실패, 다른 경로 시도 중...`);
+            let currentPathIndex = 0;
+            
+            const tryNextPath = () => {
+                currentPathIndex++;
+                if (currentPathIndex < possiblePaths.length) {
+                    console.log(`${id} 경로 변경 시도: ${possiblePaths[currentPathIndex]}`);
+                    audio.src = possiblePaths[currentPathIndex];
+                } else {
+                    console.error(`${id} 모든 경로 시도 실패`);
+                }
+            };
+            
+            audio.addEventListener('error', tryNextPath, { once: true });
+        });
+        
+        // 성공 시 로그
+        audio.addEventListener('canplaythrough', () => {
+            console.log(`${id} 오디오 로드 성공: ${audio.src}`);
+        });
+        
+        // 로드 완료 시 로그
+        audio.addEventListener('loadeddata', () => {
+            console.log(`${id} 오디오 데이터 로드 완료`);
+        });
+        
+        document.body.appendChild(audio);
+        return audio;
+    };
+    
+    // 오디오 요소들을 동적으로 생성
+    try {
+        shootSound = createAudioElement('shootSound', 'shoot.mp3');
+        explosionSound = createAudioElement('explosionSound', 'explosion.mp3');
+        collisionSound = createAudioElement('collisionSound', 'collision.mp3');
+        warningSound = createAudioElement('warningSound', 'warning.mp3');
+        
+        console.log('동적 오디오 요소 생성 완료:', {
             shootSound: !!shootSound,
             explosionSound: !!explosionSound,
             collisionSound: !!collisionSound,
