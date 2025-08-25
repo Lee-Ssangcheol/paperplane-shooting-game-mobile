@@ -561,14 +561,11 @@ collisionSound.addEventListener('loadedmetadata', () => {
 });
 
 // 목숨 감소 시 경고음과 UI 깜빡임을 위한 변수들
-let warningSound = document.getElementById('warningSound');
+let warningSound = null;
 let lifeBlinkTimer = 0;
 let lifeBlinkDuration = 2000; // 2초간 깜빡임
 let isLifeBlinking = false;
 let lastLifeCount = 5; // 이전 목숨 수
-
-// 경고음 볼륨 설정
-warningSound.volume = clampVolume(0.6);
 
 // 플레이어 우주선 - 모바일용 캔버스 크기(392x700)로 제한
 const canvasWidth = CANVAS_WIDTH;
@@ -1442,7 +1439,13 @@ async function initializeGame() {
         lastCollisionTime = 0;
         lastExplosionTime = 0;
         
-        // 13. 목숨 깜빡임 상태 초기화
+        // 13. 오디오 요소 초기화
+        warningSound = document.getElementById('warningSound');
+        if (warningSound) {
+            warningSound.volume = clampVolume(0.6);
+        }
+        
+        // 14. 목숨 깜빡임 상태 초기화
         lifeBlinkTimer = 0;
         isLifeBlinking = false;
         lastLifeCount = maxLives;
@@ -1610,7 +1613,13 @@ function restartGame() {
         lastCollisionTime = 0;
         lastExplosionTime = 0;
         
-        // 14. 목숨 깜빡임 상태 초기화
+        // 14. 오디오 요소 초기화
+        warningSound = document.getElementById('warningSound');
+        if (warningSound) {
+            warningSound.volume = clampVolume(0.6);
+        }
+        
+        // 15. 목숨 깜빡임 상태 초기화
         lifeBlinkTimer = 0;
         isLifeBlinking = false;
         lastLifeCount = maxLives;
@@ -2087,13 +2096,17 @@ function handleCollision() {
     // 목숨이 감소했을 때 경고음 재생 및 깜빡임 시작
     const currentLifeCount = maxLives - collisionCount;
     if (currentLifeCount < previousLifeCount) {
-        // 경고음 재생
-        warningSound.currentTime = 0;
-        warningSound.volume = clampVolume(0.6);
-        applyGlobalVolume();
-        warningSound.play().catch(error => {
-            console.log('경고음 재생 실패:', error);
-        });
+        // 경고음 재생 (안전장치 포함)
+        if (warningSound) {
+            warningSound.currentTime = 0;
+            warningSound.volume = clampVolume(0.6);
+            applyGlobalVolume();
+            warningSound.play().catch(error => {
+                console.log('경고음 재생 실패:', error);
+            });
+        } else {
+            console.log('경고음 요소를 찾을 수 없습니다.');
+        }
         
         // 목숨 UI 깜빡임 시작
         lifeBlinkTimer = lifeBlinkDuration;
