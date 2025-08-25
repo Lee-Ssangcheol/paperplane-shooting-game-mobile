@@ -541,24 +541,16 @@ function setupMobileControls() {
 }
 
 // 오디오 요소 가져오기
-const shootSound = document.getElementById('shootSound');
-const explosionSound = document.getElementById('explosionSound');
-const collisionSound = document.getElementById('collisionSound');
-
-// 사운드 설정
-shootSound.volume = clampVolume(0.4);  // 발사음 볼륨 증가
-explosionSound.volume = clampVolume(0.6);  // 폭발음 볼륨 조정
-collisionSound.volume = clampVolume(0.5);  // 충돌음 볼륨 조정
+let shootSound = null;
+let explosionSound = null;
+let collisionSound = null;
 
 // 충돌 사운드 재생 시간 제어를 위한 변수 추가
 let lastCollisionTime = 0;
 const collisionSoundCooldown = 300;  // 충돌음 쿨다운 시간 증가
 
-// 충돌 사운드 길이 제어
-collisionSound.addEventListener('loadedmetadata', () => {
-    // 사운드 길이를 0.8초로 제한
-    collisionSound.duration = Math.min(collisionSound.duration, 0.8);
-});
+// 충돌 사운드 길이 제어 (초기화 후에 설정)
+// 이 부분은 initializeGame 함수에서 처리됩니다
 
 // 목숨 감소 시 경고음과 UI 깜빡임을 위한 변수들
 let warningSound = null;
@@ -1440,9 +1432,31 @@ async function initializeGame() {
         lastExplosionTime = 0;
         
         // 13. 오디오 요소 초기화
+        shootSound = document.getElementById('shootSound');
+        explosionSound = document.getElementById('explosionSound');
+        collisionSound = document.getElementById('collisionSound');
         warningSound = document.getElementById('warningSound');
+        
+        // 사운드 볼륨 설정
+        if (shootSound) {
+            shootSound.volume = clampVolume(0.4);
+        }
+        if (explosionSound) {
+            explosionSound.volume = clampVolume(0.6);
+        }
+        if (collisionSound) {
+            collisionSound.volume = clampVolume(0.5);
+        }
         if (warningSound) {
             warningSound.volume = clampVolume(0.6);
+        }
+        
+        // 충돌 사운드 길이 제어 설정
+        if (collisionSound) {
+            collisionSound.addEventListener('loadedmetadata', () => {
+                // 사운드 길이를 0.8초로 제한
+                collisionSound.duration = Math.min(collisionSound.duration, 0.8);
+            });
         }
         
         // 14. 목숨 깜빡임 상태 초기화
@@ -1614,7 +1628,21 @@ function restartGame() {
         lastExplosionTime = 0;
         
         // 14. 오디오 요소 초기화
+        shootSound = document.getElementById('shootSound');
+        explosionSound = document.getElementById('explosionSound');
+        collisionSound = document.getElementById('collisionSound');
         warningSound = document.getElementById('warningSound');
+        
+        // 사운드 볼륨 설정
+        if (shootSound) {
+            shootSound.volume = clampVolume(0.4);
+        }
+        if (explosionSound) {
+            explosionSound.volume = clampVolume(0.6);
+        }
+        if (collisionSound) {
+            collisionSound.volume = clampVolume(0.5);
+        }
         if (warningSound) {
             warningSound.volume = clampVolume(0.6);
         }
