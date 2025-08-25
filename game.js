@@ -1432,33 +1432,60 @@ async function initializeGame() {
         lastCollisionTime = 0;
         lastExplosionTime = 0;
         
-        // 13. 오디오 요소 초기화 (안전하게)
+        // 13. 오디오 요소 초기화 (강화된 안전장치)
         try {
-            shootSound = document.getElementById('shootSound');
-            explosionSound = document.getElementById('explosionSound');
-            collisionSound = document.getElementById('collisionSound');
-            warningSound = document.getElementById('warningSound');
+            // DOM이 완전히 로드될 때까지 대기
+            let retryCount = 0;
+            const maxRetries = 10;
             
-            console.log('게임 초기화 - 오디오 요소 초기화 결과:', {
-                shootSound: !!shootSound,
-                explosionSound: !!explosionSound,
-                collisionSound: !!collisionSound,
-                warningSound: !!warningSound
-            });
+            const initializeAudio = () => {
+                shootSound = document.getElementById('shootSound');
+                explosionSound = document.getElementById('explosionSound');
+                collisionSound = document.getElementById('collisionSound');
+                warningSound = document.getElementById('warningSound');
+                
+                console.log(`오디오 초기화 시도 ${retryCount + 1}/${maxRetries}:`, {
+                    shootSound: !!shootSound,
+                    explosionSound: !!explosionSound,
+                    collisionSound: !!collisionSound,
+                    warningSound: !!warningSound
+                });
+                
+                // 모든 오디오 요소가 로드되었는지 확인
+                if (shootSound && explosionSound && collisionSound && warningSound) {
+                    console.log('모든 오디오 요소 로드 완료!');
+                    
+                    // 사운드 볼륨 설정
+                    shootSound.volume = clampVolume(0.4);
+                    explosionSound.volume = clampVolume(0.6);
+                    collisionSound.volume = clampVolume(0.5);
+                    warningSound.volume = clampVolume(0.6);
+                    
+                    // 충돌 사운드 길이 제어 설정
+                    collisionSound.addEventListener('loadedmetadata', () => {
+                        collisionSound.duration = Math.min(collisionSound.duration, 0.8);
+                    });
+                    
+                    return true;
+                }
+                
+                return false;
+            };
             
-            // 사운드 볼륨 설정
-            if (shootSound) {
-                shootSound.volume = clampVolume(0.4);
+            // 즉시 시도
+            if (!initializeAudio()) {
+                // 실패 시 재시도
+                const retryInterval = setInterval(() => {
+                    retryCount++;
+                    if (initializeAudio() || retryCount >= maxRetries) {
+                        clearInterval(retryInterval);
+                        if (retryCount >= maxRetries) {
+                            console.error('오디오 요소 초기화 실패 - 최대 재시도 횟수 초과');
+                        }
+                    }
+                }, 100); // 100ms마다 재시도
             }
-            if (explosionSound) {
-                explosionSound.volume = clampVolume(0.6);
-            }
-            if (collisionSound) {
-                collisionSound.volume = clampVolume(0.5);
-            }
-            if (warningSound) {
-                warningSound.volume = clampVolume(0.6);
-            }
+            
         } catch (error) {
             console.error('게임 초기화 - 오디오 요소 초기화 실패:', error);
         }
@@ -1639,35 +1666,57 @@ function restartGame() {
         lastCollisionTime = 0;
         lastExplosionTime = 0;
         
-        // 14. 오디오 요소 초기화 (안전하게)
+        // 14. 오디오 요소 초기화 (강화된 안전장치)
         try {
-            shootSound = document.getElementById('shootSound');
-            explosionSound = document.getElementById('explosionSound');
-            collisionSound = document.getElementById('collisionSound');
-            warningSound = document.getElementById('warningSound');
+            // DOM이 완전히 로드될 때까지 대기
+            let retryCount = 0;
+            const maxRetries = 10;
             
-            console.log('오디오 요소 초기화 결과:', {
-                shootSound: !!shootSound,
-                explosionSound: !!explosionSound,
-                collisionSound: !!collisionSound,
-                warningSound: !!warningSound
-            });
+            const initializeAudio = () => {
+                shootSound = document.getElementById('shootSound');
+                explosionSound = document.getElementById('explosionSound');
+                collisionSound = document.getElementById('collisionSound');
+                warningSound = document.getElementById('warningSound');
+                
+                console.log(`게임 재시작 - 오디오 초기화 시도 ${retryCount + 1}/${maxRetries}:`, {
+                    shootSound: !!shootSound,
+                    explosionSound: !!explosionSound,
+                    collisionSound: !!collisionSound,
+                    warningSound: !!warningSound
+                });
+                
+                // 모든 오디오 요소가 로드되었는지 확인
+                if (shootSound && explosionSound && collisionSound && warningSound) {
+                    console.log('게임 재시작 - 모든 오디오 요소 로드 완료!');
+                    
+                    // 사운드 볼륨 설정
+                    shootSound.volume = clampVolume(0.4);
+                    explosionSound.volume = clampVolume(0.6);
+                    collisionSound.volume = clampVolume(0.5);
+                    warningSound.volume = clampVolume(0.6);
+                    
+                    return true;
+                }
+                
+                return false;
+            };
             
-            // 사운드 볼륨 설정
-            if (shootSound) {
-                shootSound.volume = clampVolume(0.4);
+            // 즉시 시도
+            if (!initializeAudio()) {
+                // 실패 시 재시도
+                const retryInterval = setInterval(() => {
+                    retryCount++;
+                    if (initializeAudio() || retryCount >= maxRetries) {
+                        clearInterval(retryInterval);
+                        if (retryCount >= maxRetries) {
+                            console.error('게임 재시작 - 오디오 요소 초기화 실패 - 최대 재시도 횟수 초과');
+                        }
+                    }
+                }, 100); // 100ms마다 재시도
             }
-            if (explosionSound) {
-                explosionSound.volume = clampVolume(0.6);
-            }
-            if (collisionSound) {
-                collisionSound.volume = clampVolume(0.5);
-            }
-            if (warningSound) {
-                warningSound.volume = clampVolume(0.6);
-            }
+            
         } catch (error) {
-            console.error('오디오 요소 초기화 실패:', error);
+            console.error('게임 재시작 - 오디오 요소 초기화 실패:', error);
         }
         
         // 15. 목숨 깜빡임 상태 초기화
@@ -2151,7 +2200,7 @@ function handleCollision() {
     if (currentLifeCount < previousLifeCount) {
         console.log('목숨 감소 감지! 경고음 재생 시작...');
         
-        // 경고음 재생 (안전장치 포함)
+        // 경고음 재생 (강화된 안전장치 포함)
         if (warningSound) {
             console.log('경고음 요소 발견, 재생 시도...');
             warningSound.currentTime = 0;
@@ -2163,7 +2212,27 @@ function handleCollision() {
                 console.log('경고음 재생 실패:', error);
             });
         } else {
-            console.log('경고음 요소를 찾을 수 없습니다. warningSound:', warningSound);
+            console.log('경고음 요소를 찾을 수 없습니다. 재초기화 시도...');
+            
+            // 즉시 재초기화 시도
+            try {
+                warningSound = document.getElementById('warningSound');
+                if (warningSound) {
+                    console.log('경고음 요소 재발견! 재생 시도...');
+                    warningSound.currentTime = 0;
+                    warningSound.volume = clampVolume(0.6);
+                    applyGlobalVolume();
+                    warningSound.play().then(() => {
+                        console.log('경고음 재생 성공! (재초기화 후)');
+                    }).catch(error => {
+                        console.log('경고음 재생 실패 (재초기화 후):', error);
+                    });
+                } else {
+                    console.log('경고음 요소를 여전히 찾을 수 없습니다.');
+                }
+            } catch (error) {
+                console.error('경고음 재초기화 실패:', error);
+            }
         }
         
         // 목숨 UI 깜빡임 시작
