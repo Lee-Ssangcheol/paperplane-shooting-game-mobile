@@ -601,6 +601,7 @@ let hasSecondPlane = false;  // 두 번째 비행기 보유 여부
 let secondPlaneTimer = 0;    // 두 번째 비행기 타이머
 let isPaused = false;     // 일시정지 상태
 let collisionCount = 0;   // 충돌 횟수
+let maxLives = 5;        // 최대 목숨 수
 let isGameOver = false;   // 게임 오버 상태
 let flashTimer = 0;       // 깜박임 효과 타이머
 let flashDuration = 500;  // 깜박임 지속 시간
@@ -2123,17 +2124,24 @@ function handleCollision() {
     
     // 목숨이 감소했을 때 경고음 재생 및 깜빡임 시작
     const currentLifeCount = maxLives - collisionCount;
+    console.log(`충돌 처리 - 이전 목숨: ${previousLifeCount}, 현재 목숨: ${currentLifeCount}, maxLives: ${maxLives}, collisionCount: ${collisionCount}`);
+    
     if (currentLifeCount < previousLifeCount) {
+        console.log('목숨 감소 감지! 경고음 재생 시작...');
+        
         // 경고음 재생 (안전장치 포함)
         if (warningSound) {
+            console.log('경고음 요소 발견, 재생 시도...');
             warningSound.currentTime = 0;
             warningSound.volume = clampVolume(0.6);
             applyGlobalVolume();
-            warningSound.play().catch(error => {
+            warningSound.play().then(() => {
+                console.log('경고음 재생 성공!');
+            }).catch(error => {
                 console.log('경고음 재생 실패:', error);
             });
         } else {
-            console.log('경고음 요소를 찾을 수 없습니다.');
+            console.log('경고음 요소를 찾을 수 없습니다. warningSound:', warningSound);
         }
         
         // 목숨 UI 깜빡임 시작
@@ -2142,6 +2150,8 @@ function handleCollision() {
         lastLifeCount = currentLifeCount;
         
         console.log(`목숨 감소! 경고음 재생 및 UI 깜빡임 시작. 남은 목숨: ${currentLifeCount}`);
+    } else {
+        console.log('목숨 감소가 감지되지 않았습니다.');
     }
     
     // 플레이어와 미사일 충돌 시 폭발 효과 생성
@@ -5561,7 +5571,7 @@ function handleDynamites() {
 }
 
 // 게임 상태 변수에 추가
-let maxLives = 5;  // 최대 목숨 수
+// maxLives는 이미 전역으로 선언되어 있음
 
 // === 사운드 볼륨 전역 변수 및 함수 추가 ===
 let globalVolume = 0.1;
