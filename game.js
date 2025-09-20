@@ -1,6 +1,7 @@
 // 게임 상수 정의
 const SPECIAL_WEAPON_MAX_CHARGE = 3000;  // 특수무기 최대 충전량
 const SPECIAL_WEAPON_CHARGE_RATE = 10;   // 특수무기 충전 속도
+const SPECIAL_WEAPON_MAX_COUNT = 5;      // 특수무기 최대 보유 개수
 const TOP_EFFECT_ZONE = 20;  // 상단 효과 무시 영역 (픽셀)
 
 // 모바일 디바이스 감지
@@ -4001,7 +4002,7 @@ function drawUI() {
         ctx.fillStyle = 'white';
         ctx.font = 'bold 16px Arial';
         ctx.textAlign = 'center';
-        const percentText = `특수무기: ${Math.floor((specialWeaponCharge / SPECIAL_WEAPON_MAX_CHARGE) * 100)}%(보유:${specialWeaponCount}개)`;
+        const percentText = `특수무기: ${Math.floor((specialWeaponCharge / SPECIAL_WEAPON_MAX_CHARGE) * 100)}%(보유:${specialWeaponCount}/${SPECIAL_WEAPON_MAX_COUNT}개)`;
         ctx.fillText(percentText, 110, 255);
     } else {
         // 사용 가능한 상태 - 깜빡이는 효과
@@ -4022,7 +4023,7 @@ function drawUI() {
         ctx.fillStyle = isRed ? 'red' : 'cyan';
         ctx.font = 'bold 16px Arial';
         ctx.textAlign = 'center';
-        const percentText = `특수무기: ${Math.floor((specialWeaponCharge / SPECIAL_WEAPON_MAX_CHARGE) * 100)}%(보유:${specialWeaponCount}개)`;
+        const percentText = `특수무기: ${Math.floor((specialWeaponCharge / SPECIAL_WEAPON_MAX_CHARGE) * 100)}%(보유:${specialWeaponCount}/${SPECIAL_WEAPON_MAX_COUNT}개)`;
         ctx.fillText(percentText, 110, 255);
         
         // 준비 완료 메시지 배경
@@ -4031,9 +4032,9 @@ function drawUI() {
         
         // 텍스트 색상 설정
         ctx.fillStyle = isRed ? 'red' : 'cyan';
-        ctx.font = 'bold 20px Arial';
+        ctx.font = 'bold 15px Arial';
         ctx.textAlign = 'left';
-        ctx.fillText('특수무기 사용(알파벳 "B"키 클릭)', 15, 280);
+        ctx.fillText('아래 [특수무기]버튼을 터치하세요.', 15, 280);
     }
 
     // 제작자 정보 표시
@@ -4342,10 +4343,17 @@ function updateScore(points) {
     // 특수무기 충전 및 보유 개수 증가
     specialWeaponCharge += points;
     if (specialWeaponCharge >= SPECIAL_WEAPON_MAX_CHARGE) {
-        // 충전이 100%가 되면 보유 개수에 추가
-        specialWeaponCount++;
-        specialWeaponCharge = 0; // 충전 게이지 리셋
-        console.log(`특수무기 획득! 현재 보유 개수: ${specialWeaponCount}`);
+        // 최대 보유 개수 제한 확인
+        if (specialWeaponCount < SPECIAL_WEAPON_MAX_COUNT) {
+            // 충전이 100%가 되면 보유 개수에 추가
+            specialWeaponCount++;
+            specialWeaponCharge = 0; // 충전 게이지 리셋
+            console.log(`특수무기 획득! 현재 보유 개수: ${specialWeaponCount}/${SPECIAL_WEAPON_MAX_COUNT}`);
+        } else {
+            // 최대 보유 개수에 도달한 경우 충전 게이지만 리셋
+            specialWeaponCharge = 0;
+            console.log(`특수무기 최대 보유 개수 도달! (${SPECIAL_WEAPON_MAX_COUNT}개) - 충전 게이지 리셋`);
+        }
     }
     
     // 최고 점수 즉시 업데이트 및 저장
