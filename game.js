@@ -3829,7 +3829,7 @@ function handleSpecialWeapon() {
                 y: player.y,
                 width: 10,  // 총알 크기 감소
                 height: 10, // 총알 크기 감소
-                speed: 12,  // 속도 증가
+                speed: bulletSpeed,  // 총알 속도와 동일
                 angle: angle,
                 isSpecial: true,
                 life: 80,   // 총알 지속 시간 감소
@@ -3849,7 +3849,7 @@ function handleSpecialWeapon() {
                     y: secondPlane.y,
                     width: 10,  // 총알 크기 감소
                     height: 10, // 총알 크기 감소
-                    speed: 12,
+                    speed: bulletSpeed,  // 총알 속도와 동일
                     angle: angle,
                     isSpecial: true,
                     life: 80,   // 총알 지속 시간 감소
