@@ -3911,12 +3911,12 @@ function drawUI() {
         if (isBlinkOn) {
             // 흰 배경에 빨간 텍스트
             ctx.fillStyle = 'white';
-            ctx.fillRect(5, 190, 200, 30);
+            ctx.fillRect(5, 165, 200, 30);
             ctx.fillStyle = 'red';
         } else {
             // 빨간 배경에 흰 텍스트
             ctx.fillStyle = 'red';
-            ctx.fillRect(5, 190, 200, 30);
+            ctx.fillRect(5, 165, 200, 30);
             ctx.fillStyle = 'white';
         }
         
@@ -3934,6 +3934,7 @@ function drawUI() {
     }
     
     ctx.font = 'bold 20px Arial';
+    ctx.textBaseline = 'middle';
     ctx.fillText(`남은 목숨: ${maxLives - collisionCount}`, 10, 180);
     
     // 특수 무기 게이지 표시 (보유 개수 시스템)
@@ -3948,18 +3949,19 @@ function drawUI() {
         // 사용 불가능한 상태 - 충전 게이지만 표시
         // 게이지 바 배경
         ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-        ctx.fillRect(10, 240, 200, 20);
+        ctx.fillRect(10, 210, 200, 20);
         
         // 게이지 바
         ctx.fillStyle = 'rgba(0, 255, 255, 0.8)';
-        ctx.fillRect(10, 240, (specialWeaponCharge / SPECIAL_WEAPON_MAX_CHARGE) * 200, 20);
+        ctx.fillRect(10, 210, (specialWeaponCharge / SPECIAL_WEAPON_MAX_CHARGE) * 200, 20);
         
         // 게이지 바 위에 텍스트 표시
         ctx.fillStyle = 'white';
         ctx.font = 'bold 16px Arial';
         ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
         const percentText = `특수무기: ${Math.floor((specialWeaponCharge / SPECIAL_WEAPON_MAX_CHARGE) * 100)}%(보유:${specialWeaponCount}/${SPECIAL_WEAPON_MAX_COUNT}개)`;
-        ctx.fillText(percentText, 110, 225);
+        ctx.fillText(percentText, 110, 220);
     } else {
         // 사용 가능한 상태 - 깜빡이는 효과
         const blinkSpeed = 500; // 깜빡임 속도 (밀리초)
@@ -3968,29 +3970,31 @@ function drawUI() {
         
         // 배경색 설정 (게이지 바)
         ctx.fillStyle = isRed ? 'rgba(255, 0, 0, 0.3)' : 'rgba(0, 0, 255, 0.3)';
-        ctx.fillRect(10, 240, 200, 20);
+        ctx.fillRect(10, 210, 200, 20);
         
         // 테두리 효과
         ctx.strokeStyle = isRed ? 'red' : 'cyan';
         ctx.lineWidth = 2;
-        ctx.strokeRect(10, 240, 200, 20);
+        ctx.strokeRect(10, 210, 200, 20);
         
         // 게이지 바 위에 텍스트 표시
         ctx.fillStyle = isRed ? 'red' : 'cyan';
         ctx.font = 'bold 16px Arial';
         ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
         const percentText = `특수무기: ${Math.floor((specialWeaponCharge / SPECIAL_WEAPON_MAX_CHARGE) * 100)}%(보유:${specialWeaponCount}/${SPECIAL_WEAPON_MAX_COUNT}개)`;
-        ctx.fillText(percentText, 110, 225);
+        ctx.fillText(percentText, 110, 220);
         
         // 준비 완료 메시지 배경
         ctx.fillStyle = isRed ? 'rgba(255, 0, 0, 0.2)' : 'rgba(0, 0, 255, 0.2)';
-        ctx.fillRect(10, 260, 300, 30);
+        ctx.fillRect(10, 240, 300, 30);
         
         // 텍스트 색상 설정
         ctx.fillStyle = isRed ? 'red' : 'cyan';
         ctx.font = 'bold 15px Arial';
         ctx.textAlign = 'left';
-        ctx.fillText('아래 [특수무기]버튼을 터치하세요.', 15, 250);
+        ctx.textBaseline = 'middle';
+        ctx.fillText('아래 [특수무기]버튼을 터치하세요.', 15, 255);
     }
 
     // 제작자 정보 표시
