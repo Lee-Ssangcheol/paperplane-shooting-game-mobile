@@ -3519,8 +3519,8 @@ function checkEnemyCollisions(enemy) {
                     ));
                 }
                 
-                // 체력 감소 (각 총알당 100의 데미지)
-                enemy.health -= 100;
+                // 체력 감소 (각 총알당 50의 데미지)
+                enemy.health -= 50;
                 bossHealth = enemy.health;
                 
                 // 보스 피격음 재생 (최적화: 중복 재생 방지)
