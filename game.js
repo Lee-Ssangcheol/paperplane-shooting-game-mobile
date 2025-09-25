@@ -3542,56 +3542,8 @@ function checkEnemyCollisions(enemy) {
                     lastCollisionTime = currentTime;
                 }
                 
-                // 피격 시간이 전체 출현 시간의 50%를 넘으면 파괴
-                const totalTime = currentTime - enemy.lastUpdateTime;
-                const hitTimeThreshold = BOSS_SETTINGS.SPAWN_INTERVAL * 0.5;
-                
-                if (enemy.totalHitTime >= hitTimeThreshold) {
-                    console.log('보스 파괴됨 - 피격 시간 초과:', {
-                        totalHitTime: enemy.totalHitTime,
-                        threshold: hitTimeThreshold
-                    });
-                    enemy.health = 0;
-                    bossHealth = 0;
-                    bossDestroyed = true;
-                    updateScore(BOSS_SETTINGS.BONUS_SCORE);
-                    
-                    // 보스 파괴 시 목숨 1개 추가 (이미 특수 무기로 파괴된 경우는 제외)
-                    if (!bullet.isSpecial) {
-                        maxLives++; // 최대 목숨 증가
-                    }
-                    
-                    // 큰 폭발 효과
-                    explosions.push(new Explosion(
-                        enemy.x + enemy.width/2,
-                        enemy.y + enemy.height/2,
-                        true
-                    ));
-                    
-                    // 추가 폭발 효과
-                    for (let i = 0; i < 8; i++) {
-                        const angle = (Math.PI * 2 / 8) * i;
-                        const distance = 40;
-                        explosions.push(new Explosion(
-                            enemy.x + enemy.width/2 + Math.cos(angle) * distance,
-                            enemy.y + enemy.height/2 + Math.sin(angle) * distance,
-                            false
-                        ));
-                    }
-                    
-                    // 보스 파괴 시 폭발음 재생 (최적화: 중복 재생 방지)
-                    if (currentTime - lastExplosionTime > 200) {
-                        applyGlobalVolume();
-                        explosionSound.currentTime = 0;
-                        explosionSound.play().catch(error => {
-                            console.log('오디오 재생 실패:', error);
-                        });
-                        lastExplosionTime = currentTime;
-                    }
-                    
-                    bossActive = false;
-                    return false;
-                }
+                // 보스는 체력이 0이 될 때까지 계속 비행하며 공격
+                // 피격 시간 기반 파괴 로직 제거 - 체력 기반으로만 파괴
                 
                 // 보스가 파괴되지 않은 상태에서는 점수 부여하지 않음
                 isHit = true;
@@ -4616,7 +4568,7 @@ const BOSS_SETTINGS = {
     SPEED: 2 * mobileSpeedMultiplier,           // 보스 이동 속도
     BULLET_SPEED: 5 * mobileSpeedMultiplier,    // 보스 총알 속도
     PATTERN_INTERVAL: 2000, // 패턴 변경 간격
-    SPAWN_INTERVAL: 15000,  // 보스 출현 간격 (레벨에 따라 동적 조정)
+    SPAWN_INTERVAL: 8000,   // 보스 출현 간격 (레벨1에서 더 빠르게 등장)
     BONUS_SCORE: 500,    // 보스 처치 보너스 점수
     PHASE_THRESHOLDS: [  // 페이즈 전환 체력 임계값
         { health: 750, speed: 2.5 * mobileSpeedMultiplier, bulletSpeed: 6 * mobileSpeedMultiplier },
@@ -4799,28 +4751,44 @@ function handleBossPattern(boss) {
         return;
     }
 
-    // 보스 이동 패턴
-    const movePattern = Math.floor(currentTime / 5000) % 4;  // 5초마다 이동 패턴 변경
+    // 보스 이동 패턴 - 더 역동적이고 자유로운 비행
+    const movePattern = Math.floor(currentTime / 3000) % 6;  // 3초마다 이동 패턴 변경
     
     switch (movePattern) {
         case 0:  // 좌우 이동
-            boss.x += Math.sin(currentTime / 500) * 3;  // 부드러운 좌우 이동
+            boss.x += Math.sin(currentTime / 400) * 4;  // 더 빠른 좌우 이동
+            boss.y = 80 + Math.sin(currentTime / 600) * 20;  // 상하 움직임 추가
             break;
         case 1:  // 원형 이동
-            const radius = 100;
+            const radius = 120;
             const centerX = CANVAS_WIDTH / 2;
-            const centerY = 100;
-            boss.x = centerX + Math.cos(currentTime / 1000) * radius;
-            boss.y = centerY + Math.sin(currentTime / 1000) * radius;
+            const centerY = 120;
+            boss.x = centerX + Math.cos(currentTime / 800) * radius;
+            boss.y = centerY + Math.sin(currentTime / 800) * radius;
             break;
         case 2:  // 지그재그 이동
-            boss.x += Math.sin(currentTime / 300) * 4;
-            boss.y = 60 + Math.abs(Math.sin(currentTime / 500)) * 40;
+            boss.x += Math.sin(currentTime / 250) * 5;
+            boss.y = 60 + Math.abs(Math.sin(currentTime / 400)) * 60;
             break;
         case 3:  // 추적 이동
             const targetX = player.x;
             const dx = targetX - boss.x;
-            boss.x += dx * 0.02;  // 부드러운 추적
+            boss.x += dx * 0.03;  // 더 빠른 추적
+            boss.y = 100 + Math.sin(currentTime / 500) * 30;
+            break;
+        case 4:  // 8자 이동
+            const figure8Radius = 80;
+            const figure8CenterX = CANVAS_WIDTH / 2;
+            const figure8CenterY = 100;
+            boss.x = figure8CenterX + Math.sin(currentTime / 1000) * figure8Radius;
+            boss.y = figure8CenterY + Math.sin(currentTime / 500) * figure8Radius * 0.5;
+            break;
+        case 5:  // 랜덤 이동
+            boss.x += (Math.random() - 0.5) * 3;
+            boss.y += (Math.random() - 0.5) * 2;
+            // 화면 경계 체크
+            boss.x = Math.max(0, Math.min(CANVAS_WIDTH - boss.width, boss.x));
+            boss.y = Math.max(50, Math.min(200, boss.y));
             break;
     }
     
