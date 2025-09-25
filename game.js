@@ -684,7 +684,7 @@ const difficultySettings = {
         horizontalSpeedRange: 1.5 * mobileSpeedMultiplier,
         patternChance: 0.1,
         maxEnemies: 4,
-        bossHealth: 800,
+        bossHealth: 1500,
         bossSpawnInterval: 30000, // 30초
         powerUpChance: 0.1,
         bombDropChance: 0.1,
@@ -696,7 +696,7 @@ const difficultySettings = {
         horizontalSpeedRange: 2.2 * mobileSpeedMultiplier,
         patternChance: 0.25,
         maxEnemies: 6,
-        bossHealth: 1000,
+        bossHealth: 1800,
         bossSpawnInterval: 22500, // 22.5초
         powerUpChance: 0.15,
         bombDropChance: 0.15,
@@ -708,7 +708,7 @@ const difficultySettings = {
         horizontalSpeedRange: 3 * mobileSpeedMultiplier,
         patternChance: 0.4,
         maxEnemies: 8,
-        bossHealth: 1200,
+        bossHealth: 2100,
         bossSpawnInterval: 15000, // 15초
         powerUpChance: 0.2,
         bombDropChance: 0.2,
@@ -720,7 +720,7 @@ const difficultySettings = {
         horizontalSpeedRange: 4 * mobileSpeedMultiplier,
         patternChance: 0.6,
         maxEnemies: 12,
-        bossHealth: 1500,
+        bossHealth: 2400,
         bossSpawnInterval: 12500, // 12.5초
         powerUpChance: 0.25,
         bombDropChance: 0.25,
@@ -732,7 +732,7 @@ const difficultySettings = {
         horizontalSpeedRange: 5 * mobileSpeedMultiplier,
         patternChance: 0.8,
         maxEnemies: 16,
-        bossHealth: 2000,
+        bossHealth: 2700,
         bossSpawnInterval: 10000, // 10초
         powerUpChance: 0.3,
         bombDropChance: 0.3,
@@ -748,7 +748,7 @@ const extendedDifficultySettings = {
         horizontalSpeedRange: 5.5 * mobileSpeedMultiplier,
         patternChance: 0.85,
         maxEnemies: 18,
-        bossHealth: 2500,
+        bossHealth: 3000,
         bossSpawnInterval: 9000,
         powerUpChance: 0.35,
         bombDropChance: 0.35,
@@ -760,7 +760,7 @@ const extendedDifficultySettings = {
         horizontalSpeedRange: 6 * mobileSpeedMultiplier,
         patternChance: 0.9,
         maxEnemies: 20,
-        bossHealth: 3000,
+        bossHealth: 3300,
         bossSpawnInterval: 8500,
         powerUpChance: 0.4,
         bombDropChance: 0.4,
@@ -772,7 +772,7 @@ const extendedDifficultySettings = {
         horizontalSpeedRange: 6.4 * mobileSpeedMultiplier,
         patternChance: 0.92,
         maxEnemies: 22,
-        bossHealth: 3500,
+        bossHealth: 3600,
         bossSpawnInterval: 8000,
         powerUpChance: 0.45,
         bombDropChance: 0.45,
@@ -784,7 +784,7 @@ const extendedDifficultySettings = {
         horizontalSpeedRange: 6.7 * mobileSpeedMultiplier,
         patternChance: 0.94,
         maxEnemies: 24,
-        bossHealth: 4000,
+        bossHealth: 3900,
         bossSpawnInterval: 7500,
         powerUpChance: 0.5,
         bombDropChance: 0.5,
@@ -796,7 +796,7 @@ const extendedDifficultySettings = {
         horizontalSpeedRange: 7 * mobileSpeedMultiplier,
         patternChance: 0.95,
         maxEnemies: 26,
-        bossHealth: 4500,
+        bossHealth: 4200,
         bossSpawnInterval: 7000,
         powerUpChance: 0.55,
         bombDropChance: 0.55,
@@ -4563,7 +4563,7 @@ function handleBullets() {
 
 // 보스 관련 상수 추가
 const BOSS_SETTINGS = {
-    HEALTH: 1000,        // 기본 체력 (레벨에 따라 동적 조정)
+    HEALTH: 1500,        // 기본 체력 (레벨에 따라 동적 조정)
     DAMAGE: 50,          // 보스 총알 데미지
     SPEED: 2 * mobileSpeedMultiplier,           // 보스 이동 속도
     BULLET_SPEED: 5 * mobileSpeedMultiplier,    // 보스 총알 속도
