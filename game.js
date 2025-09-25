@@ -4760,28 +4760,30 @@ function handleBossPattern(boss) {
     const isStablePhase = bossSpawnTime < 15000;  // 15초 동안 안정적 체공
     
     if (isStablePhase) {
-        // 안정적 체공 패턴 (15초 동안)
+        // 안정적 체공 패턴 (15초 동안) - 좌우 화면 여백을 모두 사용
         switch (movePattern) {
-            case 0:  // 중앙 호버링
-                boss.x = CANVAS_WIDTH / 2 - boss.width / 2 + Math.sin(currentTime / 1000) * 30;
-                boss.y = 100 + Math.sin(currentTime / 800) * 15;
+            case 0:  // 전체 화면 좌우 이동
+                const fullWidthRange = (CANVAS_WIDTH - boss.width) / 2;
+                boss.x = CANVAS_WIDTH / 2 - boss.width / 2 + Math.sin(currentTime / 800) * fullWidthRange;
+                boss.y = 100 + Math.sin(currentTime / 1000) * 20;
                 break;
-            case 1:  // 좌우 부드러운 이동
-                boss.x = CANVAS_WIDTH / 2 - boss.width / 2 + Math.sin(currentTime / 600) * 80;
-                boss.y = 120 + Math.sin(currentTime / 1000) * 20;
+            case 1:  // 지그재그 전체 화면 이동
+                const zigzagRange = (CANVAS_WIDTH - boss.width) / 2;
+                boss.x = CANVAS_WIDTH / 2 - boss.width / 2 + Math.sin(currentTime / 500) * zigzagRange;
+                boss.y = 120 + Math.abs(Math.sin(currentTime / 600)) * 30;
                 break;
-            case 2:  // 작은 원형 이동
-                const radius = 60;
+            case 2:  // 큰 원형 이동 (화면 전체 활용)
+                const radius = (CANVAS_WIDTH - boss.width) / 2;
                 const centerX = CANVAS_WIDTH / 2;
                 const centerY = 120;
-                boss.x = centerX + Math.cos(currentTime / 1200) * radius - boss.width / 2;
-                boss.y = centerY + Math.sin(currentTime / 1200) * radius;
+                boss.x = centerX + Math.cos(currentTime / 1000) * radius - boss.width / 2;
+                boss.y = centerY + Math.sin(currentTime / 1000) * radius;
                 break;
-            case 3:  // 플레이어 추적 (제한적)
-                const targetX = Math.max(50, Math.min(CANVAS_WIDTH - boss.width - 50, player.x));
+            case 3:  // 플레이어 추적 (전체 화면 범위)
+                const targetX = Math.max(0, Math.min(CANVAS_WIDTH - boss.width, player.x));
                 const dx = targetX - boss.x;
-                boss.x += dx * 0.015;  // 느린 추적
-                boss.y = 110 + Math.sin(currentTime / 700) * 25;
+                boss.x += dx * 0.02;  // 부드러운 추적
+                boss.y = 110 + Math.sin(currentTime / 800) * 25;
                 break;
         }
     } else {
