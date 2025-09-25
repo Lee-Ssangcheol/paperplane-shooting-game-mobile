@@ -4665,7 +4665,8 @@ function createBoss() {
         currentPatternIndex: 0,  // 현재 패턴 인덱스
         isPatternSequenceComplete: false,  // 패턴 순서 완료 여부
         // 단일 패턴 시스템 (레벨 1~5용)
-        singlePattern: null  // 현재 사용할 단일 패턴
+        singlePattern: null,  // 현재 사용할 단일 패턴
+        spawnTime: currentTime  // 보스 등장 시간 기록
     };
     
     // 레벨별 패턴 설정
@@ -4751,46 +4752,68 @@ function handleBossPattern(boss) {
         return;
     }
 
-    // 보스 이동 패턴 - 더 역동적이고 자유로운 비행
-    const movePattern = Math.floor(currentTime / 3000) % 6;  // 3초마다 이동 패턴 변경
+    // 보스 이동 패턴 - 화면 내에서 안정적으로 체공
+    const movePattern = Math.floor(currentTime / 5000) % 4;  // 5초마다 이동 패턴 변경
     
-    switch (movePattern) {
-        case 0:  // 좌우 이동
-            boss.x += Math.sin(currentTime / 400) * 4;  // 더 빠른 좌우 이동
-            boss.y = 80 + Math.sin(currentTime / 600) * 20;  // 상하 움직임 추가
-            break;
-        case 1:  // 원형 이동
-            const radius = 120;
-            const centerX = CANVAS_WIDTH / 2;
-            const centerY = 120;
-            boss.x = centerX + Math.cos(currentTime / 800) * radius;
-            boss.y = centerY + Math.sin(currentTime / 800) * radius;
-            break;
-        case 2:  // 지그재그 이동
-            boss.x += Math.sin(currentTime / 250) * 5;
-            boss.y = 60 + Math.abs(Math.sin(currentTime / 400)) * 60;
-            break;
-        case 3:  // 추적 이동
-            const targetX = player.x;
-            const dx = targetX - boss.x;
-            boss.x += dx * 0.03;  // 더 빠른 추적
-            boss.y = 100 + Math.sin(currentTime / 500) * 30;
-            break;
-        case 4:  // 8자 이동
-            const figure8Radius = 80;
-            const figure8CenterX = CANVAS_WIDTH / 2;
-            const figure8CenterY = 100;
-            boss.x = figure8CenterX + Math.sin(currentTime / 1000) * figure8Radius;
-            boss.y = figure8CenterY + Math.sin(currentTime / 500) * figure8Radius * 0.5;
-            break;
-        case 5:  // 랜덤 이동
-            boss.x += (Math.random() - 0.5) * 3;
-            boss.y += (Math.random() - 0.5) * 2;
-            // 화면 경계 체크
-            boss.x = Math.max(0, Math.min(CANVAS_WIDTH - boss.width, boss.x));
-            boss.y = Math.max(50, Math.min(200, boss.y));
-            break;
+    // 보스 등장 후 경과 시간 계산
+    const bossSpawnTime = currentTime - boss.spawnTime;
+    const isStablePhase = bossSpawnTime < 15000;  // 15초 동안 안정적 체공
+    
+    if (isStablePhase) {
+        // 안정적 체공 패턴 (15초 동안)
+        switch (movePattern) {
+            case 0:  // 중앙 호버링
+                boss.x = CANVAS_WIDTH / 2 - boss.width / 2 + Math.sin(currentTime / 1000) * 30;
+                boss.y = 100 + Math.sin(currentTime / 800) * 15;
+                break;
+            case 1:  // 좌우 부드러운 이동
+                boss.x = CANVAS_WIDTH / 2 - boss.width / 2 + Math.sin(currentTime / 600) * 80;
+                boss.y = 120 + Math.sin(currentTime / 1000) * 20;
+                break;
+            case 2:  // 작은 원형 이동
+                const radius = 60;
+                const centerX = CANVAS_WIDTH / 2;
+                const centerY = 120;
+                boss.x = centerX + Math.cos(currentTime / 1200) * radius - boss.width / 2;
+                boss.y = centerY + Math.sin(currentTime / 1200) * radius;
+                break;
+            case 3:  // 플레이어 추적 (제한적)
+                const targetX = Math.max(50, Math.min(CANVAS_WIDTH - boss.width - 50, player.x));
+                const dx = targetX - boss.x;
+                boss.x += dx * 0.015;  // 느린 추적
+                boss.y = 110 + Math.sin(currentTime / 700) * 25;
+                break;
+        }
+    } else {
+        // 15초 후 더 역동적인 패턴
+        switch (movePattern) {
+            case 0:  // 좌우 이동
+                boss.x += Math.sin(currentTime / 400) * 3;
+                boss.y = 80 + Math.sin(currentTime / 600) * 20;
+                break;
+            case 1:  // 원형 이동
+                const radius = 100;
+                const centerX = CANVAS_WIDTH / 2;
+                const centerY = 120;
+                boss.x = centerX + Math.cos(currentTime / 800) * radius - boss.width / 2;
+                boss.y = centerY + Math.sin(currentTime / 800) * radius;
+                break;
+            case 2:  // 지그재그 이동
+                boss.x += Math.sin(currentTime / 250) * 4;
+                boss.y = 60 + Math.abs(Math.sin(currentTime / 400)) * 50;
+                break;
+            case 3:  // 추적 이동
+                const targetX = Math.max(50, Math.min(CANVAS_WIDTH - boss.width - 50, player.x));
+                const dx = targetX - boss.x;
+                boss.x += dx * 0.02;
+                boss.y = 100 + Math.sin(currentTime / 500) * 30;
+                break;
+        }
     }
+    
+    // 모든 패턴에 대해 화면 경계 체크 적용
+    boss.x = Math.max(0, Math.min(CANVAS_WIDTH - boss.width, boss.x));
+    boss.y = Math.max(50, Math.min(250, boss.y));
     
     // 패턴 단계별 패턴 선택
     let patterns = [];
