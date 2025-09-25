@@ -1512,9 +1512,7 @@ async function initializeGame() {
         isLifeBlinking = false;
         lastLifeCount = maxLives;
         
-        // 13. 패턴 추적 시스템 초기화
-        levelBossPatterns.usedPatterns = [];
-        levelBossPatterns.currentLevelPattern = null;
+        // 13. 패턴 추적 시스템은 각 보스별로 관리되므로 전역 초기화 불필요
         
         console.log('게임 상태 초기화 완료');
         console.log('초기화된 상태:', {
@@ -1829,9 +1827,7 @@ function restartGame() {
         isLifeBlinking = false;
         lastLifeCount = maxLives;
     
-    // 14. 패턴 추적 시스템 초기화
-    levelBossPatterns.usedPatterns = [];
-    levelBossPatterns.currentLevelPattern = null;
+    // 14. 패턴 추적 시스템은 각 보스별로 관리되므로 전역 초기화 불필요
     
     // 15. 캔버스 포커스 설정
     setTimeout(() => {
@@ -4666,26 +4662,56 @@ function createBoss() {
         isPatternSequenceComplete: false,  // 패턴 순서 완료 여부
         // 단일 패턴 시스템 (레벨 1~5용)
         singlePattern: null,  // 현재 사용할 단일 패턴
-        spawnTime: currentTime  // 보스 등장 시간 기록
+        spawnTime: currentTime,  // 보스 등장 시간 기록
+        currentPattern: null  // 현재 사용 중인 패턴 (연속 발사 방지용)
     };
     
-    // 레벨별 패턴 설정
+    // 레벨별 패턴 설정 - 모든 레벨에서 랜덤 패턴 시스템 사용
     if (gameLevel <= 5) {
-        // 레벨 1~5: 순차적 단일 패턴 시스템
-        if (levelBossPatterns.usedPatterns.length < levelBossPatterns.patternSequence.length) {
-            // 아직 사용하지 않은 패턴이 있으면 다음 패턴 사용
-            boss.singlePattern = levelBossPatterns.patternSequence[levelBossPatterns.usedPatterns.length];
-            levelBossPatterns.currentLevelPattern = boss.singlePattern;
-        } else {
-            // 모든 패턴을 다 사용했으면 랜덤 패턴 사용
-            boss.singlePattern = levelBossPatterns.patternSequence[Math.floor(Math.random() * levelBossPatterns.patternSequence.length)];
-            levelBossPatterns.currentLevelPattern = boss.singlePattern;
+        // 레벨 1~5: 랜덤 단일 패턴 시스템
+        const availablePatterns = [
+            BOSS_PATTERNS.CIRCLE_SHOT,
+            BOSS_PATTERNS.CROSS_SHOT,
+            BOSS_PATTERNS.SPIRAL_SHOT,
+            BOSS_PATTERNS.WAVE_SHOT,
+            BOSS_PATTERNS.DIAMOND_SHOT,
+            BOSS_PATTERNS.RANDOM_SPREAD,
+            BOSS_PATTERNS.DOUBLE_SPIRAL,
+            BOSS_PATTERNS.TRIPLE_WAVE,
+            BOSS_PATTERNS.TARGETED_SHOT,
+            BOSS_PATTERNS.BURST_SHOT
+        ];
+        
+        // 보스별 사용한 패턴 추적 시스템 초기화
+        if (!boss.usedPatterns) {
+            boss.usedPatterns = [];
         }
-        console.log(`보스 생성 (레벨 ${gameLevel}): ${boss.singlePattern}`);
+        
+        // 사용 가능한 패턴 목록에서 아직 사용하지 않은 패턴들만 선택
+        const unusedPatterns = availablePatterns.filter(pattern => !boss.usedPatterns.includes(pattern));
+        
+        let selectedPattern;
+        if (unusedPatterns.length > 0) {
+            // 아직 사용하지 않은 패턴이 있으면 그 중에서 랜덤 선택
+            selectedPattern = unusedPatterns[Math.floor(Math.random() * unusedPatterns.length)];
+            boss.usedPatterns.push(selectedPattern);
+        } else {
+            // 모든 패턴을 다 사용했으면 사용 기록 초기화하고 랜덤 선택
+            boss.usedPatterns = [];
+            selectedPattern = availablePatterns[Math.floor(Math.random() * availablePatterns.length)];
+            boss.usedPatterns.push(selectedPattern);
+        }
+        
+        // 현재 패턴을 저장하여 연속 발사 방지
+        boss.currentPattern = selectedPattern;
+        
+        boss.singlePattern = selectedPattern;
+        // 패턴은 보스별로 관리되므로 전역 설정 불필요
+        console.log(`보스 생성 (레벨 ${gameLevel}): 랜덤 패턴 ${selectedPattern}`);
     } else {
         // 레벨 6 이상: 단일 랜덤 패턴 시스템
         boss.singlePattern = null;
-        levelBossPatterns.currentLevelPattern = null;
+        // 패턴은 보스별로 관리되므로 전역 설정 불필요
         console.log(`보스 생성 (레벨 ${gameLevel}): 단일 랜덤 패턴 시스템`);
     }
     
@@ -4705,13 +4731,7 @@ function handleBossPattern(boss) {
         bossHealth = 0;
         updateScore(BOSS_SETTINGS.BONUS_SCORE);
         
-        // 레벨 1~5에서 패턴 사용 기록
-        if (gameLevel <= 5 && boss.singlePattern) {
-            if (!levelBossPatterns.usedPatterns.includes(boss.singlePattern)) {
-                levelBossPatterns.usedPatterns.push(boss.singlePattern);
-                console.log(`패턴 사용 기록: ${boss.singlePattern} (총 ${levelBossPatterns.usedPatterns.length}/${levelBossPatterns.patternSequence.length})`);
-            }
-        }
+        // 패턴 사용 기록은 각 보스별로 관리되므로 여기서는 제거
         
         // 보스 파괴 시 목숨 1개 추가
         maxLives++; // 최대 목숨 증가
@@ -4870,18 +4890,32 @@ function handleBossPattern(boss) {
             
             if (unusedPatterns.length > 0) {
                 // 아직 사용하지 않은 패턴이 있으면 그 중에서 랜덤 선택
-                selectedPattern = unusedPatterns[Math.floor(Math.random() * unusedPatterns.length)];
+                // 단, 현재 패턴과 같은 패턴은 제외
+                const differentPatterns = unusedPatterns.filter(pattern => pattern !== boss.currentPattern);
+                if (differentPatterns.length > 0) {
+                    selectedPattern = differentPatterns[Math.floor(Math.random() * differentPatterns.length)];
+                } else {
+                    // 다른 패턴이 없으면 (마지막 패턴인 경우) 그냥 선택
+                    selectedPattern = unusedPatterns[Math.floor(Math.random() * unusedPatterns.length)];
+                }
                 boss.usedPatterns.push(selectedPattern);
                 console.log(`보스 패턴 변경 (단일 랜덤): ${selectedPattern} (사용된 패턴: ${boss.usedPatterns.length}/${availablePatterns.length})`);
             } else {
                 // 모든 패턴을 다 사용했으면 사용 기록 초기화하고 랜덤 선택
                 boss.usedPatterns = [];
-                selectedPattern = availablePatterns[Math.floor(Math.random() * availablePatterns.length)];
+                // 현재 패턴과 다른 패턴 선택
+                const differentPatterns = availablePatterns.filter(pattern => pattern !== boss.currentPattern);
+                if (differentPatterns.length > 0) {
+                    selectedPattern = differentPatterns[Math.floor(Math.random() * differentPatterns.length)];
+                } else {
+                    selectedPattern = availablePatterns[Math.floor(Math.random() * availablePatterns.length)];
+                }
                 boss.usedPatterns.push(selectedPattern);
                 console.log(`보스 패턴 변경 (단일 랜덤): ${selectedPattern} (모든 패턴 사용 완료, 기록 초기화)`);
             }
             
             boss.currentPatterns = [selectedPattern];
+            boss.currentPattern = selectedPattern; // 현재 패턴 저장
             boss.lastPatternChange = currentTime;
         }
         
@@ -4894,6 +4928,7 @@ function handleBossPattern(boss) {
             patterns = [initialPattern];
             boss.currentPatterns = [initialPattern];
             boss.usedPatterns = [initialPattern];
+            boss.currentPattern = initialPattern; // 현재 패턴 저장
             console.log(`보스 초기 패턴 설정: ${initialPattern}`);
         }
     }
@@ -6363,9 +6398,7 @@ function restartGame() {
     lastCollisionTime = 0;
     lastExplosionTime = 0;
     
-    // 14. 패턴 추적 시스템 초기화
-    levelBossPatterns.usedPatterns = [];
-    levelBossPatterns.currentLevelPattern = null;
+    // 14. 패턴 추적 시스템은 각 보스별로 관리되므로 전역 초기화 불필요
     
     // 15. 적응형 프레임 레이트 시스템 초기화
     adaptiveFrameRate.frameSkip = 0;
