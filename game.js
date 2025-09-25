@@ -797,7 +797,7 @@ const extendedDifficultySettings = {
         patternChance: 0.95,
         maxEnemies: 26,
         bossHealth: 4200,
-        bossSpawnInterval: 10000,
+        bossSpawnInterval: 12000,
         powerUpChance: 0.55,
         bombDropChance: 0.55,
         dynamiteDropChance: 0.5
@@ -1870,7 +1870,7 @@ function createEnemy() {
             patternChance: Math.min(0.98, baseSettings.patternChance + (levelDiff * 0.01)),
             maxEnemies: Math.min(35, baseSettings.maxEnemies + levelDiff),
             bossHealth: baseSettings.bossHealth + (levelDiff * 200),
-            bossSpawnInterval: Math.max(8000, baseSettings.bossSpawnInterval), // 레벨 11 이상에서는 최소 8초 유지
+            bossSpawnInterval: Math.max(12000, baseSettings.bossSpawnInterval), // 레벨 11 이상에서는 최소 12초 유지
             powerUpChance: Math.min(0.7, baseSettings.powerUpChance + (levelDiff * 0.01)),
             bombDropChance: Math.min(0.7, baseSettings.bombDropChance + (levelDiff * 0.01)),
             dynamiteDropChance: Math.min(0.6, baseSettings.dynamiteDropChance + (levelDiff * 0.01))
@@ -2861,12 +2861,14 @@ function gameLoop() {
             if (!bossActive) {  // bossDestroyed 조건 제거
                 const timeSinceLastBoss = currentTime - lastBossSpawnTime;
                 
-                if (timeSinceLastBoss >= BOSS_SETTINGS.SPAWN_INTERVAL) {
+                // 최소 12초 간격 보장
+                const minInterval = Math.max(12000, BOSS_SETTINGS.SPAWN_INTERVAL);
+                if (timeSinceLastBoss >= minInterval) {
                     console.log('보스 생성 조건 만족:', {
                         currentTime,
                         lastBossSpawnTime,
                         timeSinceLastBoss,
-                        interval: BOSS_SETTINGS.SPAWN_INTERVAL
+                        interval: minInterval
                     });
                     createBoss();
                 }
@@ -2880,6 +2882,7 @@ function gameLoop() {
                     bossActive = false;
                     bossHealth = 0;
                     bossDestroyed = false;  // 보스 파괴 상태 초기화
+                    lastBossSpawnTime = currentTime;  // 다음 보스 등장 시간 업데이트
                     console.log('보스가 제거되어 상태 초기화');
                 }
             }
@@ -2970,12 +2973,14 @@ function gameLoop() {
             if (!bossActive) {  // bossDestroyed 조건 제거
                 const timeSinceLastBoss = currentTime - lastBossSpawnTime;
                 
-                if (timeSinceLastBoss >= BOSS_SETTINGS.SPAWN_INTERVAL) {
+                // 최소 12초 간격 보장
+                const minInterval = Math.max(12000, BOSS_SETTINGS.SPAWN_INTERVAL);
+                if (timeSinceLastBoss >= minInterval) {
                     console.log('보스 생성 조건 만족:', {
                         currentTime,
                         lastBossSpawnTime,
                         timeSinceLastBoss,
-                        interval: BOSS_SETTINGS.SPAWN_INTERVAL
+                        interval: minInterval
                     });
                     createBoss();
                 }
@@ -2989,6 +2994,7 @@ function gameLoop() {
                     bossActive = false;
                     bossHealth = 0;
                     bossDestroyed = false;  // 보스 파괴 상태 초기화
+                    lastBossSpawnTime = currentTime;  // 다음 보스 등장 시간 업데이트
                     console.log('보스가 제거되어 상태 초기화');
                 }
             }
@@ -3097,7 +3103,7 @@ function handleEnemies() {
             patternChance: Math.min(0.98, baseSettings.patternChance + (levelDiff * 0.01)),
             maxEnemies: Math.min(35, baseSettings.maxEnemies + levelDiff),
             bossHealth: baseSettings.bossHealth + (levelDiff * 200),
-            bossSpawnInterval: Math.max(8000, baseSettings.bossSpawnInterval), // 레벨 11 이상에서는 최소 8초 유지
+            bossSpawnInterval: Math.max(12000, baseSettings.bossSpawnInterval), // 레벨 11 이상에서는 최소 12초 유지
             powerUpChance: Math.min(0.7, baseSettings.powerUpChance + (levelDiff * 0.01)),
             bombDropChance: Math.min(0.7, baseSettings.bombDropChance + (levelDiff * 0.01)),
             dynamiteDropChance: Math.min(0.6, baseSettings.dynamiteDropChance + (levelDiff * 0.01))
@@ -3470,6 +3476,9 @@ function checkEnemyCollisions(enemy) {
                     bossHealth = 0;
                     bossDestroyed = true;
                     updateScore(BOSS_SETTINGS.BONUS_SCORE);
+                    
+                    // 보스 파괴 시 다음 보스 등장 시간 업데이트
+                    lastBossSpawnTime = Date.now();
                     
                     // 보스 파괴 시 목숨 1개 추가
                     maxLives++; // 최대 목숨 증가
@@ -4591,12 +4600,13 @@ function createBoss() {
     const timeSinceLastBoss = currentTime - lastBossSpawnTime;
     
    
-    // 시간 체크
-    if (timeSinceLastBoss < BOSS_SETTINGS.SPAWN_INTERVAL) {
+    // 시간 체크 - 최소 12초 간격 보장
+    const minInterval = Math.max(12000, BOSS_SETTINGS.SPAWN_INTERVAL);
+    if (timeSinceLastBoss < minInterval) {
         console.log('보스 생성 시간이 되지 않음:', {
             timeSinceLastBoss,
-            requiredInterval: BOSS_SETTINGS.SPAWN_INTERVAL,
-            remainingTime: BOSS_SETTINGS.SPAWN_INTERVAL - timeSinceLastBoss
+            requiredInterval: minInterval,
+            remainingTime: minInterval - timeSinceLastBoss
         });
         return;
     }
@@ -4730,6 +4740,9 @@ function handleBossPattern(boss) {
         bossActive = false;
         bossHealth = 0;
         updateScore(BOSS_SETTINGS.BONUS_SCORE);
+        
+        // 보스 파괴 시 다음 보스 등장 시간 업데이트
+        lastBossSpawnTime = currentTime;
         
         // 패턴 사용 기록은 각 보스별로 관리되므로 여기서는 제거
         
@@ -5512,7 +5525,7 @@ function checkLevelUp() {
                 patternChance: Math.min(0.98, baseSettings.patternChance + (levelDiff * 0.01)),
                 maxEnemies: Math.min(35, baseSettings.maxEnemies + levelDiff),
                 bossHealth: baseSettings.bossHealth + (levelDiff * 200),
-                bossSpawnInterval: Math.max(8000, baseSettings.bossSpawnInterval), // 레벨 11 이상에서는 최소 8초 유지
+                bossSpawnInterval: Math.max(12000, baseSettings.bossSpawnInterval), // 레벨 11 이상에서는 최소 12초 유지
                 powerUpChance: Math.min(0.7, baseSettings.powerUpChance + (levelDiff * 0.01)),
                 bombDropChance: Math.min(0.7, baseSettings.bombDropChance + (levelDiff * 0.01)),
                 dynamiteDropChance: Math.min(0.6, baseSettings.dynamiteDropChance + (levelDiff * 0.01))
