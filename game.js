@@ -685,7 +685,7 @@ const difficultySettings = {
         patternChance: 0.1,
         maxEnemies: 4,
         bossHealth: 1500,
-        bossSpawnInterval: 30000, // 30초
+        bossSpawnInterval: 25000, // 25초
         powerUpChance: 0.1,
         bombDropChance: 0.1,
         dynamiteDropChance: 0.05
@@ -697,7 +697,7 @@ const difficultySettings = {
         patternChance: 0.25,
         maxEnemies: 6,
         bossHealth: 1800,
-        bossSpawnInterval: 22500, // 22.5초
+        bossSpawnInterval: 20000, // 20초
         powerUpChance: 0.15,
         bombDropChance: 0.15,
         dynamiteDropChance: 0.1
@@ -709,7 +709,7 @@ const difficultySettings = {
         patternChance: 0.4,
         maxEnemies: 8,
         bossHealth: 2100,
-        bossSpawnInterval: 15000, // 15초
+        bossSpawnInterval: 18000, // 18초
         powerUpChance: 0.2,
         bombDropChance: 0.2,
         dynamiteDropChance: 0.15
@@ -721,7 +721,7 @@ const difficultySettings = {
         patternChance: 0.6,
         maxEnemies: 12,
         bossHealth: 2400,
-        bossSpawnInterval: 12500, // 12.5초
+        bossSpawnInterval: 16000, // 16초
         powerUpChance: 0.25,
         bombDropChance: 0.25,
         dynamiteDropChance: 0.2
@@ -733,7 +733,7 @@ const difficultySettings = {
         patternChance: 0.8,
         maxEnemies: 16,
         bossHealth: 2700,
-        bossSpawnInterval: 10000, // 10초
+        bossSpawnInterval: 15000, // 15초
         powerUpChance: 0.3,
         bombDropChance: 0.3,
         dynamiteDropChance: 0.25
@@ -749,7 +749,7 @@ const extendedDifficultySettings = {
         patternChance: 0.85,
         maxEnemies: 18,
         bossHealth: 3000,
-        bossSpawnInterval: 9000,
+        bossSpawnInterval: 14000,
         powerUpChance: 0.35,
         bombDropChance: 0.35,
         dynamiteDropChance: 0.3
@@ -761,7 +761,7 @@ const extendedDifficultySettings = {
         patternChance: 0.9,
         maxEnemies: 20,
         bossHealth: 3300,
-        bossSpawnInterval: 8500,
+        bossSpawnInterval: 13000,
         powerUpChance: 0.4,
         bombDropChance: 0.4,
         dynamiteDropChance: 0.35
@@ -773,7 +773,7 @@ const extendedDifficultySettings = {
         patternChance: 0.92,
         maxEnemies: 22,
         bossHealth: 3600,
-        bossSpawnInterval: 8000,
+        bossSpawnInterval: 12000,
         powerUpChance: 0.45,
         bombDropChance: 0.45,
         dynamiteDropChance: 0.4
@@ -785,7 +785,7 @@ const extendedDifficultySettings = {
         patternChance: 0.94,
         maxEnemies: 24,
         bossHealth: 3900,
-        bossSpawnInterval: 7500,
+        bossSpawnInterval: 11000,
         powerUpChance: 0.5,
         bombDropChance: 0.5,
         dynamiteDropChance: 0.45
@@ -797,7 +797,7 @@ const extendedDifficultySettings = {
         patternChance: 0.95,
         maxEnemies: 26,
         bossHealth: 4200,
-        bossSpawnInterval: 7000,
+        bossSpawnInterval: 10000,
         powerUpChance: 0.55,
         bombDropChance: 0.55,
         dynamiteDropChance: 0.5
@@ -1874,7 +1874,7 @@ function createEnemy() {
             patternChance: Math.min(0.98, baseSettings.patternChance + (levelDiff * 0.01)),
             maxEnemies: Math.min(35, baseSettings.maxEnemies + levelDiff),
             bossHealth: baseSettings.bossHealth + (levelDiff * 200),
-            bossSpawnInterval: Math.max(5000, baseSettings.bossSpawnInterval - (levelDiff * 100)),
+            bossSpawnInterval: Math.max(8000, baseSettings.bossSpawnInterval), // 레벨 11 이상에서는 최소 8초 유지
             powerUpChance: Math.min(0.7, baseSettings.powerUpChance + (levelDiff * 0.01)),
             bombDropChance: Math.min(0.7, baseSettings.bombDropChance + (levelDiff * 0.01)),
             dynamiteDropChance: Math.min(0.6, baseSettings.dynamiteDropChance + (levelDiff * 0.01))
@@ -3101,7 +3101,7 @@ function handleEnemies() {
             patternChance: Math.min(0.98, baseSettings.patternChance + (levelDiff * 0.01)),
             maxEnemies: Math.min(35, baseSettings.maxEnemies + levelDiff),
             bossHealth: baseSettings.bossHealth + (levelDiff * 200),
-            bossSpawnInterval: Math.max(5000, baseSettings.bossSpawnInterval - (levelDiff * 100)),
+            bossSpawnInterval: Math.max(8000, baseSettings.bossSpawnInterval), // 레벨 11 이상에서는 최소 8초 유지
             powerUpChance: Math.min(0.7, baseSettings.powerUpChance + (levelDiff * 0.01)),
             bombDropChance: Math.min(0.7, baseSettings.bombDropChance + (levelDiff * 0.01)),
             dynamiteDropChance: Math.min(0.6, baseSettings.dynamiteDropChance + (levelDiff * 0.01))
@@ -4568,7 +4568,7 @@ const BOSS_SETTINGS = {
     SPEED: 2 * mobileSpeedMultiplier,           // 보스 이동 속도
     BULLET_SPEED: 5 * mobileSpeedMultiplier,    // 보스 총알 속도
     PATTERN_INTERVAL: 2000, // 패턴 변경 간격
-    SPAWN_INTERVAL: 8000,   // 보스 출현 간격 (레벨1에서 더 빠르게 등장)
+    SPAWN_INTERVAL: 25000,  // 보스 출현 간격 (레벨별 설정으로 동적 조정)
     BONUS_SCORE: 500,    // 보스 처치 보너스 점수
     PHASE_THRESHOLDS: [  // 페이즈 전환 체력 임계값
         { health: 750, speed: 2.5 * mobileSpeedMultiplier, bulletSpeed: 6 * mobileSpeedMultiplier },
@@ -5477,7 +5477,7 @@ function checkLevelUp() {
                 patternChance: Math.min(0.98, baseSettings.patternChance + (levelDiff * 0.01)),
                 maxEnemies: Math.min(35, baseSettings.maxEnemies + levelDiff),
                 bossHealth: baseSettings.bossHealth + (levelDiff * 200),
-                bossSpawnInterval: Math.max(5000, baseSettings.bossSpawnInterval - (levelDiff * 100)),
+                bossSpawnInterval: Math.max(8000, baseSettings.bossSpawnInterval), // 레벨 11 이상에서는 최소 8초 유지
                 powerUpChance: Math.min(0.7, baseSettings.powerUpChance + (levelDiff * 0.01)),
                 bombDropChance: Math.min(0.7, baseSettings.bombDropChance + (levelDiff * 0.01)),
                 dynamiteDropChance: Math.min(0.6, baseSettings.dynamiteDropChance + (levelDiff * 0.01))
