@@ -4422,8 +4422,8 @@ function handleBullets() {
                 const currentTime = Date.now();
                 if (currentTime - lastExplosionTime > 200) {
                     applyGlobalVolume();
-                    explosionSound.currentTime = 0;
-                    explosionSound.play().catch(error => {
+                    shootSound.currentTime = 0;
+                    shootSound.play().catch(error => {
                         console.log('오디오 재생 실패:', error);
                     });
                     lastExplosionTime = currentTime;
