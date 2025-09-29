@@ -3373,7 +3373,12 @@ function handleSnakePattern() {
                             enemy.y + enemy.height/2
                         ));
                         updateScore(20); //뱀 패턴 비행기 한 대당 획득 점수
-                        playExplosionSound(true); // 뱀패턴 효과음으로 설정
+                        // 뱀 패턴 파괴: shootSound
+                        applyGlobalVolume();
+                        shootSound.currentTime = 0;
+                        shootSound.play().catch(error => {
+                            console.log('오디오 재생 실패:', error);
+                        });
                         
                         // 즉시 제거 - 페이드아웃 효과 제거
                         enemy.isHit = true;
@@ -3540,8 +3545,8 @@ function checkEnemyCollisions(enemy) {
                 // 보스 피격음 재생 (최적화: 중복 재생 방지)
                 if (currentTime - lastCollisionTime > 100) {
                     applyGlobalVolume();
-                    collisionSound.currentTime = 0;
-                    collisionSound.play().catch(error => {
+                    shootSound.currentTime = 0;
+                    shootSound.play().catch(error => {
                         console.log('오디오 재생 실패:', error);
                     });
                     lastCollisionTime = currentTime;
@@ -4462,8 +4467,8 @@ function handleBullets() {
                 const currentTime = Date.now();
                 if (currentTime - lastCollisionTime > 50) {
                     applyGlobalVolume();
-                    collisionSound.currentTime = 0;
-                    collisionSound.play().catch(error => {
+                    shootSound.currentTime = 0;
+                    shootSound.play().catch(error => {
                         console.log('미사일 파괴 효과음 재생 실패:', error);
                     });
                     lastCollisionTime = currentTime;
@@ -4488,8 +4493,8 @@ function handleBullets() {
                 const currentTime = Date.now();
                 if (currentTime - lastCollisionTime > 50) {
                     applyGlobalVolume();
-                    collisionSound.currentTime = 0;
-                    collisionSound.play().catch(error => {
+                    shootSound.currentTime = 0;
+                    shootSound.play().catch(error => {
                         console.log('방어막 적 피격 효과음 재생 실패:', error);
                     });
                     lastCollisionTime = currentTime;
@@ -4524,8 +4529,8 @@ function handleBullets() {
                     
                     // 폭발음 재생
                     applyGlobalVolume();
-                    explosionSound.currentTime = 0;
-                    explosionSound.play().catch(error => {
+                    shootSound.currentTime = 0;
+                    shootSound.play().catch(error => {
                         console.log('방어막 적 파괴 효과음 재생 실패:', error);
                     });
                     
@@ -4542,8 +4547,8 @@ function handleBullets() {
                     if (enemy.shieldActive) {
                         // 방어막 피격 효과음 (다른 톤)
                         applyGlobalVolume();
-                        collisionSound.currentTime = 0;
-                        collisionSound.play().catch(error => {
+                        shootSound.currentTime = 0;
+                        shootSound.play().catch(error => {
                             console.log('방어막 피격 효과음 재생 실패:', error);
                         });
                     }
