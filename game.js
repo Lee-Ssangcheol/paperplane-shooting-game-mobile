@@ -5144,8 +5144,8 @@ function createBossBullet(boss, angle, pattern = null, bulletType = 'normal') {
     const bullet = {
         x: boss.x + boss.width/2,
         y: boss.y + boss.height/2,
-        width: 24,
-        height: 24,
+        width: 18,
+        height: 18,
         speed: boss.bulletSpeed,
         angle: angle,
         isBossBullet: true,
