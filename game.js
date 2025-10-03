@@ -4042,14 +4042,14 @@ function drawUI() {
         ctx.fillStyle = 'white';
         ctx.font = 'bold 16px Arial';
         ctx.textAlign = 'center';
-        ctx.fillText(`보스 체력: ${Math.max(0, Math.ceil(bossHealth))}/${BOSS_SETTINGS.HEALTH}`, CANVAS_WIDTH/2, 30);       
+        ctx.fillText(`보스 체력: ${Math.max(0, Math.ceil(bossHealth))}/${BOSS_SETTINGS.HEALTH}`, CANVAS_WIDTH/2, 25);       
         
         // 페이즈 표시
         const currentPhase = BOSS_SETTINGS.PHASE_THRESHOLDS.findIndex(
             threshold => bossHealth > threshold.health
         );
         if (currentPhase >= 0) {
-        ctx.fillText(`페이즈 ${currentPhase + 1}`, CANVAS_WIDTH/2, 50);
+        ctx.fillText(`페이즈 ${currentPhase + 1}`, CANVAS_WIDTH/2, 45);
         }
     }
 }
