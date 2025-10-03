@@ -602,6 +602,7 @@ let secondPlaneTimer = 0;    // 두 번째 비행기 타이머
 let isPaused = false;     // 일시정지 상태
 let collisionCount = 0;   // 충돌 횟수
 let maxLives = 5;        // 최대 목숨 수
+let shieldedEnemiesDestroyed = 0; // 방어막 적 파괴 카운트
 let isGameOver = false;   // 게임 오버 상태
 let flashTimer = 0;       // 깜박임 효과 타이머
 let flashDuration = 500;  // 깜박임 지속 시간
@@ -1348,6 +1349,7 @@ async function initializeGame() {
         // 1. 충돌 및 게임 상태 초기화
         collisionCount = 0;
         maxLives = 5;  // 최대 목숨 초기화
+        shieldedEnemiesDestroyed = 0; // 방어막 적 파괴 카운트 초기화
         hasSecondPlane = false;
         secondPlaneTimer = 0;
         lastSecondPlaneScore = 0; // ← 추가!
@@ -1468,7 +1470,7 @@ async function initializeGame() {
                     shootSound.volume = clampVolume(0.4);
                     explosionSound.volume = clampVolume(0.6);
                     collisionSound.volume = clampVolume(0.5);
-                    warningSound.volume = clampVolume(0.6);
+                    warningSound.volume = clampVolume(0.3);
                     
                     // 충돌 사운드 길이 제어 설정
                     collisionSound.addEventListener('loadedmetadata', () => {
@@ -1633,7 +1635,7 @@ window.addEventListener('DOMContentLoaded', () => {
             collisionSound.volume = clampVolume(0.5);
         }
         if (warningSound) {
-            warningSound.volume = clampVolume(0.6);
+            warningSound.volume = clampVolume(0.3);
         }
         
         console.log('오디오 요소 초기화 완료!');
@@ -1796,7 +1798,7 @@ function restartGame() {
                     shootSound.volume = clampVolume(0.4);
                     explosionSound.volume = clampVolume(0.6);
                     collisionSound.volume = clampVolume(0.5);
-                    warningSound.volume = clampVolume(0.6);
+                    warningSound.volume = clampVolume(0.3);
                     
                     return true;
                 }
@@ -2305,7 +2307,7 @@ function handleCollision() {
         if (warningSound) {
             console.log('경고음 요소 발견, 재생 시도...');
             warningSound.currentTime = 0;
-            warningSound.volume = clampVolume(0.6);
+            warningSound.volume = clampVolume(0.3);
             applyGlobalVolume();
             warningSound.play().then(() => {
                 console.log('경고음 재생 성공!');
@@ -2321,7 +2323,7 @@ function handleCollision() {
                 if (warningSound) {
                     console.log('경고음 요소 재발견! 재생 시도...');
                     warningSound.currentTime = 0;
-                    warningSound.volume = clampVolume(0.6);
+                    warningSound.volume = clampVolume(0.3);
                     applyGlobalVolume();
                     warningSound.play().then(() => {
                         console.log('경고음 재생 성공! (재초기화 후)');
@@ -3485,7 +3487,7 @@ function checkEnemyCollisions(enemy) {
                     // 보스 파괴 시 다음 보스 등장 시간 업데이트
                     lastBossSpawnTime = Date.now();
                     
-                    // 보스 파괴 시 목숨 1개 추가
+                    // 보스 파괴 시 목숨 1개 추가 (특수무기로 파괴)
                     maxLives++; // 최대 목숨 증가
                     
                     // 큰 폭발 효과
@@ -3688,6 +3690,21 @@ function handleBossBullets() {
             // 총알 충돌 시 작은 폭발 효과
             explosions.push(new Explosion(bullet.x, bullet.y, false));
             return false;
+        }
+        
+        // 보스 총알과 플레이어 총알 충돌 체크 (보스 총알 파괴)
+        for (let i = bullets.length - 1; i >= 0; i--) {
+            const playerBullet = bullets[i];
+            if (checkCollision(bullet, playerBullet)) {
+                // 보스 총알 파괴 시 폭발 효과만 (생명 추가 없음)
+                explosions.push(new Explosion(bullet.x, bullet.y, false));
+                
+                // 플레이어 총알도 제거
+                bullets.splice(i, 1);
+                
+                // 보스 총알 제거
+                return false;
+            }
         }
         
         // 화면 밖으로 나간 총알 제거
@@ -4537,8 +4554,18 @@ function handleBullets() {
                     // 점수 보상 (방어막 적은 더 높은 점수)
                     updateScore(100);
                     
+                    // 방어막 적 파괴 카운트 증가
+                    shieldedEnemiesDestroyed++;
+                    
+                    // 2대 파괴 시 생명 추가
+                    if (shieldedEnemiesDestroyed >= 2) {
+                        maxLives++;
+                        shieldedEnemiesDestroyed = 0; // 카운트 리셋
+                        console.log('방어막 적 2대 파괴! 생명 1개 추가');
+                    }
+                    
                     // 파괴 로그 출력
-                    console.log(`방어막 적 파괴 완료! 총 20발 맞춤`);
+                    console.log(`방어막 적 파괴 완료! 총 20발 맞춤 (파괴 카운트: ${shieldedEnemiesDestroyed})`);
                     
                     // 해당 적이 발사한 미사일들 제거
                     // removeEnemyMissiles(enemy);
@@ -4632,8 +4659,7 @@ function createBoss() {
     bossDestroyed = false;  // 보스 파괴 상태 초기화
     
     
-    // 보스 파괴 시 목숨 1개 추가
-    maxLives++; // 최대 목숨 증가
+    // 보스 생성 시에는 목숨 증가하지 않음 (파괴 시에만 증가)
     
     // 보스 객체 생성 - 모바일용 캔버스 크기(392x700)로 제한
     const canvasWidth = CANVAS_WIDTH;
@@ -4751,7 +4777,7 @@ function handleBossPattern(boss) {
         
         // 패턴 사용 기록은 각 보스별로 관리되므로 여기서는 제거
         
-        // 보스 파괴 시 목숨 1개 추가
+        // 보스 파괴 시 목숨 1개 추가 (체력 0으로 파괴)
         maxLives++; // 최대 목숨 증가
         
         // 큰 폭발 효과
@@ -4783,9 +4809,6 @@ function handleBossPattern(boss) {
         bossWarning.message = '';
         bossWarning.timer = 0;
         bossWarning.patternDetails = '';
-        
-        // 보스 파괴 시 목숨 1개 추가
-        maxLives++; // 최대 목숨 증가
         
         return;
     }
@@ -6571,7 +6594,7 @@ window.addEventListener('load', () => {
             for (let audio of allAudioElements) {
                 if (audio.id === 'warningSound') {
                     warningSound = audio;
-                    warningSound.volume = clampVolume(0.6);
+                    warningSound.volume = clampVolume(0.3);
                     console.log('경고음 요소 강제 발견 및 설정 완료!');
                     break;
                 }
