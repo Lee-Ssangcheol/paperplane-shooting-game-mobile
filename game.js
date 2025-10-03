@@ -3483,6 +3483,7 @@ function checkEnemyCollisions(enemy) {
                     
                     // 보스 파괴 시 목숨 1개 추가 (특수무기로 파괴)
                     maxLives++; // 최대 목숨 증가
+                    console.log('특수무기로 보스 파괴! 생명 추가! 현재 생명:', maxLives);
                     
                     // 큰 폭발 효과
                     explosions.push(new Explosion(
@@ -3537,6 +3538,47 @@ function checkEnemyCollisions(enemy) {
                 // 체력 감소 (각 총알당 50의 데미지)
                 enemy.health -= 50;
                 bossHealth = enemy.health;
+                
+                // 보스 체력이 0 이하가 되면 파괴 처리
+                if (enemy.health <= 0 && !bossDestroyed) {
+                    console.log('보스 체력이 0 이하가 되어 파괴 처리 시작');
+                    bossDestroyed = true;
+                    bossActive = false;
+                    bossHealth = 0;
+                    updateScore(BOSS_SETTINGS.BONUS_SCORE);
+                    
+                    // 보스 파괴 시 다음 보스 등장 시간 업데이트
+                    lastBossSpawnTime = Date.now();
+                    
+                    // 보스 파괴 시 목숨 1개 추가 (총알로 파괴)
+                    maxLives++; // 최대 목숨 증가
+                    console.log('총알로 보스 파괴! 생명 추가! 현재 생명:', maxLives);
+                    
+                    // 큰 폭발 효과
+                    explosions.push(new Explosion(
+                        enemy.x + enemy.width/2,
+                        enemy.y + enemy.height/2,
+                        true
+                    ));
+                    
+                    // 추가 폭발 효과
+                    for (let i = 0; i < 8; i++) {
+                        const angle = (Math.PI * 2 / 8) * i;
+                        const distance = 50;
+                        explosions.push(new Explosion(
+                            enemy.x + enemy.width/2 + Math.cos(angle) * distance,
+                            enemy.y + enemy.height/2 + Math.sin(angle) * distance,
+                            false
+                        ));
+                    }
+                    
+                    // 보스 파괴 시 폭발음 재생
+                    applyGlobalVolume();
+                    explosionSound.currentTime = 0;
+                    explosionSound.play().catch(error => {
+                        console.log('오디오 재생 실패:', error);
+                    });
+                }
                 
                 // 보스 피격음 재생 (최적화: 중복 재생 방지)
                 if (currentTime - lastCollisionTime > 100) {
@@ -4740,57 +4782,15 @@ function createBoss() {
 function handleBossPattern(boss) {
     const currentTime = Date.now();
     
-    // 보스 체력이 0 이하이면 파괴 처리
-    if (boss.health <= 0 && !bossDestroyed) {
-        bossDestroyed = true;
-        bossActive = false;
-        bossHealth = 0;
-        updateScore(BOSS_SETTINGS.BONUS_SCORE);
-        
-        // 보스 파괴 시 다음 보스 등장 시간 업데이트
-        lastBossSpawnTime = currentTime;
-        
-        // 보스 파괴 시 패턴 사용 기록 초기화 (다음 보스가 새로운 패턴으로 시작)
-        boss.usedPatterns = [];
-        boss.currentPattern = null;
-        boss.currentPatterns = [];
-        
-        console.log('보스 파괴: 패턴 사용 기록 초기화');
-        
-        // 보스 파괴 시 목숨 1개 추가 (체력 0으로 파괴)
-        maxLives++; // 최대 목숨 증가
-        
-        // 큰 폭발 효과
-        explosions.push(new Explosion(
-            boss.x + boss.width/2,
-            boss.y + boss.height/2,
-            true
-        ));
-        // 추가 폭발 효과
-        for (let i = 0; i < 8; i++) {
-            const angle = (Math.PI * 2 / 8) * i;
-            const distance = 50;
-            explosions.push(new Explosion(
-                boss.x + boss.width/2 + Math.cos(angle) * distance,
-                boss.y + boss.height/2 + Math.sin(angle) * distance,
-                false
-            ));
-        }
-        // 보스 파괴 시 폭발음 재생
-        applyGlobalVolume();
-        explosionSound.currentTime = 0;
-        explosionSound.play().catch(error => {
-            console.log('오디오 재생 실패:', error);
-        });
-        
-        // 보스 경고 시스템 초기화
-        bossWarning.active = false;
-        bossWarning.pattern = '';
-        bossWarning.message = '';
-        bossWarning.timer = 0;
-        bossWarning.patternDetails = '';
-        
+    // 보스가 이미 파괴된 경우 함수 종료
+    if (bossDestroyed) {
         return;
+    }
+    
+    // 보스 체력이 0 이하이면 파괴 처리 (checkEnemyCollisions에서 이미 처리됨)
+    if (boss.health <= 0 && !bossDestroyed) {
+        console.log('보스 체력이 0 이하이지만 이미 checkEnemyCollisions에서 처리됨');
+        return; // 보스 파괴 후 함수 종료
     }
 
     // 보스 이동 패턴 - 화면 내에서 안정적으로 체공
