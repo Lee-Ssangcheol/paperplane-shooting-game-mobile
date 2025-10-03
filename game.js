@@ -1460,11 +1460,11 @@ async function initializeGame() {
                 if (shootSound && explosionSound && collisionSound && warningSound) {
                     console.log('모든 오디오 요소 로드 완료!');
                     
-                    // 사운드 볼륨 설정
-                    shootSound.volume = clampVolume(0.4);
-                    explosionSound.volume = clampVolume(0.6);
-                    collisionSound.volume = clampVolume(0.5);
-                    warningSound.volume = clampVolume(0.3);
+                    // 사운드 볼륨 설정 (60%로 감소)
+                    shootSound.volume = clampVolume(0.24);      // 0.4 * 0.6
+                    explosionSound.volume = clampVolume(0.36);  // 0.6 * 0.6
+                    collisionSound.volume = clampVolume(0.3);   // 0.5 * 0.6
+                    warningSound.volume = clampVolume(0.18);   // 0.3 * 0.6
                     
                     // 충돌 사운드 길이 제어 설정
                     collisionSound.addEventListener('loadedmetadata', () => {
@@ -1618,18 +1618,18 @@ window.addEventListener('DOMContentLoaded', () => {
             warningSound: !!warningSound
         });
         
-        // 사운드 볼륨 설정
+        // 사운드 볼륨 설정 (60%로 감소)
         if (shootSound) {
-            shootSound.volume = clampVolume(0.4);
+            shootSound.volume = clampVolume(0.24);      // 0.4 * 0.6
         }
         if (explosionSound) {
-            explosionSound.volume = clampVolume(0.6);
+            explosionSound.volume = clampVolume(0.36);  // 0.6 * 0.6
         }
         if (collisionSound) {
-            collisionSound.volume = clampVolume(0.5);
+            collisionSound.volume = clampVolume(0.3);   // 0.5 * 0.6
         }
         if (warningSound) {
-            warningSound.volume = clampVolume(0.3);
+            warningSound.volume = clampVolume(0.18);   // 0.3 * 0.6
         }
         
         console.log('오디오 요소 초기화 완료!');
@@ -1788,11 +1788,11 @@ function restartGame() {
                 if (shootSound && explosionSound && collisionSound && warningSound) {
                     console.log('게임 재시작 - 모든 오디오 요소 로드 완료!');
                     
-                    // 사운드 볼륨 설정
-                    shootSound.volume = clampVolume(0.4);
-                    explosionSound.volume = clampVolume(0.6);
-                    collisionSound.volume = clampVolume(0.5);
-                    warningSound.volume = clampVolume(0.3);
+                    // 사운드 볼륨 설정 (60%로 감소)
+                    shootSound.volume = clampVolume(0.24);      // 0.4 * 0.6
+                    explosionSound.volume = clampVolume(0.36);  // 0.6 * 0.6
+                    collisionSound.volume = clampVolume(0.3);   // 0.5 * 0.6
+                    warningSound.volume = clampVolume(0.18);   // 0.3 * 0.6
                     
                     return true;
                 }
@@ -2301,7 +2301,7 @@ function handleCollision() {
         if (warningSound) {
             console.log('경고음 요소 발견, 재생 시도...');
             warningSound.currentTime = 0;
-            warningSound.volume = clampVolume(0.3);
+            warningSound.volume = clampVolume(0.18);   // 0.3 * 0.6
             applyGlobalVolume();
             warningSound.play().then(() => {
                 console.log('경고음 재생 성공!');
@@ -2317,7 +2317,7 @@ function handleCollision() {
                 if (warningSound) {
                     console.log('경고음 요소 재발견! 재생 시도...');
                     warningSound.currentTime = 0;
-                    warningSound.volume = clampVolume(0.3);
+                    warningSound.volume = clampVolume(0.18);   // 0.3 * 0.6
                     applyGlobalVolume();
                     warningSound.play().then(() => {
                         console.log('경고음 재생 성공! (재초기화 후)');
@@ -2360,10 +2360,10 @@ function handleCollision() {
     
     if (currentTime - lastCollisionTime >= collisionSoundCooldown) {
         collisionSound.currentTime = 0;
-        collisionSound.volume = clampVolume(0.5);
+        collisionSound.volume = clampVolume(0.3);   // 0.5 * 0.6
         // 폭발음으로 변경
         explosionSound.currentTime = 0;
-        explosionSound.volume = clampVolume(0.6);
+        explosionSound.volume = clampVolume(0.36);  // 0.6 * 0.6
         applyGlobalVolume();
         explosionSound.play().catch(error => {
             console.log('오디오 재생 실패:', error);
@@ -3686,20 +3686,20 @@ function handleBossBullets() {
             return false;
         }
         
-        // 보스 총알과 플레이어 총알 충돌 체크 (보스 총알 파괴)
-        for (let i = bullets.length - 1; i >= 0; i--) {
-            const playerBullet = bullets[i];
-            if (checkCollision(bullet, playerBullet)) {
-                // 보스 총알 파괴 시 폭발 효과만 (생명 추가 없음)
-                explosions.push(new Explosion(bullet.x, bullet.y, false));
-                
-                // 플레이어 총알도 제거
-                bullets.splice(i, 1);
-                
-                // 보스 총알 제거
-                return false;
-            }
-        }
+        // 보스 총알과 플레이어 총알 충돌 체크 제거 (확산탄이 파괴되지 않도록)
+        // for (let i = bullets.length - 1; i >= 0; i--) {
+        //     const playerBullet = bullets[i];
+        //     if (checkCollision(bullet, playerBullet)) {
+        //         // 보스 총알 파괴 시 폭발 효과만 (생명 추가 없음)
+        //         explosions.push(new Explosion(bullet.x, bullet.y, false));
+        //         
+        //         // 플레이어 총알도 제거
+        //         bullets.splice(i, 1);
+        //         
+        //         // 보스 총알 제거
+        //         return false;
+        //     }
+        // }
         
         // 화면 밖으로 나간 총알 제거
         return bullet.y < CANVAS_HEIGHT + 50 && 
@@ -4664,7 +4664,7 @@ function createBoss() {
         width: 69,
         height: 69,
         speed: BOSS_SETTINGS.SPEED,
-        pattern: (gameLevel < 5) ? BOSS_PATTERNS.WAVE_SHOT : BOSS_PATTERNS.CIRCLE_SHOT,
+        pattern: BOSS_PATTERNS.SNOWFLAKE_SHOT, // 초기 패턴 (나중에 랜덤으로 변경됨)
         angle: 0,
         movePhase: 0,
         targetX: canvas.width / 2 - 30,
@@ -4696,59 +4696,40 @@ function createBoss() {
         currentPatternIndex: 0,  // 현재 패턴 인덱스
         isPatternSequenceComplete: false,  // 패턴 순서 완료 여부
         // 단일 패턴 시스템 (레벨 1~5용)
-        singlePattern: null,  // 현재 사용할 단일 패턴
+        singlePattern: null,  // 더 이상 사용하지 않음 (통합 시스템 사용)
         spawnTime: currentTime,  // 보스 등장 시간 기록
-        currentPattern: null  // 현재 사용 중인 패턴 (연속 발사 방지용)
+        currentPattern: null,  // 현재 사용 중인 패턴
+        usedPatterns: [],     // 사용한 패턴 추적
+        currentPatterns: [],  // 현재 패턴 배열
+        lastPatternChange: currentTime, // 마지막 패턴 변경 시간
+        patternDuration: 5000 // 패턴 변경 간격 (5초)
     };
     
-    // 레벨별 패턴 설정 - 모든 레벨에서 랜덤 패턴 시스템 사용
-    if (gameLevel <= 5) {
-        // 레벨 1~5: 랜덤 단일 패턴 시스템
-        const availablePatterns = [
-            BOSS_PATTERNS.CIRCLE_SHOT,
-            BOSS_PATTERNS.CROSS_SHOT,
-            BOSS_PATTERNS.SPIRAL_SHOT,
-            BOSS_PATTERNS.WAVE_SHOT,
-            BOSS_PATTERNS.DIAMOND_SHOT,
-            BOSS_PATTERNS.RANDOM_SPREAD,
-            BOSS_PATTERNS.DOUBLE_SPIRAL,
-            BOSS_PATTERNS.TRIPLE_WAVE,
-            BOSS_PATTERNS.TARGETED_SHOT,
-            BOSS_PATTERNS.BURST_SHOT
-        ];
-        
-        // 보스별 사용한 패턴 추적 시스템 초기화
-        if (!boss.usedPatterns) {
-            boss.usedPatterns = [];
-        }
-        
-        // 사용 가능한 패턴 목록에서 아직 사용하지 않은 패턴들만 선택
-        const unusedPatterns = availablePatterns.filter(pattern => !boss.usedPatterns.includes(pattern));
-        
-        let selectedPattern;
-        if (unusedPatterns.length > 0) {
-            // 아직 사용하지 않은 패턴이 있으면 그 중에서 랜덤 선택
-            selectedPattern = unusedPatterns[Math.floor(Math.random() * unusedPatterns.length)];
-            boss.usedPatterns.push(selectedPattern);
-        } else {
-            // 모든 패턴을 다 사용했으면 사용 기록 초기화하고 랜덤 선택
-            boss.usedPatterns = [];
-            selectedPattern = availablePatterns[Math.floor(Math.random() * availablePatterns.length)];
-            boss.usedPatterns.push(selectedPattern);
-        }
-        
-        // 현재 패턴을 저장하여 연속 발사 방지
-        boss.currentPattern = selectedPattern;
-        
-        boss.singlePattern = selectedPattern;
-        // 패턴은 보스별로 관리되므로 전역 설정 불필요
-        console.log(`보스 생성 (레벨 ${gameLevel}): 랜덤 패턴 ${selectedPattern}`);
-    } else {
-        // 레벨 6 이상: 단일 랜덤 패턴 시스템
-        boss.singlePattern = null;
-        // 패턴은 보스별로 관리되므로 전역 설정 불필요
-        console.log(`보스 생성 (레벨 ${gameLevel}): 단일 랜덤 패턴 시스템`);
-    }
+    // 보스 등장 시 초기 패턴 랜덤 선택 (선택되지 않은 모양 우선)
+    const availablePatterns = [
+        BOSS_PATTERNS.SNOWFLAKE_SHOT,    // 눈 결정체
+        BOSS_PATTERNS.PINWHEEL_SHOT,     // 바람개비
+        BOSS_PATTERNS.TRIANGLE_SHOT,     // 삼각형
+        BOSS_PATTERNS.RECTANGLE_SHOT,    // 정사각형
+        BOSS_PATTERNS.CLOVER_SHOT,       // 네잎 클로버
+        BOSS_PATTERNS.WHEEL_SHOT,        // 수레바퀴
+        BOSS_PATTERNS.LIGHTNING_SHOT,    // 번개 표시
+        BOSS_PATTERNS.CIRCLE_SHOT,       // 원형
+        BOSS_PATTERNS.CROSS_SHOT,        // 십자
+        BOSS_PATTERNS.HEART_SHOT,        // 하트
+        BOSS_PATTERNS.STAR_SHOT,         // 별
+        BOSS_PATTERNS.FLOWER_SHOT,       // 꽃
+        BOSS_PATTERNS.GEAR_SHOT,         // 기어
+        BOSS_PATTERNS.RADIATION_SHOT     // 방사능 표시
+    ];
+    
+    // 초기 패턴 랜덤 선택 (보스 등장 시마다 새로운 패턴)
+    const initialPattern = availablePatterns[Math.floor(Math.random() * availablePatterns.length)];
+    boss.currentPattern = initialPattern;
+    boss.currentPatterns = [initialPattern];
+    boss.usedPatterns = [initialPattern]; // 첫 번째 패턴을 사용 기록에 추가
+    
+    console.log(`보스 생성 (레벨 ${gameLevel}): 초기 패턴 ${initialPattern} (랜덤 선택)`);
     
     // 보스 추가
     enemies.push(boss);
@@ -4769,7 +4750,12 @@ function handleBossPattern(boss) {
         // 보스 파괴 시 다음 보스 등장 시간 업데이트
         lastBossSpawnTime = currentTime;
         
-        // 패턴 사용 기록은 각 보스별로 관리되므로 여기서는 제거
+        // 보스 파괴 시 패턴 사용 기록 초기화 (다음 보스가 새로운 패턴으로 시작)
+        boss.usedPatterns = [];
+        boss.currentPattern = null;
+        boss.currentPatterns = [];
+        
+        console.log('보스 파괴: 패턴 사용 기록 초기화');
         
         // 보스 파괴 시 목숨 1개 추가 (체력 0으로 파괴)
         maxLives++; // 최대 목숨 증가
@@ -4875,97 +4861,83 @@ function handleBossPattern(boss) {
     // 패턴 단계별 패턴 선택
     let patterns = [];
     
-    // 사용 가능한 패턴 목록
+    // 사용 가능한 패턴 목록 - 새로운 패턴들로 완전 교체
     const availablePatterns = [
-        BOSS_PATTERNS.BASIC,
-        BOSS_PATTERNS.CIRCLE_SHOT,
-        BOSS_PATTERNS.CROSS_SHOT,
-        BOSS_PATTERNS.SPIRAL_SHOT,
-        BOSS_PATTERNS.WAVE_SHOT,
-        BOSS_PATTERNS.DIAMOND_SHOT,
-        BOSS_PATTERNS.RANDOM_SPREAD,
-        BOSS_PATTERNS.DOUBLE_SPIRAL,
-        BOSS_PATTERNS.TRIPLE_WAVE,
-        BOSS_PATTERNS.TARGETED_SHOT,
-        BOSS_PATTERNS.BURST_SHOT,
-        // 새로운 확산탄 패턴들
-        BOSS_PATTERNS.HEART_SHOT,
-        BOSS_PATTERNS.STAR_SHOT,
-        BOSS_PATTERNS.FLOWER_SHOT,
-        BOSS_PATTERNS.BUTTERFLY_SHOT,
-        BOSS_PATTERNS.SPIRAL_WAVE,
-        BOSS_PATTERNS.CONCENTRIC_CIRCLES,
-        BOSS_PATTERNS.FIREWORK_SHOT,
-        BOSS_PATTERNS.CHAOS_SHOT
+        BOSS_PATTERNS.SNOWFLAKE_SHOT,    // 눈 결정체
+        BOSS_PATTERNS.PINWHEEL_SHOT,     // 바람개비
+        BOSS_PATTERNS.TRIANGLE_SHOT,     // 삼각형
+        BOSS_PATTERNS.RECTANGLE_SHOT,    // 정사각형
+        BOSS_PATTERNS.CLOVER_SHOT,       // 네잎 클로버
+        BOSS_PATTERNS.WHEEL_SHOT,        // 수레바퀴
+        BOSS_PATTERNS.LIGHTNING_SHOT,    // 번개 표시
+        BOSS_PATTERNS.CIRCLE_SHOT,       // 원형
+        BOSS_PATTERNS.CROSS_SHOT,        // 십자
+        BOSS_PATTERNS.HEART_SHOT,        // 하트
+        BOSS_PATTERNS.STAR_SHOT,         // 별
+        BOSS_PATTERNS.FLOWER_SHOT,       // 꽃
+        BOSS_PATTERNS.GEAR_SHOT,         // 기어
+        BOSS_PATTERNS.RADIATION_SHOT     // 방사능 표시
     ];
     
-    // 레벨별 패턴 시스템
-    if (gameLevel <= 5) {
-        // 레벨 1~5: 순차적 패턴 시스템
-        if (boss.singlePattern) {
-            patterns = [boss.singlePattern];
-        } else {
-            // 기본 패턴 사용
-            patterns = [BOSS_PATTERNS.BASIC];
-        }
-    } else {
-        // 레벨 6 이상: 단일 랜덤 패턴 시스템 (한 번 등장한 패턴은 모든 패턴이 등장한 후에 다시 등장)
+    // 통합 패턴 시스템 - 모든 레벨에서 동일한 로직 사용
+    // 보스별 사용한 패턴 추적 시스템 초기화
+    if (!boss.usedPatterns) {
+        boss.usedPatterns = [];
+    }
+    
+    // 패턴 변경 체크 (5초마다)
+    if (currentTime - boss.lastPatternChange >= boss.patternDuration) {
+        // 사용 가능한 패턴 목록에서 아직 사용하지 않은 패턴들만 선택 (우선순위)
+        const unusedPatterns = availablePatterns.filter(pattern => !boss.usedPatterns.includes(pattern));
         
-        // 보스별 사용한 패턴 추적 시스템 초기화
-        if (!boss.usedPatterns) {
-            boss.usedPatterns = [];
-        }
+        let selectedPattern;
         
-        // 패턴 변경 체크 (5초마다)
-        if (currentTime - boss.lastPatternChange >= boss.patternDuration) {
-            // 사용 가능한 패턴 목록에서 아직 사용하지 않은 패턴들만 선택
-            const unusedPatterns = availablePatterns.filter(pattern => !boss.usedPatterns.includes(pattern));
-            
-            let selectedPattern;
-            
-            if (unusedPatterns.length > 0) {
-                // 아직 사용하지 않은 패턴이 있으면 그 중에서 랜덤 선택
-                // 단, 현재 패턴과 같은 패턴은 제외
-                const differentPatterns = unusedPatterns.filter(pattern => pattern !== boss.currentPattern);
-                if (differentPatterns.length > 0) {
-                    selectedPattern = differentPatterns[Math.floor(Math.random() * differentPatterns.length)];
-                } else {
-                    // 다른 패턴이 없으면 (마지막 패턴인 경우) 그냥 선택
-                    selectedPattern = unusedPatterns[Math.floor(Math.random() * unusedPatterns.length)];
-                }
-                boss.usedPatterns.push(selectedPattern);
-                console.log(`보스 패턴 변경 (단일 랜덤): ${selectedPattern} (사용된 패턴: ${boss.usedPatterns.length}/${availablePatterns.length})`);
+        if (unusedPatterns.length > 0) {
+            // 아직 사용하지 않은 패턴이 있으면 그 중에서 랜덤 선택 (우선순위)
+            // 단, 현재 패턴과 같은 패턴은 제외하여 연속 발사 방지
+            const differentPatterns = unusedPatterns.filter(pattern => pattern !== boss.currentPattern);
+            if (differentPatterns.length > 0) {
+                selectedPattern = differentPatterns[Math.floor(Math.random() * differentPatterns.length)];
+                console.log(`보스 패턴 변경 (미사용 우선): ${selectedPattern} (미사용 패턴 중 선택)`);
             } else {
-                // 모든 패턴을 다 사용했으면 사용 기록 초기화하고 랜덤 선택
-                boss.usedPatterns = [];
-                // 현재 패턴과 다른 패턴 선택
-                const differentPatterns = availablePatterns.filter(pattern => pattern !== boss.currentPattern);
-                if (differentPatterns.length > 0) {
-                    selectedPattern = differentPatterns[Math.floor(Math.random() * differentPatterns.length)];
-                } else {
-                    selectedPattern = availablePatterns[Math.floor(Math.random() * availablePatterns.length)];
-                }
-                boss.usedPatterns.push(selectedPattern);
-                console.log(`보스 패턴 변경 (단일 랜덤): ${selectedPattern} (모든 패턴 사용 완료, 기록 초기화)`);
+                // 다른 패턴이 없으면 (마지막 미사용 패턴인 경우) 그냥 선택
+                selectedPattern = unusedPatterns[Math.floor(Math.random() * unusedPatterns.length)];
+                console.log(`보스 패턴 변경 (마지막 미사용): ${selectedPattern} (마지막 미사용 패턴)`);
             }
-            
-            boss.currentPatterns = [selectedPattern];
-            boss.currentPattern = selectedPattern; // 현재 패턴 저장
-            boss.lastPatternChange = currentTime;
+            boss.usedPatterns.push(selectedPattern);
+            console.log(`사용된 패턴: ${boss.usedPatterns.length}/${availablePatterns.length}`);
+        } else {
+            // 모든 패턴을 다 사용했으면 사용 기록 초기화하고 랜덤 선택
+            boss.usedPatterns = [];
+            // 현재 패턴과 다른 패턴 선택하여 연속 발사 방지
+            const differentPatterns = availablePatterns.filter(pattern => pattern !== boss.currentPattern);
+            if (differentPatterns.length > 0) {
+                selectedPattern = differentPatterns[Math.floor(Math.random() * differentPatterns.length)];
+            } else {
+                selectedPattern = availablePatterns[Math.floor(Math.random() * availablePatterns.length)];
+            }
+            boss.usedPatterns.push(selectedPattern);
+            console.log(`보스 패턴 변경 (순환): ${selectedPattern} (사용 기록 초기화 후 재시작)`);
         }
         
-        // 현재 패턴 사용
-        if (boss.currentPatterns.length > 0) {
-            patterns = boss.currentPatterns;
-        } else {
-            // 초기 패턴 설정
-            const initialPattern = availablePatterns[Math.floor(Math.random() * availablePatterns.length)];
-            patterns = [initialPattern];
-            boss.currentPatterns = [initialPattern];
-            boss.usedPatterns = [initialPattern];
-            boss.currentPattern = initialPattern; // 현재 패턴 저장
-            console.log(`보스 초기 패턴 설정: ${initialPattern}`);
-        }
+        // 패턴 변경 적용
+        boss.currentPattern = selectedPattern;
+        boss.currentPatterns = [selectedPattern];
+        boss.lastPatternChange = currentTime;
+    }
+    
+    // 현재 패턴 사용
+    if (boss.currentPatterns && boss.currentPatterns.length > 0) {
+        patterns = boss.currentPatterns;
+    } else {
+        // 초기 패턴 설정
+        const initialPattern = availablePatterns[Math.floor(Math.random() * availablePatterns.length)];
+        patterns = [initialPattern];
+        boss.currentPatterns = [initialPattern];
+        boss.currentPattern = initialPattern;
+        boss.usedPatterns = [initialPattern];
+        boss.lastPatternChange = currentTime;
+        console.log(`보스 초기 패턴 설정: ${initialPattern}`);
     }
     
     // 현재 패턴들로 공격 실행
@@ -5034,6 +5006,7 @@ function executeBossPattern(boss, pattern, currentTime) {
         case BOSS_PATTERNS.CLOVER_SHOT:
             if (currentTime - boss.lastShot >= 1000) {
                 // 네잎 클로버 모양으로 발사 (4방향)
+                console.log('네잎 클로버 패턴 실행');
                 for (let i = 0; i < 4; i++) {
                     const angle = (Math.PI / 2) * i;
                     createBossBullet(boss, angle, 'clover_shot');
@@ -5142,6 +5115,7 @@ function executeBossPattern(boss, pattern, currentTime) {
         case BOSS_PATTERNS.RADIATION_SHOT:
             if (currentTime - boss.lastShot >= 500) {
                 // 방사능 표시 모양으로 발사 (3방향)
+                console.log('방사능 패턴 실행');
                 for (let i = 0; i < 3; i++) {
                     const angle = (Math.PI * 2 / 3) * i;
                     createBossBullet(boss, angle, 'radiation_shot');
@@ -5170,8 +5144,8 @@ function createBossBullet(boss, angle, pattern = null, bulletType = 'normal') {
     const bullet = {
         x: boss.x + boss.width/2,
         y: boss.y + boss.height/2,
-        width: 18,
-        height: 18,
+        width: 24,
+        height: 24,
         speed: boss.bulletSpeed,
         angle: angle,
         isBossBullet: true,
@@ -5450,17 +5424,46 @@ function drawRectangle(bullet) {
 function drawSnowflake(bullet) {
     const size = bullet.width / 2;
     ctx.beginPath();
-    // 6방향 눈 결정체 모양
+    
+    // 중심에서 6방향으로 주 가지 그리기
     for (let i = 0; i < 6; i++) {
         const angle = (Math.PI / 3) * i;
-        const x1 = Math.cos(angle) * size;
-        const y1 = Math.sin(angle) * size;
-        const x2 = Math.cos(angle + Math.PI / 6) * size * 0.5;
-        const y2 = Math.sin(angle + Math.PI / 6) * size * 0.5;
+        const x = Math.cos(angle) * size;
+        const y = Math.sin(angle) * size;
         ctx.moveTo(0, 0);
-        ctx.lineTo(x1, y1);
-        ctx.moveTo(x2, y2);
-        ctx.lineTo(-x2, -y2);
+        ctx.lineTo(x, y);
+        
+        // 각 주 가지 끝에서 작은 가지들 그리기
+        const branchLength = size * 0.3;
+        const branchAngle1 = angle + Math.PI / 6; // 30도 회전
+        const branchAngle2 = angle - Math.PI / 6; // -30도 회전
+        
+        // 첫 번째 작은 가지
+        const bx1 = x + Math.cos(branchAngle1) * branchLength;
+        const by1 = y + Math.sin(branchAngle1) * branchLength;
+        ctx.moveTo(x, y);
+        ctx.lineTo(bx1, by1);
+        
+        // 두 번째 작은 가지
+        const bx2 = x + Math.cos(branchAngle2) * branchLength;
+        const by2 = y + Math.sin(branchAngle2) * branchLength;
+        ctx.moveTo(x, y);
+        ctx.lineTo(bx2, by2);
+        
+        // 중간 지점에서도 작은 가지들
+        const midX = x * 0.6;
+        const midY = y * 0.6;
+        const midBranchLength = size * 0.2;
+        
+        const mbx1 = midX + Math.cos(branchAngle1) * midBranchLength;
+        const mby1 = midY + Math.sin(branchAngle1) * midBranchLength;
+        ctx.moveTo(midX, midY);
+        ctx.lineTo(mbx1, mby1);
+        
+        const mbx2 = midX + Math.cos(branchAngle2) * midBranchLength;
+        const mby2 = midY + Math.sin(branchAngle2) * midBranchLength;
+        ctx.moveTo(midX, midY);
+        ctx.lineTo(mbx2, mby2);
     }
     ctx.stroke();
 }
@@ -5468,19 +5471,21 @@ function drawSnowflake(bullet) {
 // 바람개비 모양 그리기
 function drawPinwheel(bullet) {
     const size = bullet.width / 2;
-    ctx.beginPath();
-    // 4개의 날개
+    
+    // 4개의 날개를 각각 그리기
     for (let i = 0; i < 4; i++) {
+        ctx.beginPath();
         const angle = (Math.PI / 2) * i;
         const x = Math.cos(angle) * size;
         const y = Math.sin(angle) * size;
+        
+        // 삼각형 모양의 날개 그리기
         ctx.moveTo(0, 0);
         ctx.lineTo(x, y);
         ctx.lineTo(Math.cos(angle + Math.PI / 4) * size * 0.7, Math.sin(angle + Math.PI / 4) * size * 0.7);
-        ctx.lineTo(Math.cos(angle - Math.PI / 4) * size * 0.7, Math.sin(angle - Math.PI / 4) * size * 0.7);
         ctx.closePath();
+        ctx.fill();
     }
-    ctx.fill();
 }
 
 // 삼각형 모양 그리기
@@ -5497,19 +5502,27 @@ function drawTriangle(bullet) {
 
 // 네잎 클로버 모양 그리기
 function drawClover(bullet) {
+    console.log('drawClover 함수 호출됨');
     const size = bullet.width / 2;
-    ctx.beginPath();
-    // 4개의 하트 모양 잎
+    
+    // 4개의 원형 잎을 각각 그리기
     for (let i = 0; i < 4; i++) {
+        ctx.beginPath();
         const angle = (Math.PI / 2) * i;
-        ctx.save();
-        ctx.rotate(angle);
-        ctx.moveTo(0, size * 0.3);
-        ctx.bezierCurveTo(-size * 0.3, -size * 0.1, -size * 0.3, size * 0.3, 0, size * 0.3);
-        ctx.bezierCurveTo(size * 0.3, size * 0.3, size * 0.3, -size * 0.1, 0, size * 0.3);
-        ctx.restore();
+        const leafX = Math.cos(angle) * size * 0.6;
+        const leafY = Math.sin(angle) * size * 0.6;
+        const leafRadius = size * 0.4;
+        
+        // 각 잎을 원으로 그리기
+        ctx.arc(leafX, leafY, leafRadius, 0, Math.PI * 2);
+        ctx.fill();
     }
+    
+    // 중심에 작은 원 그리기
+    ctx.beginPath();
+    ctx.arc(0, 0, size * 0.15, 0, Math.PI * 2);
     ctx.fill();
+    console.log('drawClover 함수 완료');
 }
 
 // 수레바퀴 모양 그리기
@@ -5535,20 +5548,41 @@ function drawWheel(bullet) {
 // 번개 모양 그리기
 function drawLightning(bullet) {
     const size = bullet.width / 2;
+    const thickness = 8; // 두께 유지
+    
+    ctx.lineWidth = thickness;
+    ctx.lineCap = 'square'; // 날카로운 끝
+    ctx.lineJoin = 'miter'; // 날카로운 연결
+    
     ctx.beginPath();
-    ctx.moveTo(-size * 0.3, -size);
-    ctx.lineTo(size * 0.2, -size * 0.3);
-    ctx.lineTo(-size * 0.1, 0);
-    ctx.lineTo(size * 0.3, size);
-    ctx.lineTo(-size * 0.2, size * 0.3);
-    ctx.lineTo(size * 0.1, 0);
-    ctx.closePath();
-    ctx.fill();
+    // 더 각진 번개 모양 (이미지와 동일한 급격한 각도 변화)
+    ctx.moveTo(-size * 0.8, -size * 0.9);  // 시작점 (좌상단)
+    ctx.lineTo(-size * 0.4, -size * 0.3);  // 첫 번째 급격한 각도
+    ctx.lineTo(-size * 0.1, -size * 0.7);  // 두 번째 급격한 각도 (더 급격하게)
+    ctx.lineTo(size * 0.3, -size * 0.1);   // 세 번째 급격한 각도
+    ctx.lineTo(size * 0.1, size * 0.3);    // 네 번째 급격한 각도
+    ctx.lineTo(size * 0.6, size * 0.8);     // 끝점 (우하단)
+    ctx.stroke();
+    
+    // 그림자 효과 (더 각진 그림자)
+    ctx.lineWidth = thickness * 0.6;
+    ctx.strokeStyle = '#FF8C00'; // 다크 오렌지 그림자
+    ctx.beginPath();
+    ctx.moveTo(-size * 0.75, -size * 0.85);  // 그림자 시작점
+    ctx.lineTo(-size * 0.35, -size * 0.25);  // 그림자 첫 번째 각도
+    ctx.lineTo(-size * 0.05, -size * 0.65);  // 그림자 두 번째 각도
+    ctx.lineTo(size * 0.35, -size * 0.05);   // 그림자 세 번째 각도
+    ctx.lineTo(size * 0.15, size * 0.35);    // 그림자 네 번째 각도
+    ctx.lineTo(size * 0.65, size * 0.85);     // 그림자 끝점
+    ctx.stroke();
 }
 
 // 십자 모양 그리기
 function drawCross(bullet) {
     const size = bullet.width / 2;
+    const thickness = 6; // 두께를 3배로 증가 (기본 2에서 6으로)
+    
+    ctx.lineWidth = thickness;
     ctx.beginPath();
     // 세로선
     ctx.moveTo(0, -size);
@@ -5590,22 +5624,45 @@ function drawGear(bullet) {
 
 // 방사능 표시 모양 그리기
 function drawRadiation(bullet) {
+    console.log('drawRadiation 함수 호출됨');
     const size = bullet.width / 2;
-    // 원
+    
+    // 빨간색 삼각형 테두리 (이미지와 동일)
+    ctx.strokeStyle = '#FF0000'; // 빨간색
+    ctx.fillStyle = '#FFFFFF'; // 흰색 배경
+    ctx.lineWidth = 3;
+    
     ctx.beginPath();
-    ctx.arc(0, 0, size * 0.3, 0, Math.PI * 2);
+    // 정삼각형 그리기
+    ctx.moveTo(0, -size * 0.8);
+    ctx.lineTo(size * 0.7, size * 0.4);
+    ctx.lineTo(-size * 0.7, size * 0.4);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    
+    // 검은색 방사능 기호 (이미지와 동일)
+    ctx.fillStyle = '#000000'; // 검은색
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 2;
+    
+    // 중심 원
+    ctx.beginPath();
+    ctx.arc(0, 0, size * 0.15, 0, Math.PI * 2);
     ctx.fill();
     
-    // 방사선
+    // 3개의 방사선 (간단한 직선)
     for (let i = 0; i < 3; i++) {
         const angle = (Math.PI * 2 / 3) * i;
-        const x = Math.cos(angle) * size;
-        const y = Math.sin(angle) * size;
+        const x = Math.cos(angle) * size * 0.6;
+        const y = Math.sin(angle) * size * 0.6;
+        
         ctx.beginPath();
         ctx.moveTo(0, 0);
         ctx.lineTo(x, y);
         ctx.stroke();
     }
+    console.log('drawRadiation 함수 완료');
 }
 
 // 레벨업 체크 함수 수정
@@ -6683,7 +6740,7 @@ window.addEventListener('load', () => {
             for (let audio of allAudioElements) {
                 if (audio.id === 'warningSound') {
                     warningSound = audio;
-                    warningSound.volume = clampVolume(0.3);
+                    warningSound.volume = clampVolume(0.18);   // 0.3 * 0.6
                     console.log('경고음 요소 강제 발견 및 설정 완료!');
                     break;
                 }
