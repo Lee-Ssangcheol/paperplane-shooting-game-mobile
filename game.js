@@ -3123,9 +3123,8 @@ function handleEnemies() {
         lastEnemySpawnTime = currentTime;
     }
 
-    // 방어막 적 생성 (레벨 3 이상에서 등장)
-    if (gameLevel >= 3 && 
-        currentTime - lastShieldedEnemySpawnTime >= 8000 && // 8초마다
+    // 방어막 적 생성 (레벨에 상관없이 등장)
+    if (currentTime - lastShieldedEnemySpawnTime >= 8000 && // 8초마다
         shieldedEnemies.length < 2 && // 최대 2개까지만
         !isGameOver) {
         createShieldedEnemy();
@@ -3504,6 +3503,15 @@ function checkEnemyCollisions(enemy) {
                         ));
                     }
                     
+                    // 특수 무기로 보스 파괴 시 폭발음 재생 (볼륨 2배)
+                    console.log('특수무기로 보스 파괴 폭발음 재생 시도');
+                    applyGlobalVolume();
+                    explosionSound.currentTime = 0;
+                    explosionSound.volume = clampVolume(0.72); // 0.36 * 2 = 0.72
+                    explosionSound.play().catch(error => {
+                        console.log('특수무기로 보스 파괴 폭발음 재생 실패:', error);
+                    });
+                    
                     bossActive = false;
                     return false;
                 }
@@ -3574,10 +3582,11 @@ function checkEnemyCollisions(enemy) {
                         ));
                     }
                     
-                    // 보스 파괴 시 폭발음 재생
+                    // 보스 파괴 시 폭발음 재생 (볼륨 2배)
                     console.log('보스 파괴 폭발음 재생 시도');
                     applyGlobalVolume();
                     explosionSound.currentTime = 0;
+                    explosionSound.volume = clampVolume(0.72); // 0.36 * 2 = 0.72
                     explosionSound.play().catch(error => {
                         console.log('보스 파괴 폭발음 재생 실패:', error);
                     });
@@ -4583,10 +4592,11 @@ function handleBullets() {
                         ));
                     }
                     
-                    // 폭발음 재생
+                    // 폭발음 재생 (볼륨 2배)
                     console.log('방어막 적 파괴 폭발음 재생 시도');
                     applyGlobalVolume();
                     explosionSound.currentTime = 0;
+                    explosionSound.volume = clampVolume(0.72); // 0.36 * 2 = 0.72
                     explosionSound.play().catch(error => {
                         console.log('방어막 적 파괴 폭발음 재생 실패:', error);
                     });
