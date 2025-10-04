@@ -3482,6 +3482,7 @@ function checkEnemyCollisions(enemy) {
                     lastBossSpawnTime = Date.now();
                     
                     // 보스 파괴 시 목숨 1개 추가 (특수무기로 파괴)
+                    console.log('특수무기로 보스 파괴 전 생명:', maxLives);
                     maxLives++; // 최대 목숨 증가
                     console.log('특수무기로 보스 파괴! 생명 추가! 현재 생명:', maxLives);
                     
@@ -3542,6 +3543,7 @@ function checkEnemyCollisions(enemy) {
                 // 보스 체력이 0 이하가 되면 파괴 처리
                 if (enemy.health <= 0 && !bossDestroyed) {
                     console.log('보스 체력이 0 이하가 되어 파괴 처리 시작');
+                    console.log('보스 파괴 전 생명:', maxLives);
                     bossDestroyed = true;
                     bossActive = false;
                     bossHealth = 0;
@@ -3573,10 +3575,11 @@ function checkEnemyCollisions(enemy) {
                     }
                     
                     // 보스 파괴 시 폭발음 재생
+                    console.log('보스 파괴 폭발음 재생 시도');
                     applyGlobalVolume();
                     explosionSound.currentTime = 0;
                     explosionSound.play().catch(error => {
-                        console.log('오디오 재생 실패:', error);
+                        console.log('보스 파괴 폭발음 재생 실패:', error);
                     });
                 }
                 
@@ -4581,10 +4584,11 @@ function handleBullets() {
                     }
                     
                     // 폭발음 재생
+                    console.log('방어막 적 파괴 폭발음 재생 시도');
                     applyGlobalVolume();
-                    shootSound.currentTime = 0;
-                    shootSound.play().catch(error => {
-                        console.log('방어막 적 파괴 효과음 재생 실패:', error);
+                    explosionSound.currentTime = 0;
+                    explosionSound.play().catch(error => {
+                        console.log('방어막 적 파괴 폭발음 재생 실패:', error);
                     });
                     
                     // 점수 보상 (방어막 적은 더 높은 점수)
@@ -4592,12 +4596,14 @@ function handleBullets() {
                     
                     // 방어막 적 파괴 카운트 증가
                     shieldedEnemiesDestroyed++;
+                    console.log(`방어막 적 파괴! 카운트: ${shieldedEnemiesDestroyed}`);
                     
                     // 2대 파괴 시 생명 추가
                     if (shieldedEnemiesDestroyed >= 2) {
+                        console.log('방어막 적 2대 파괴 전 생명:', maxLives);
                         maxLives++;
                         shieldedEnemiesDestroyed = 0; // 카운트 리셋
-                        console.log('방어막 적 2대 파괴! 생명 1개 추가');
+                        console.log('방어막 적 2대 파괴! 생명 1개 추가! 현재 생명:', maxLives);
                     }
                     
                     // 파괴 로그 출력
