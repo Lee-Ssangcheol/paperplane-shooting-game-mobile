@@ -602,7 +602,6 @@ let secondPlaneTimer = 0;    // 두 번째 비행기 타이머
 let isPaused = false;     // 일시정지 상태
 let collisionCount = 0;   // 충돌 횟수
 let maxLives = 5;        // 최대 목숨 수
-let shieldedEnemiesDestroyed = 0; // 방어막 적 파괴 카운트
 let isGameOver = false;   // 게임 오버 상태
 let flashTimer = 0;       // 깜박임 효과 타이머
 let flashDuration = 500;  // 깜박임 지속 시간
@@ -1343,7 +1342,6 @@ async function initializeGame() {
         // 1. 충돌 및 게임 상태 초기화
         collisionCount = 0;
         maxLives = 5;  // 최대 목숨 초기화
-        shieldedEnemiesDestroyed = 0; // 방어막 적 파괴 카운트 초기화
         hasSecondPlane = false;
         secondPlaneTimer = 0;
         lastSecondPlaneScore = 0; // ← 추가!
@@ -3629,7 +3627,7 @@ function checkEnemyCollisions(enemy) {
                 updateScore(20); //적 처치 시 획득 점수
                 
                 // 해당 적이 발사한 미사일들 제거
-                // removeEnemyMissiles(enemy);
+                removeEnemyMissiles(enemy);
             }
             
             // 적을 맞췄을 때 효과음 재생 (최적화: 중복 재생 방지)
@@ -3690,7 +3688,7 @@ function checkEnemyCollisions(enemy) {
         }
         
         // 해당 적이 발사한 미사일들 제거
-        // removeEnemyMissiles(enemy);
+        removeEnemyMissiles(enemy);
         
         return false;
     }
@@ -4604,23 +4602,16 @@ function handleBullets() {
                     // 점수 보상 (방어막 적은 더 높은 점수)
                     updateScore(100);
                     
-                    // 방어막 적 파괴 카운트 증가
-                    shieldedEnemiesDestroyed++;
-                    console.log(`방어막 적 파괴! 카운트: ${shieldedEnemiesDestroyed}`);
-                    
-                    // 2대 파괴 시 생명 추가
-                    if (shieldedEnemiesDestroyed >= 2) {
-                        console.log('방어막 적 2대 파괴 전 생명:', maxLives);
-                        maxLives++;
-                        shieldedEnemiesDestroyed = 0; // 카운트 리셋
-                        console.log('방어막 적 2대 파괴! 생명 1개 추가! 현재 생명:', maxLives);
-                    }
+                    // 방어막 적 파괴 시 생명 1개 추가 (1대당 1개)
+                    console.log('방어막 적 파괴 전 생명:', maxLives);
+                    maxLives++;
+                    console.log('방어막 적 파괴! 생명 1개 추가! 현재 생명:', maxLives);
                     
                     // 파괴 로그 출력
-                    console.log(`방어막 적 파괴 완료! 총 20발 맞춤 (파괴 카운트: ${shieldedEnemiesDestroyed})`);
+                    console.log('방어막 적 파괴 완료! 총 20발 맞춤');
                     
                     // 해당 적이 발사한 미사일들 제거
-                    // removeEnemyMissiles(enemy);
+                    removeEnemyMissiles(enemy);
                 } else {
                     // 방어막이 활성화된 경우 방어막 효과음
                     if (enemy.shieldActive) {
