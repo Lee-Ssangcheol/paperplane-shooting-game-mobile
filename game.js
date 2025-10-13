@@ -550,6 +550,10 @@ let collisionSound = null;
 let lastCollisionTime = 0;
 const collisionSoundCooldown = 300;  // 충돌음 쿨다운 시간 증가
 
+// 폭발 효과음 재생을 위한 전용 변수들
+let lastExplosionSoundTime = 0;
+const explosionSoundCooldown = 150; // 폭발음 쿨다운 시간
+
 // 충돌 사운드 길이 제어 (초기화 후에 설정)
 // 이 부분은 initializeGame 함수에서 처리됩니다
 
@@ -557,6 +561,47 @@ const collisionSoundCooldown = 300;  // 충돌음 쿨다운 시간 증가
 let warningSound = null;
 let lifeBlinkTimer = 0;
 let lifeBlinkDuration = 2000; // 2초간 깜빡임
+
+// 안전한 사운드 재생 함수
+function safePlaySound(soundElement, volume = null) {
+    if (!soundElement) {
+        return; // 사운드 요소가 없으면 재생하지 않음
+    }
+    
+    try {
+        if (volume !== null) {
+            soundElement.volume = clampVolume(volume);
+            applyGlobalVolume();
+        }
+        soundElement.currentTime = 0;
+        soundElement.play().catch(error => {
+            console.log('사운드 재생 실패:', error);
+        });
+    } catch (error) {
+        console.log('사운드 재생 중 오류:', error);
+    }
+}
+
+// 폭발 효과음 재생을 위한 전용 함수 (중복 재생 방지)
+function playExplosionSoundSafe(volume = 0.36, isBoss = false) {
+    if (!explosionSound) return;
+    
+    const currentTime = Date.now();
+    if (currentTime - lastExplosionSoundTime < explosionSoundCooldown) {
+        return; // 쿨다운 중이면 재생하지 않음
+    }
+    
+    try {
+        explosionSound.currentTime = 0;
+        explosionSound.volume = clampVolume(volume);
+        explosionSound.play().catch(error => {
+            console.log('폭발음 재생 실패:', error);
+        });
+        lastExplosionSoundTime = currentTime;
+    } catch (error) {
+        console.log('폭발음 재생 중 오류:', error);
+    }
+}
 let isLifeBlinking = false;
 let lastLifeCount = 5; // 이전 목숨 수
 
@@ -1569,7 +1614,8 @@ window.addEventListener('DOMContentLoaded', () => {
                     console.log(`${id} 경로 변경 시도: ${possiblePaths[currentPathIndex]}`);
                     audio.src = possiblePaths[currentPathIndex];
                 } else {
-                    console.error(`${id} 모든 경로 시도 실패`);
+                    console.warn(`${id} 모든 경로 시도 실패 - 사운드 없이 게임 계속 실행`);
+                    // 사운드 파일이 없어도 게임은 계속 실행
                 }
             };
             
@@ -2289,11 +2335,7 @@ function handleCollision() {
             warningSound.currentTime = 0;
             warningSound.volume = clampVolume(0.18);   // 0.3 * 0.6
             applyGlobalVolume();
-            warningSound.play().then(() => {
-                console.log('경고음 재생 성공!');
-            }).catch(error => {
-                console.log('경고음 재생 실패:', error);
-            });
+            safePlaySound(warningSound, 0.18);
         } else {
             console.log('경고음 요소를 찾을 수 없습니다. 재초기화 시도...');
             
@@ -2305,11 +2347,7 @@ function handleCollision() {
                     warningSound.currentTime = 0;
                     warningSound.volume = clampVolume(0.18);   // 0.3 * 0.6
                     applyGlobalVolume();
-                    warningSound.play().then(() => {
-                        console.log('경고음 재생 성공! (재초기화 후)');
-                    }).catch(error => {
-                        console.log('경고음 재생 실패 (재초기화 후):', error);
-                    });
+                    safePlaySound(warningSound, 0.18);
                 } else {
                     console.log('경고음 요소를 여전히 찾을 수 없습니다.');
                 }
@@ -2348,12 +2386,7 @@ function handleCollision() {
         collisionSound.currentTime = 0;
         collisionSound.volume = clampVolume(0.3);   // 0.5 * 0.6
         // 폭발음으로 변경
-        explosionSound.currentTime = 0;
-        explosionSound.volume = clampVolume(0.36);  // 0.6 * 0.6
-        applyGlobalVolume();
-        explosionSound.play().catch(error => {
-            console.log('오디오 재생 실패:', error);
-        });
+        playExplosionSoundSafe(0.36);
         lastCollisionTime = currentTime;
     }
     
@@ -2397,11 +2430,7 @@ function handleCollision() {
         }
         
         // 게임 오버 시 폭발음 재생
-        applyGlobalVolume();
-        explosionSound.currentTime = 0;
-        explosionSound.play().catch(error => {
-            console.log('오디오 재생 실패:', error);
-        });
+        playExplosionSoundSafe(0.36);
     }
 }
 
@@ -3357,9 +3386,7 @@ function handleSnakePattern() {
                         // 뱀 패턴 파괴: shootSound
                         applyGlobalVolume();
                         shootSound.currentTime = 0;
-                        shootSound.play().catch(error => {
-                            console.log('오디오 재생 실패:', error);
-                        });
+                        safePlaySound(shootSound);
                         
                         // 즉시 제거 - 페이드아웃 효과 제거
                         enemy.isHit = true;
@@ -3491,12 +3518,7 @@ function checkEnemyCollisions(enemy) {
                     
                     // 특수 무기로 보스 파괴 시 폭발음 재생 (볼륨 2배)
                     console.log('특수무기로 보스 파괴 폭발음 재생 시도');
-                    applyGlobalVolume();
-                    explosionSound.currentTime = 0;
-                    explosionSound.volume = clampVolume(0.72); // 0.36 * 2 = 0.72
-                    explosionSound.play().catch(error => {
-                        console.log('특수무기로 보스 파괴 폭발음 재생 실패:', error);
-                    });
+                    playExplosionSoundSafe(0.72, true);
                     
                     bossActive = false;
                     return false;
@@ -3570,12 +3592,7 @@ function checkEnemyCollisions(enemy) {
                     
                     // 보스 파괴 시 폭발음 재생 (볼륨 2배)
                     console.log('보스 파괴 폭발음 재생 시도');
-                    applyGlobalVolume();
-                    explosionSound.currentTime = 0;
-                    explosionSound.volume = clampVolume(0.72); // 0.36 * 2 = 0.72
-                    explosionSound.play().catch(error => {
-                        console.log('보스 파괴 폭발음 재생 실패:', error);
-                    });
+                    playExplosionSoundSafe(0.72, true);
                 }
                 
                 // 보스 피격음 재생 (최적화: 중복 재생 방지)
@@ -4492,11 +4509,7 @@ function handleBullets() {
                 // 폭발음 재생 (최적화: 중복 재생 방지)
                 const currentTime = Date.now();
                 if (currentTime - lastExplosionTime > 200) {
-                    applyGlobalVolume();
-                    explosionSound.currentTime = 0;
-                    explosionSound.play().catch(error => {
-                        console.log('오디오 재생 실패:', error);
-                    });
+                    playExplosionSoundSafe(0.36);
                     lastExplosionTime = currentTime;
                 }
                 return false;
@@ -4580,12 +4593,7 @@ function handleBullets() {
                     
                     // 폭발음 재생 (볼륨 2배)
                     console.log('방어막 적 파괴 폭발음 재생 시도');
-                    applyGlobalVolume();
-                    explosionSound.currentTime = 0;
-                    explosionSound.volume = clampVolume(0.72); // 0.36 * 2 = 0.72
-                    explosionSound.play().catch(error => {
-                        console.log('방어막 적 파괴 폭발음 재생 실패:', error);
-                    });
+                    playExplosionSoundSafe(0.72, true);
                     
                     // 점수 보상 (방어막 적은 더 높은 점수)
                     updateScore(100);
@@ -6269,10 +6277,14 @@ function clampVolume(volume) {
 }
 
 function applyGlobalVolume() {
-    const vol = isMuted ? 0 : clampVolume(globalVolume);
-    shootSound.volume = vol;
-    explosionSound.volume = vol;
-    collisionSound.volume = vol;
+    // 전역 볼륨은 음소거 상태만 적용하고, 개별 볼륨은 유지
+    if (isMuted) {
+        if (shootSound) shootSound.volume = 0;
+        if (explosionSound) explosionSound.volume = 0;
+        if (collisionSound) collisionSound.volume = 0;
+        if (warningSound) warningSound.volume = 0;
+    }
+    // 음소거가 아닌 경우에는 개별 볼륨 설정을 유지
 }
 
 function playExplosionSound(isSnakePattern = false) {
@@ -6281,28 +6293,9 @@ function playExplosionSound(isSnakePattern = false) {
         return; // 50% 확률로 사운드 스킵
     }
     
-    const currentTime = Date.now();
-    let volumeMultiplier = 1.0;
-    
-    if (isSnakePattern) {
-        volumeMultiplier = SNAKE_EXPLOSION_VOLUME_MULTIPLIER;
-    }
-    
-    if (currentTime - lastExplosionTime < EXPLOSION_COOLDOWN) {
-        // 연속 재생 시 볼륨 감소
-        const decayedVolume = globalVolume * Math.pow(VOLUME_DECAY, 
-            Math.floor((currentTime - lastExplosionTime) / EXPLOSION_COOLDOWN));
-        explosionSound.volume = isMuted ? 0 : clampVolume(decayedVolume * volumeMultiplier);
-    } else {
-        // 일반 재생
-        explosionSound.volume = isMuted ? 0 : clampVolume(globalVolume * volumeMultiplier);
-    }
-    
-    explosionSound.currentTime = 0;
-    explosionSound.play().catch(error => {
-        console.log('오디오 재생 실패:', error);
-    });
-    lastExplosionTime = currentTime;
+    // 새로운 안전한 폭발음 재생 함수 사용
+    const volume = isSnakePattern ? 0.54 : 0.36; // 뱀 패턴은 1.5배 볼륨
+    playExplosionSoundSafe(volume, false);
 }
 
 // 게임 상태 변수 추가
