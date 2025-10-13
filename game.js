@@ -1082,8 +1082,8 @@ const ScoreManager = {
     async init() {
         try {
             console.log('ScoreManager 초기화 시작');
-            // Electron IPC를 통해 점수 로드
-            highScore = await window.electron.ipcRenderer.invoke('load-score');
+            // IndexedDB를 통해 점수 로드
+            highScore = await this.loadScoreFromIndexedDB();
             
             // 현재 점수 초기화
             score = 0;
@@ -1100,11 +1100,9 @@ const ScoreManager = {
         try {
             if (score > highScore) {
                 highScore = score;
-                // Electron IPC를 통해 점수 저장
-                const saved = await window.electron.ipcRenderer.invoke('save-score', highScore);
-                if (saved) {
-                    console.log('점수 저장 성공:', highScore);
-                }
+                // IndexedDB를 통해 점수 저장
+                await this.saveScoreToIndexedDB(highScore);
+                console.log('점수 저장 성공:', highScore);
             }
         } catch (error) {
             console.error('점수 저장 실패:', error);
@@ -1113,8 +1111,8 @@ const ScoreManager = {
 
     async getHighScore() {
         try {
-            // Electron IPC를 통해 점수 로드
-            return await window.electron.ipcRenderer.invoke('load-score');
+            // IndexedDB를 통해 점수 로드
+            return await this.loadScoreFromIndexedDB();
         } catch (error) {
             console.error('최고 점수 로드 실패:', error);
             return 0;
@@ -1191,16 +1189,6 @@ const ScoreManager = {
                 console.log('ScoreManager IndexedDB 리셋 완료');
             } catch (e) {
                 console.warn('ScoreManager IndexedDB 리셋 실패:', e);
-            }
-            
-            // Electron IPC 리셋 (Electron 환경에서만)
-            try {
-                if (window.electron && window.electron.ipcRenderer) {
-                    await window.electron.ipcRenderer.invoke('reset-score');
-                    console.log('ScoreManager Electron IPC 리셋 완료');
-                }
-            } catch (e) {
-                console.warn('ScoreManager Electron IPC 리셋 실패:', e);
             }
             
             // 게임 변수들 리셋
@@ -4110,10 +4098,10 @@ window.addEventListener('load', async () => {
     console.log('페이지 로드 완료');
     
     try {
-        // 버전 정보 로드 - Electron 환경에서는 package.json 접근이 제한적이므로 기본값 사용
+        // 버전 정보 로드
         try {
-            // Electron 환경에서는 package.json에 직접 접근할 수 없으므로 기본값 사용
-            gameVersion = '1.0.0-202506161826'; // package.json의 현재 버전으로 설정
+            // 게임 버전 설정
+            gameVersion = '1.0.0-202506161826';
             console.log('버전 정보 로드 성공:', gameVersion);
         } catch (e) {
             console.warn('버전 정보 로드 실패:', e);
@@ -6372,19 +6360,6 @@ function handleGameInput(e) {
                 });
             } catch (e) {
                 console.warn('IndexedDB 리셋 실패:', e);
-            }
-            
-            // Electron IPC 리셋 (Electron 환경에서만)
-            try {
-                if (window.electron && window.electron.ipcRenderer) {
-                    window.electron.ipcRenderer.invoke('reset-score').then(() => {
-                        console.log('Electron IPC 리셋 완료');
-                    }).catch(e => {
-                        console.warn('Electron IPC 리셋 실패:', e);
-                    });
-                }
-            } catch (e) {
-                console.warn('Electron IPC 리셋 실패:', e);
             }
             
             alert('최고 점수가 리셋되었습니다.');
