@@ -7555,8 +7555,8 @@ function setupTouchDragControls() {
         }
         
         // 터치한 위치로 플레이어 즉시 이동 (터치 지점과 플레이어 중심점의 거리를 일정하게 유지)
-        let newX = touchX - player.width / 6; // 터치 지점을 기준으로 플레이어 중심을 왼쪽으로 조정하여 일정한 거리 유지 (50% 증가)
-        let newY = touchY - player.height * 1.2; // 비행기 꼬리 부분으로 조정 (꼬리가 터치 지점에 오도록) (50% 증가)
+        let newX = touchX - player.width / 8; // 터치 지점을 기준으로 플레이어 중심을 왼쪽으로 조정 (거리 단축)
+        let newY = touchY - player.height * 0.8; // 비행기 꼬리 부분으로 조정 (거리 단축)
         
         // 경계 제한 - 모바일용 캔버스 크기(392x700)로 제한
         const canvasWidth = 392;
@@ -7611,8 +7611,8 @@ function setupTouchDragControls() {
         const touchY = touch.clientY - rect.top;
         
         // 터치한 위치로 플레이어 즉시 이동 (터치 지점과 플레이어 중심점의 거리를 일정하게 유지)
-        let newX = touchX - player.width / 6; // 터치 지점을 기준으로 플레이어 중심을 왼쪽으로 조정하여 일정한 거리 유지 (50% 증가)
-        let newY = touchY - player.height * 1.2; // 비행기 꼬리 부분으로 조정 (꼬리가 터치 지점에 오도록) (50% 증가)
+        let newX = touchX - player.width / 8; // 터치 지점을 기준으로 플레이어 중심을 왼쪽으로 조정 (거리 단축)
+        let newY = touchY - player.height * 0.8; // 비행기 꼬리 부분으로 조정 (거리 단축)
         
         // 경계 제한 - 모바일용 캔버스 크기로 제한
         const canvasWidth = CANVAS_WIDTH;
