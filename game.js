@@ -583,7 +583,7 @@ function safePlaySound(soundElement, volume = null) {
 }
 
 // 폭발 효과음 재생을 위한 전용 함수 (중복 재생 방지)
-function playExplosionSoundSafe(volume = 0.36, isBoss = false) {
+function playExplosionSoundSafe(volume = 1.0, isBoss = false) {
     if (!explosionSound) return;
     
     const currentTime = Date.now();
@@ -1491,11 +1491,11 @@ async function initializeGame() {
                 if (shootSound && explosionSound && collisionSound && warningSound) {
                     console.log('모든 오디오 요소 로드 완료!');
                     
-                    // 사운드 볼륨 설정 (60%로 감소)
-                    shootSound.volume = clampVolume(0.24);      // 0.4 * 0.6
-                    explosionSound.volume = clampVolume(0.36);  // 0.6 * 0.6
-                    collisionSound.volume = clampVolume(0.3);   // 0.5 * 0.6
-                    warningSound.volume = clampVolume(0.18);   // 0.3 * 0.6
+                    // 사운드 볼륨 설정 (최대 볼륨)
+                    shootSound.volume = clampVolume(1.0);      // 최대 볼륨
+                    explosionSound.volume = clampVolume(1.0);  // 최대 볼륨
+                    collisionSound.volume = clampVolume(1.0);   // 최대 볼륨
+                    warningSound.volume = clampVolume(1.0);   // 최대 볼륨
                     
                     // 충돌 사운드 길이 제어 설정
                     collisionSound.addEventListener('loadedmetadata', () => {
@@ -1650,18 +1650,18 @@ window.addEventListener('DOMContentLoaded', () => {
             warningSound: !!warningSound
         });
         
-        // 사운드 볼륨 설정 (60%로 감소)
+        // 사운드 볼륨 설정 (최대 볼륨)
         if (shootSound) {
-            shootSound.volume = clampVolume(0.24);      // 0.4 * 0.6
+            shootSound.volume = clampVolume(1.0);      // 최대 볼륨
         }
         if (explosionSound) {
-            explosionSound.volume = clampVolume(0.36);  // 0.6 * 0.6
+            explosionSound.volume = clampVolume(1.0);  // 최대 볼륨
         }
         if (collisionSound) {
-            collisionSound.volume = clampVolume(0.3);   // 0.5 * 0.6
+            collisionSound.volume = clampVolume(1.0);   // 최대 볼륨
         }
         if (warningSound) {
-            warningSound.volume = clampVolume(0.18);   // 0.3 * 0.6
+            warningSound.volume = clampVolume(1.0);   // 최대 볼륨
         }
         
         console.log('오디오 요소 초기화 완료!');
@@ -1820,11 +1820,11 @@ function restartGame() {
                 if (shootSound && explosionSound && collisionSound && warningSound) {
                     console.log('게임 재시작 - 모든 오디오 요소 로드 완료!');
                     
-                    // 사운드 볼륨 설정 (60%로 감소)
-                    shootSound.volume = clampVolume(0.24);      // 0.4 * 0.6
-                    explosionSound.volume = clampVolume(0.36);  // 0.6 * 0.6
-                    collisionSound.volume = clampVolume(0.3);   // 0.5 * 0.6
-                    warningSound.volume = clampVolume(0.18);   // 0.3 * 0.6
+                    // 사운드 볼륨 설정 (최대 볼륨)
+                    shootSound.volume = clampVolume(1.0);      // 최대 볼륨
+                    explosionSound.volume = clampVolume(1.0);  // 최대 볼륨
+                    collisionSound.volume = clampVolume(1.0);   // 최대 볼륨
+                    warningSound.volume = clampVolume(1.0);   // 최대 볼륨
                     
                     return true;
                 }
@@ -2333,9 +2333,9 @@ function handleCollision() {
         if (warningSound) {
             console.log('경고음 요소 발견, 재생 시도...');
             warningSound.currentTime = 0;
-            warningSound.volume = clampVolume(0.18);   // 0.3 * 0.6
+            warningSound.volume = clampVolume(1.0);   // 최대 볼륨
             applyGlobalVolume();
-            safePlaySound(warningSound, 0.18);
+            safePlaySound(warningSound, 1.0);
         } else {
             console.log('경고음 요소를 찾을 수 없습니다. 재초기화 시도...');
             
@@ -2345,9 +2345,9 @@ function handleCollision() {
                 if (warningSound) {
                     console.log('경고음 요소 재발견! 재생 시도...');
                     warningSound.currentTime = 0;
-                    warningSound.volume = clampVolume(0.18);   // 0.3 * 0.6
+                    warningSound.volume = clampVolume(1.0);   // 최대 볼륨
                     applyGlobalVolume();
-                    safePlaySound(warningSound, 0.18);
+                    safePlaySound(warningSound, 1.0);
                 } else {
                     console.log('경고음 요소를 여전히 찾을 수 없습니다.');
                 }
@@ -2384,9 +2384,9 @@ function handleCollision() {
     
     if (currentTime - lastCollisionTime >= collisionSoundCooldown) {
         collisionSound.currentTime = 0;
-        collisionSound.volume = clampVolume(0.3);   // 0.5 * 0.6
+        collisionSound.volume = clampVolume(1.0);   // 최대 볼륨
         // 폭발음으로 변경
-        playExplosionSoundSafe(0.36);
+        playExplosionSoundSafe(1.0);
         lastCollisionTime = currentTime;
     }
     
@@ -2430,7 +2430,7 @@ function handleCollision() {
         }
         
         // 게임 오버 시 폭발음 재생
-        playExplosionSoundSafe(0.36);
+        playExplosionSoundSafe(1.0);
     }
 }
 
@@ -4509,7 +4509,7 @@ function handleBullets() {
                 // 폭발음 재생 (최적화: 중복 재생 방지)
                 const currentTime = Date.now();
                 if (currentTime - lastExplosionTime > 200) {
-                    playExplosionSoundSafe(0.36);
+                    playExplosionSoundSafe(1.0);
                     lastExplosionTime = currentTime;
                 }
                 return false;
@@ -6294,7 +6294,7 @@ function playExplosionSound(isSnakePattern = false) {
     }
     
     // 새로운 안전한 폭발음 재생 함수 사용
-    const volume = isSnakePattern ? 0.54 : 0.36; // 뱀 패턴은 1.5배 볼륨
+    const volume = isSnakePattern ? 1.0 : 1.0; // 최대 볼륨
     playExplosionSoundSafe(volume, false);
 }
 
@@ -6715,7 +6715,7 @@ window.addEventListener('load', () => {
             for (let audio of allAudioElements) {
                 if (audio.id === 'warningSound') {
                     warningSound = audio;
-                    warningSound.volume = clampVolume(0.18);   // 0.3 * 0.6
+                    warningSound.volume = clampVolume(1.0);   // 최대 볼륨
                     console.log('경고음 요소 강제 발견 및 설정 완료!');
                     break;
                 }
