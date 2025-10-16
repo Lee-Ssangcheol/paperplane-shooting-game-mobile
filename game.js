@@ -3383,7 +3383,7 @@ function handleSnakePattern() {
                             enemy.y + enemy.height/2
                         ));
                         updateScore(20); //뱀 패턴 비행기 한 대당 획득 점수
-                        // 뱀 패턴 파괴: shootSound
+                        // 뱀 패턴 파괴: shootSound (폭발음 제거)
                         applyGlobalVolume();
                         shootSound.currentTime = 0;
                         safePlaySound(shootSound);
@@ -4504,14 +4504,9 @@ function handleBullets() {
         // 다이나마이트와 총알 충돌 체크 (최적화: 중복 재생 방지)
         dynamites = dynamites.filter(dynamite => {
             if (checkCollision(bullet, dynamite)) {
-                // 다이나마이트 폭발
+                // 다이나마이트 폭발 (폭발음 제거)
                 explosions.push(new Explosion(dynamite.x, dynamite.y, true));
-                // 폭발음 재생 (최적화: 중복 재생 방지)
-                const currentTime = Date.now();
-                if (currentTime - lastExplosionTime > 200) {
-                    playExplosionSoundSafe(1.0);
-                    lastExplosionTime = currentTime;
-                }
+                // 폭발음 재생 제거
                 return false;
             }
             return true;
@@ -5274,7 +5269,7 @@ function drawBossBullet(bullet) {
 
 // 하트 모양 그리기
 function drawHeart(bullet) {
-    const size = 20 / 2; // 작게 보이는 모양이므로 20픽셀로 고정
+    const size = 24 / 2; // 하트 모양을 더 크게 (24픽셀)
     ctx.beginPath();
     ctx.moveTo(0, size * 0.3);
     ctx.bezierCurveTo(-size * 0.5, -size * 0.3, -size, size * 0.2, 0, size);
@@ -5310,7 +5305,7 @@ function drawStar(bullet) {
 
 // 꽃 모양 그리기
 function drawFlower(bullet) {
-    const size = 20 / 2; // 작게 보이는 모양이므로 20픽셀로 고정
+    const size = 18 / 2; // 꽃 모양을 조금 작게 (18픽셀)
     const petals = 6;
     
     ctx.beginPath();
@@ -5631,7 +5626,7 @@ function drawGear(bullet) {
 // 방사능 표시 모양 그리기
 function drawRadiation(bullet) {
     console.log('drawRadiation 함수 호출됨');
-    const size = 20 / 2; // 작게 보이는 모양이므로 20픽셀로 고정
+    const size = 24 / 2; // 방사능 모양을 더 크게 (24픽셀)
     
     // 빨간색 삼각형 테두리 (이미지와 동일)
     ctx.strokeStyle = '#FF0000'; // 빨간색
