@@ -1775,7 +1775,7 @@ function restartGame() {
     spacePressTime = 0;
     fireDelay = 1200;
     continuousFireDelay = 50;
-    bulletSpeed = 12;
+        bulletSpeed = 12;
     baseBulletSize = 5.0;
     isContinuousFire = false;
     canFire = true;
@@ -5909,7 +5909,7 @@ let isSpacePressed = false;  // 스페이스바 누름 상태
 let spacePressTime = 0;  // 스페이스바를 처음 누른 시간
 let fireDelay = 1200;  // 기본 발사 딜레이 (끊어서 발사할 때 - 더 느리게)
 let continuousFireDelay = 50;  // 연속 발사 딜레이 (빠르게)
-let bulletSpeed = 12;  // 총알 속도
+let bulletSpeed = 14;  // 총알 속도
 let baseBulletSize = 5.0;  // 기본 총알 크기 (1.5배 증가)
 let isContinuousFire = false;  // 연속 발사 상태
 let canFire = true;  // 발사 가능 상태 추가
