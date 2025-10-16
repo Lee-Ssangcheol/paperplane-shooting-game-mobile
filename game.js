@@ -5144,11 +5144,14 @@ function createBossBullet(boss, angle, pattern = null, bulletType = 'normal') {
         bossBullets.splice(0, bossBullets.length - 40); // 오래된 보스 총알 10개 제거
     }
     
+    // 확산탄 크기를 18~20픽셀로 랜덤하게 설정
+    const bulletSize = Math.random() * 3 + 18; // 18~21 사이의 값 (18, 19, 20, 21)
+    
     const bullet = {
         x: boss.x + boss.width/2,
         y: boss.y + boss.height/2,
-        width: 18,
-        height: 18,
+        width: bulletSize,
+        height: bulletSize,
         speed: boss.bulletSpeed,
         angle: angle,
         isBossBullet: true,
@@ -5271,7 +5274,7 @@ function drawBossBullet(bullet) {
 
 // 하트 모양 그리기
 function drawHeart(bullet) {
-    const size = bullet.width / 2;
+    const size = 20 / 2; // 작게 보이는 모양이므로 20픽셀로 고정
     ctx.beginPath();
     ctx.moveTo(0, size * 0.3);
     ctx.bezierCurveTo(-size * 0.5, -size * 0.3, -size, size * 0.2, 0, size);
@@ -5282,7 +5285,7 @@ function drawHeart(bullet) {
 
 // 별 모양 그리기
 function drawStar(bullet) {
-    const size = bullet.width / 2;
+    const size = 20 / 2; // 작게 보이는 모양이므로 20픽셀로 고정
     const spikes = 5;
     const outerRadius = size;
     const innerRadius = size * 0.4;
@@ -5307,7 +5310,7 @@ function drawStar(bullet) {
 
 // 꽃 모양 그리기
 function drawFlower(bullet) {
-    const size = bullet.width / 2;
+    const size = 20 / 2; // 작게 보이는 모양이므로 20픽셀로 고정
     const petals = 6;
     
     ctx.beginPath();
@@ -5369,7 +5372,7 @@ function drawSpiral(bullet) {
 
 // 원 모양 그리기
 function drawCircle(bullet) {
-    const size = bullet.width / 2;
+    const size = bullet.width / 2; // 균형잡힌 모양이므로 원래 크기 사용
     ctx.beginPath();
     ctx.arc(0, 0, size, 0, Math.PI * 2);
     ctx.fill();
@@ -5418,14 +5421,14 @@ function drawChaos(bullet) {
 
 // 사각형 모양 그리기 (기본)
 function drawRectangle(bullet) {
-    const size = bullet.width / 2;
+    const size = bullet.width / 2; // 균형잡힌 모양이므로 원래 크기 사용
     ctx.fillRect(-size, -size, bullet.width, bullet.height);
     ctx.strokeRect(-size, -size, bullet.width, bullet.height);
 }
 
 // 눈 결정체 모양 그리기
 function drawSnowflake(bullet) {
-    const size = bullet.width / 2;
+    const size = 20 / 2; // 작게 보이는 모양이므로 20픽셀로 고정
     ctx.beginPath();
     
     // 중심에서 6방향으로 주 가지 그리기
@@ -5473,7 +5476,7 @@ function drawSnowflake(bullet) {
 
 // 바람개비 모양 그리기
 function drawPinwheel(bullet) {
-    const size = bullet.width / 2;
+    const size = 20 / 2; // 작게 보이는 모양이므로 20픽셀로 고정
     
     // 4개의 날개를 각각 그리기
     for (let i = 0; i < 4; i++) {
@@ -5493,7 +5496,7 @@ function drawPinwheel(bullet) {
 
 // 삼각형 모양 그리기
 function drawTriangle(bullet) {
-    const size = bullet.width / 2;
+    const size = bullet.width / 2; // 균형잡힌 모양이므로 원래 크기 사용
     ctx.beginPath();
     ctx.moveTo(0, -size);
     ctx.lineTo(-size * 0.866, size * 0.5);
@@ -5506,7 +5509,7 @@ function drawTriangle(bullet) {
 // 네잎 클로버 모양 그리기
 function drawClover(bullet) {
     console.log('drawClover 함수 호출됨');
-    const size = bullet.width / 2;
+    const size = 20 / 2; // 작게 보이는 모양이므로 20픽셀로 고정
     
     // 4개의 원형 잎을 각각 그리기
     for (let i = 0; i < 4; i++) {
@@ -5530,7 +5533,7 @@ function drawClover(bullet) {
 
 // 수레바퀴 모양 그리기
 function drawWheel(bullet) {
-    const size = bullet.width / 2;
+    const size = bullet.width / 2; // 균형잡힌 모양이므로 원래 크기 사용
     // 바퀴 테두리
     ctx.beginPath();
     ctx.arc(0, 0, size, 0, Math.PI * 2);
@@ -5550,7 +5553,7 @@ function drawWheel(bullet) {
 
 // 번개 모양 그리기
 function drawLightning(bullet) {
-    const size = bullet.width / 2;
+    const size = bullet.width / 2; // 균형잡힌 모양이므로 원래 크기 사용
     const thickness = 8; // 두께 유지
     
     ctx.lineWidth = thickness;
@@ -5582,7 +5585,7 @@ function drawLightning(bullet) {
 
 // 십자 모양 그리기
 function drawCross(bullet) {
-    const size = bullet.width / 2;
+    const size = bullet.width / 2; // 균형잡힌 모양이므로 원래 크기 사용
     const thickness = 6; // 두께를 3배로 증가 (기본 2에서 6으로)
     
     ctx.lineWidth = thickness;
@@ -5598,7 +5601,7 @@ function drawCross(bullet) {
 
 // 기어 모양 그리기
 function drawGear(bullet) {
-    const size = bullet.width / 2;
+    const size = 20 / 2; // 작게 보이는 모양이므로 20픽셀로 고정
     const teeth = 8;
     const innerRadius = size * 0.6;
     
@@ -5628,7 +5631,7 @@ function drawGear(bullet) {
 // 방사능 표시 모양 그리기
 function drawRadiation(bullet) {
     console.log('drawRadiation 함수 호출됨');
-    const size = bullet.width / 2;
+    const size = 20 / 2; // 작게 보이는 모양이므로 20픽셀로 고정
     
     // 빨간색 삼각형 테두리 (이미지와 동일)
     ctx.strokeStyle = '#FF0000'; // 빨간색
