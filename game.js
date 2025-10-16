@@ -2385,8 +2385,8 @@ function handleCollision() {
     if (currentTime - lastCollisionTime >= collisionSoundCooldown) {
         collisionSound.currentTime = 0;
         collisionSound.volume = clampVolume(1.0);   // 최대 볼륨
-        // 폭발음으로 변경
-        playExplosionSoundSafe(1.0);
+        // 경고음으로 변경 (폭발음 제거)
+        safePlaySound(collisionSound, 1.0);
         lastCollisionTime = currentTime;
     }
     
