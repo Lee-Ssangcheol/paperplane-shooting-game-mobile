@@ -4958,166 +4958,184 @@ function handleBossPattern(boss) {
 function executeBossPattern(boss, pattern, currentTime) {
     switch (pattern) {
         case BOSS_PATTERNS.SNOWFLAKE_SHOT:
-            if (currentTime - boss.lastShot >= 800) {
-                // 눈 결정체 모양으로 발사 (6방향)
-                for (let i = 0; i < 6; i++) {
-                    const angle = (Math.PI / 3) * i;
+            if (currentTime - boss.lastShot >= 600) { // 발사 간격 단축 (800 -> 600)
+                // 눈 결정체 모양으로 발사 (12방향으로 증가)
+                for (let i = 0; i < 12; i++) {
+                    const angle = (Math.PI / 6) * i + boss.patternAngle; // 회전 각도 추가
                     createBossBullet(boss, angle, 'snowflake_shot');
                 }
+                boss.patternAngle += Math.PI / 12; // 패턴 회전
                 boss.lastShot = currentTime;
             }
             break;
             
         case BOSS_PATTERNS.PINWHEEL_SHOT:
-            if (currentTime - boss.lastShot >= 600) {
-                // 바람개비 모양으로 발사 (4방향)
-                for (let i = 0; i < 4; i++) {
-                    const angle = (Math.PI / 2) * i;
+            if (currentTime - boss.lastShot >= 400) { // 발사 간격 단축 (600 -> 400)
+                // 바람개비 모양으로 발사 (8방향으로 증가)
+                for (let i = 0; i < 8; i++) {
+                    const angle = (Math.PI / 4) * i + boss.patternAngle; // 회전 각도 추가
                     createBossBullet(boss, angle, 'pinwheel_shot');
                 }
+                boss.patternAngle += Math.PI / 8; // 패턴 회전
                 boss.lastShot = currentTime;
             }
             break;
             
         case BOSS_PATTERNS.TRIANGLE_SHOT:
-            if (currentTime - boss.lastShot >= 700) {
-                // 삼각형 모양으로 발사 (3방향)
-                for (let i = 0; i < 3; i++) {
-                    const angle = (Math.PI * 2 / 3) * i;
+            if (currentTime - boss.lastShot >= 500) { // 발사 간격 단축 (700 -> 500)
+                // 삼각형 모양으로 발사 (6방향으로 증가)
+                for (let i = 0; i < 6; i++) {
+                    const angle = (Math.PI / 3) * i + boss.patternAngle; // 회전 각도 추가
                     createBossBullet(boss, angle, 'triangle_shot');
                 }
+                boss.patternAngle += Math.PI / 6; // 패턴 회전
                 boss.lastShot = currentTime;
             }
             break;
             
         case BOSS_PATTERNS.RECTANGLE_SHOT:
-            if (currentTime - boss.lastShot >= 500) {
-                // 정사각형 모양으로 발사 (4방향)
-                for (let i = 0; i < 4; i++) {
-                    const angle = (Math.PI / 2) * i;
+            if (currentTime - boss.lastShot >= 350) { // 발사 간격 단축 (500 -> 350)
+                // 정사각형 모양으로 발사 (8방향으로 증가)
+                for (let i = 0; i < 8; i++) {
+                    const angle = (Math.PI / 4) * i + boss.patternAngle; // 회전 각도 추가
                     createBossBullet(boss, angle, 'rectangle_shot');
                 }
+                boss.patternAngle += Math.PI / 8; // 패턴 회전
                 boss.lastShot = currentTime;
             }
             break;
             
         case BOSS_PATTERNS.CLOVER_SHOT:
-            if (currentTime - boss.lastShot >= 1000) {
-                // 네잎 클로버 모양으로 발사 (4방향)
+            if (currentTime - boss.lastShot >= 600) { // 발사 간격 단축 (1000 -> 600)
+                // 네잎 클로버 모양으로 발사 (8방향으로 증가)
                 console.log('네잎 클로버 패턴 실행');
-                for (let i = 0; i < 4; i++) {
-                    const angle = (Math.PI / 2) * i;
+                for (let i = 0; i < 8; i++) {
+                    const angle = (Math.PI / 4) * i + boss.patternAngle; // 회전 각도 추가
                     createBossBullet(boss, angle, 'clover_shot');
                 }
+                boss.patternAngle += Math.PI / 8; // 패턴 회전
                 boss.lastShot = currentTime;
             }
             break;
             
         case BOSS_PATTERNS.WHEEL_SHOT:
-            if (currentTime - boss.lastShot >= 400) {
-                // 수레바퀴 모양으로 발사 (8방향)
-                for (let i = 0; i < 8; i++) {
-                    const angle = (Math.PI / 4) * i;
+            if (currentTime - boss.lastShot >= 300) { // 발사 간격 단축 (400 -> 300)
+                // 수레바퀴 모양으로 발사 (12방향으로 증가)
+                for (let i = 0; i < 12; i++) {
+                    const angle = (Math.PI / 6) * i + boss.patternAngle; // 회전 각도 추가
                     createBossBullet(boss, angle, 'wheel_shot');
                 }
+                boss.patternAngle += Math.PI / 12; // 패턴 회전
                 boss.lastShot = currentTime;
             }
             break;
             
         case BOSS_PATTERNS.LIGHTNING_SHOT:
-            if (currentTime - boss.lastShot >= 300) {
-                // 번개 모양으로 발사 (3방향)
-                for (let i = 0; i < 3; i++) {
-                    const angle = (Math.PI * 2 / 3) * i;
+            if (currentTime - boss.lastShot >= 200) { // 발사 간격 단축 (300 -> 200)
+                // 번개 모양으로 발사 (6방향으로 증가)
+                for (let i = 0; i < 6; i++) {
+                    const angle = (Math.PI / 3) * i + boss.patternAngle; // 회전 각도 추가
                     createBossBullet(boss, angle, 'lightning_shot');
                 }
+                boss.patternAngle += Math.PI / 6; // 패턴 회전
                 boss.lastShot = currentTime;
             }
             break;
             
         case BOSS_PATTERNS.CIRCLE_SHOT:
-            if (currentTime - boss.lastShot >= 500) {
-                // 원형으로 발사 (8방향)
-                for (let i = 0; i < 8; i++) {
-                    const angle = (Math.PI * 2 / 8) * i;
+            if (currentTime - boss.lastShot >= 300) { // 발사 간격 단축 (500 -> 300)
+                // 원형으로 발사 (16방향으로 증가)
+                for (let i = 0; i < 16; i++) {
+                    const angle = (Math.PI / 8) * i + boss.patternAngle; // 회전 각도 추가
                     createBossBullet(boss, angle, 'circle_shot');
                 }
+                boss.patternAngle += Math.PI / 16; // 패턴 회전
                 boss.lastShot = currentTime;
             }
             break;
             
         case BOSS_PATTERNS.CROSS_SHOT:
-            if (currentTime - boss.lastShot >= 800) {
-                // 십자 모양으로 발사 (4방향)
-                for (let i = 0; i < 4; i++) {
-                    const angle = (Math.PI / 2) * i;
+            if (currentTime - boss.lastShot >= 400) { // 발사 간격 단축 (800 -> 400)
+                // 십자 모양으로 발사 (8방향으로 증가)
+                for (let i = 0; i < 8; i++) {
+                    const angle = (Math.PI / 4) * i + boss.patternAngle; // 회전 각도 추가
                     createBossBullet(boss, angle, 'cross_shot');
                 }
+                boss.patternAngle += Math.PI / 8; // 패턴 회전
                 boss.lastShot = currentTime;
             }
             break;
             
         case BOSS_PATTERNS.HEART_SHOT:
-            if (currentTime - boss.lastShot >= 1200) {
-                // 하트 모양으로 발사 (8개 총알)
+            if (currentTime - boss.lastShot >= 600) { // 발사 간격 단축 (1200 -> 600)
+                // 하트 모양으로 발사 (12개 총알로 증가)
                 const heartAngles = [
                     Math.PI / 2,           // 위
-                    Math.PI / 2 + Math.PI / 6,  // 위-오른쪽
-                    Math.PI / 2 - Math.PI / 6,  // 위-왼쪽
-                    Math.PI / 2 + Math.PI / 3,  // 오른쪽
-                    Math.PI / 2 - Math.PI / 3,  // 왼쪽
-                    Math.PI / 2 + Math.PI / 2,  // 아래-오른쪽
-                    Math.PI / 2 - Math.PI / 2,  // 아래-왼쪽
+                    Math.PI / 2 + Math.PI / 12,  // 위-오른쪽
+                    Math.PI / 2 - Math.PI / 12,  // 위-왼쪽
+                    Math.PI / 2 + Math.PI / 6,   // 오른쪽-위
+                    Math.PI / 2 - Math.PI / 6,   // 왼쪽-위
+                    Math.PI / 2 + Math.PI / 4,   // 오른쪽
+                    Math.PI / 2 - Math.PI / 4,   // 왼쪽
+                    Math.PI / 2 + Math.PI / 3,   // 오른쪽-아래
+                    Math.PI / 2 - Math.PI / 3,   // 왼쪽-아래
+                    Math.PI / 2 + Math.PI / 2,   // 아래-오른쪽
+                    Math.PI / 2 - Math.PI / 2,   // 아래-왼쪽
                     Math.PI / 2 + Math.PI       // 아래
                 ];
                 heartAngles.forEach(angle => {
-                    createBossBullet(boss, angle, 'heart_shot');
+                    createBossBullet(boss, angle + boss.patternAngle, 'heart_shot'); // 회전 각도 추가
                 });
+                boss.patternAngle += Math.PI / 12; // 패턴 회전
                 boss.lastShot = currentTime;
             }
             break;
             
         case BOSS_PATTERNS.STAR_SHOT:
-            if (currentTime - boss.lastShot >= 600) {
-                // 별 모양으로 발사 (5방향)
-                for (let i = 0; i < 5; i++) {
-                    const angle = (Math.PI * 2 / 5) * i;
+            if (currentTime - boss.lastShot >= 400) { // 발사 간격 단축 (600 -> 400)
+                // 별 모양으로 발사 (10방향으로 증가)
+                for (let i = 0; i < 10; i++) {
+                    const angle = (Math.PI / 5) * i + boss.patternAngle; // 회전 각도 추가
                     createBossBullet(boss, angle, 'star_shot');
                 }
+                boss.patternAngle += Math.PI / 10; // 패턴 회전
                 boss.lastShot = currentTime;
             }
             break;
             
         case BOSS_PATTERNS.FLOWER_SHOT:
-            if (currentTime - boss.lastShot >= 900) {
-                // 꽃 모양으로 발사 (6방향)
-                for (let i = 0; i < 6; i++) {
-                    const angle = (Math.PI / 3) * i;
+            if (currentTime - boss.lastShot >= 500) { // 발사 간격 단축 (900 -> 500)
+                // 꽃 모양으로 발사 (12방향으로 증가)
+                for (let i = 0; i < 12; i++) {
+                    const angle = (Math.PI / 6) * i + boss.patternAngle; // 회전 각도 추가
                     createBossBullet(boss, angle, 'flower_shot');
                 }
+                boss.patternAngle += Math.PI / 12; // 패턴 회전
                 boss.lastShot = currentTime;
             }
             break;
             
         case BOSS_PATTERNS.GEAR_SHOT:
-            if (currentTime - boss.lastShot >= 400) {
-                // 기어 모양으로 발사 (8방향)
-                for (let i = 0; i < 8; i++) {
-                    const angle = (Math.PI / 4) * i;
+            if (currentTime - boss.lastShot >= 250) { // 발사 간격 단축 (400 -> 250)
+                // 기어 모양으로 발사 (16방향으로 증가)
+                for (let i = 0; i < 16; i++) {
+                    const angle = (Math.PI / 8) * i + boss.patternAngle; // 회전 각도 추가
                     createBossBullet(boss, angle, 'gear_shot');
                 }
+                boss.patternAngle += Math.PI / 16; // 패턴 회전
                 boss.lastShot = currentTime;
             }
             break;
             
         case BOSS_PATTERNS.RADIATION_SHOT:
-            if (currentTime - boss.lastShot >= 500) {
-                // 방사능 표시 모양으로 발사 (3방향)
+            if (currentTime - boss.lastShot >= 300) { // 발사 간격 단축 (500 -> 300)
+                // 방사능 표시 모양으로 발사 (6방향으로 증가)
                 console.log('방사능 패턴 실행');
-                for (let i = 0; i < 3; i++) {
-                    const angle = (Math.PI * 2 / 3) * i;
+                for (let i = 0; i < 6; i++) {
+                    const angle = (Math.PI / 3) * i + boss.patternAngle; // 회전 각도 추가
                     createBossBullet(boss, angle, 'radiation_shot');
                 }
+                boss.patternAngle += Math.PI / 6; // 패턴 회전
                 boss.lastShot = currentTime;
             }
             break;
