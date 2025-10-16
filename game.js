@@ -5269,7 +5269,7 @@ function drawBossBullet(bullet) {
 
 // 하트 모양 그리기
 function drawHeart(bullet) {
-    const size = 24 / 2; // 하트 모양을 더 크게 (24픽셀)
+    const size = 26 / 2; // 하트 모양을 더 크게 (26픽셀)
     ctx.beginPath();
     ctx.moveTo(0, size * 0.3);
     ctx.bezierCurveTo(-size * 0.5, -size * 0.3, -size, size * 0.2, 0, size);
@@ -5471,7 +5471,7 @@ function drawSnowflake(bullet) {
 
 // 바람개비 모양 그리기
 function drawPinwheel(bullet) {
-    const size = 20 / 2; // 작게 보이는 모양이므로 20픽셀로 고정
+    const size = 22 / 2; // 바람개비 모양을 더 크게 (22픽셀)
     
     // 4개의 날개를 각각 그리기
     for (let i = 0; i < 4; i++) {
@@ -5626,7 +5626,7 @@ function drawGear(bullet) {
 // 방사능 표시 모양 그리기
 function drawRadiation(bullet) {
     console.log('drawRadiation 함수 호출됨');
-    const size = 24 / 2; // 방사능 모양을 더 크게 (24픽셀)
+    const size = 26 / 2; // 방사능 모양을 더 크게 (26픽셀)
     
     // 빨간색 삼각형 테두리 (이미지와 동일)
     ctx.strokeStyle = '#FF0000'; // 빨간색
