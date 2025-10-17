@@ -1688,195 +1688,6 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// 게임 재시작 함수 수정
-function restartGame() {
-    // 게임 상태 초기화
-    isGameActive = true;
-    isSoundControlActive = false;
-    isGameOver = false;
-    
-    console.log('게임 재시작 - 재시작 전 최고 점수:', highScore);
-    
-    // 현재 최고 점수 저장
-    const currentHighScore = Math.max(score, highScore);
-    if (currentHighScore > 0) {
-        saveHighScoreDirectly(currentHighScore, 'restartGame');
-    }
-    
-    // === 모든 게임 요소 완전 초기화 ===
-    
-    // 1. 충돌 및 게임 상태 초기화
-    collisionCount = 0;
-    maxLives = 5;  // 최대 목숨 초기화
-    hasSecondPlane = false;
-    secondPlaneTimer = 0;
-    
-    // 2. 모든 배열 완전 초기화
-    enemies = [];           // 적 비행기 배열 초기화
-    bullets = [];           // 총알 배열 초기화
-    explosions = [];        // 폭발 효과 배열 초기화
-    bombs = [];             // 폭탄 배열 초기화
-    dynamites = [];         // 다이나마이트 배열 초기화
-    powerUps = [];          // 파워업 배열 초기화
-    snakeEnemies = [];      // 뱀 패턴 적 배열 초기화
-    snakeGroups = [];       // 뱀 패턴 그룹 배열 초기화
-    enemyMissiles = [];     // 적 미사일 배열 초기화
-    shieldedEnemies = [];   // 방어막 적 배열 초기화
-    
-    // 3. 플레이어 위치 초기화 - 모바일용 캔버스 크기(392x700)로 제한
-    const canvasWidth = CANVAS_WIDTH;
-    const canvasHeight = CANVAS_HEIGHT;
-    player.x = canvasWidth / 2;
-    player.y = canvasHeight - player.height - 10;  // 10에서 player.height + 10으로 변경하여 캔버스 하단에서 10픽셀 위에 위치
-    secondPlane.x = canvasWidth / 2 - 60;
-    secondPlane.y = canvasHeight - secondPlane.height - 10;  // 10에서 secondPlane.height + 10으로 변경하여 캔버스 하단에서 10픽셀 위에 위치
-    
-    // 4. 게임 타이머 및 상태 초기화
-    gameOverStartTime = null;
-    flashTimer = 0;
-    lastEnemySpawnTime = 0;
-    lastShieldedEnemySpawnTime = 0;
-    lastBossSpawnTime = Date.now();
-    
-    // 5. 점수 및 레벨 초기화
-    score = 0;
-    levelScore = 0;
-    scoreForSpread = 0;
-    gameLevel = 1;
-    levelUpScore = 1000;
-    
-    // 6. 특수무기 관련 상태 초기화
-    specialWeaponCharged = false;
-    specialWeaponCharge = 0;
-    specialWeaponCount = 0;
-    specialWeaponUsedCount = 0;
-    
-    // 7. 보스 관련 상태 완전 초기화
-    bossActive = false;
-    bossHealth = 0;
-    bossDestroyed = false;
-    bossPattern = 0;
-       
-    // 8. 뱀 패턴 상태 초기화
-    isSnakePatternActive = false;
-    snakePatternTimer = 0;
-    snakePatternInterval = 0;
-    lastSnakeGroupTime = 0;
-    
-    // 9. 파워업 상태 초기화
-    hasSpreadShot = false;
-    hasShield = false;
-    damageMultiplier = 1;
-    fireRateMultiplier = 1;
-    
-    // 10. 발사 관련 상태 초기화
-    lastFireTime = 0;
-    isSpacePressed = false;
-    spacePressTime = 0;
-    fireDelay = 1200;
-    continuousFireDelay = 50;
-        bulletSpeed = 12;
-    baseBulletSize = 5.0;
-    isContinuousFire = false;
-    canFire = true;
-    lastReleaseTime = 0;
-    singleShotCooldown = 500;
-    minPressDuration = 200;
-    minReleaseDuration = 100;
-    
-    // 11. 키보드 입력 상태 초기화
-    Object.keys(keys).forEach(key => {
-        keys[key] = false;
-    });
-    
-    // 12. 게임 화면 상태 초기화
-    isStartScreen = false;
-    isPaused = false;
-    
-            // 13. 사운드 관련 상태 초기화
-        lastCollisionTime = 0;
-        lastExplosionTime = 0;
-        
-        // 14. 오디오 요소 초기화 (강화된 안전장치)
-        try {
-            // DOM이 완전히 로드될 때까지 대기
-            let retryCount = 0;
-            const maxRetries = 10;
-            
-            const initializeAudio = () => {
-                shootSound = document.getElementById('shootSound');
-                explosionSound = document.getElementById('explosionSound');
-                collisionSound = document.getElementById('collisionSound');
-                warningSound = document.getElementById('warningSound');
-                
-                console.log(`게임 재시작 - 오디오 초기화 시도 ${retryCount + 1}/${maxRetries}:`, {
-                    shootSound: !!shootSound,
-                    explosionSound: !!explosionSound,
-                    collisionSound: !!collisionSound,
-                    warningSound: !!warningSound
-                });
-                
-                // 모든 오디오 요소가 로드되었는지 확인
-                if (shootSound && explosionSound && collisionSound && warningSound) {
-                    console.log('게임 재시작 - 모든 오디오 요소 로드 완료!');
-                    
-                    // 사운드 볼륨 설정 (최대 볼륨)
-                    shootSound.volume = clampVolume(1.0);      // 최대 볼륨
-                    explosionSound.volume = clampVolume(1.0);  // 최대 볼륨
-                    collisionSound.volume = clampVolume(1.0);   // 최대 볼륨
-                    warningSound.volume = clampVolume(1.0);   // 최대 볼륨
-                    
-                    return true;
-                }
-                
-                return false;
-            };
-            
-            // 즉시 시도
-            if (!initializeAudio()) {
-                // 실패 시 재시도
-                const retryInterval = setInterval(() => {
-                    retryCount++;
-                    if (initializeAudio() || retryCount >= maxRetries) {
-                        clearInterval(retryInterval);
-                        if (retryCount >= maxRetries) {
-                            console.error('게임 재시작 - 오디오 요소 초기화 실패 - 최대 재시도 횟수 초과');
-                        }
-                    }
-                }, 100); // 100ms마다 재시도
-            }
-            
-        } catch (error) {
-            console.error('게임 재시작 - 오디오 요소 초기화 실패:', error);
-        }
-        
-        // 15. 목숨 깜빡임 상태 초기화
-        lifeBlinkTimer = 0;
-        isLifeBlinking = false;
-        lastLifeCount = maxLives;
-    
-    // 14. 패턴 추적 시스템은 각 보스별로 관리되므로 전역 초기화 불필요
-    
-    // 15. 캔버스 포커스 설정
-    setTimeout(() => {
-        document.getElementById('gameCanvas').focus();
-    }, 100);
-    
-    console.log('게임 재시작 완료 - 모든 요소 초기화됨');
-    console.log('현재 최고 점수:', highScore);
-    console.log('초기화된 상태:', {
-        enemies: enemies.length,
-        bullets: bullets.length,
-        explosions: explosions.length,
-        bombs: bombs.length,
-        dynamites: dynamites.length,
-        powerUps: powerUps.length,
-        snakeGroups: snakeGroups.length,
-        bossActive: bossActive,
-        isSnakePatternActive: isSnakePatternActive
-    });
-}
-
 // 적 생성 함수 수정
 function createEnemy() {
     // 레벨에 따른 난이도 설정 가져오기 (개선된 시스템)
@@ -6567,28 +6378,42 @@ function restartGame() {
         keys[key] = false;
     });
     
-    // 12. 게임 화면 상태 초기화
+    // 12. 터치 관련 변수 초기화
+    touchStartX = 0;
+    touchStartY = 0;
+    mobileFireStartTime = 0;
+    isMobileFirePressed = false;
+    if (mobileContinuousFireInterval) {
+        clearInterval(mobileContinuousFireInterval);
+        mobileContinuousFireInterval = null;
+    }
+    
+    // 13. 레벨별 보스 패턴 추적 시스템 초기화
+    levelBossPatterns.usedPatterns = [];
+    levelBossPatterns.currentLevelPattern = null;
+    
+    // 14. 게임 화면 상태 초기화
     isStartScreen = false;
     isPaused = false;
     gameStarted = false;  // 게임 시작 상태 초기화
     
-    // 13. 사운드 관련 상태 초기화
+    // 15. 사운드 관련 상태 초기화
     lastCollisionTime = 0;
     lastExplosionTime = 0;
     
-    // 14. 패턴 추적 시스템은 각 보스별로 관리되므로 전역 초기화 불필요
+    // 16. 패턴 추적 시스템은 각 보스별로 관리되므로 전역 초기화 불필요
     
-    // 15. 적응형 프레임 레이트 시스템 초기화
+    // 17. 적응형 프레임 레이트 시스템 초기화
     adaptiveFrameRate.frameSkip = 0;
     adaptiveFrameRate.performanceMode = false;
     adaptiveFrameRate.currentFPS = 60;
     
-    // 16. 캔버스 포커스 설정
+    // 18. 캔버스 포커스 설정
     setTimeout(() => {
         document.getElementById('gameCanvas').focus();
     }, 100);
     
-    // 17. 게임 루프 재시작
+    // 19. 게임 루프 재시작
     setTimeout(() => {
         startGameLoop();
     }, 200);
